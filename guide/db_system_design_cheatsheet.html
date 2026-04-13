@@ -1,0 +1,481 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.root{padding:.75rem 0;font-size:13px;color:var(--color-text-primary)}
+.sec-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--color-text-tertiary);margin-bottom:8px}
+.tab-bar{display:flex;border-bottom:1.5px solid var(--color-border-tertiary);margin-bottom:16px;gap:0}
+.tab-btn{font-size:13px;font-weight:500;padding:8px 18px;border:none;background:transparent;color:var(--color-text-secondary);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:color .15s,border-color .15s;white-space:nowrap}
+.tab-btn:hover{color:var(--color-text-primary)}
+.tab-btn.active{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary)}
+.tab-pane{display:none}.tab-pane.active{display:block}
+.two-col{display:grid;grid-template-columns:1fr 290px;gap:12px;align-items:start}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:14px 16px}
+.divider{border:none;border-top:0.5px solid var(--color-border-tertiary);margin:14px 0}
+
+/* ── TAB 1: decision tree ── */
+.crumbs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:24px}
+.crumb{font-size:11px;padding:3px 10px;border-radius:12px;font-weight:500}
+.crumb-sep{font-size:11px;color:var(--color-text-tertiary);align-self:center}
+.q-card{border-radius:12px;padding:14px 16px;border:1px solid transparent;margin-bottom:8px}
+.q-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;opacity:.75}
+.q-text{font-size:14px;font-weight:500;line-height:1.4;margin-bottom:5px}
+.q-hint{font-size:11px;margin-bottom:12px;opacity:.7}
+.q-btns{display:flex;gap:8px}
+.q-btn{font-size:12px;font-weight:500;padding:6px 18px;border-radius:20px;border:1.5px solid transparent;cursor:pointer;background:rgba(255,255,255,.35);transition:background .15s,transform .1s}
+.q-btn:hover{background:rgba(255,255,255,.6)}.q-btn:active{transform:scale(.97)}
+.result-card{border-radius:12px;padding:16px;border:1px solid transparent;margin-bottom:8px}
+.result-title{font-size:16px;font-weight:500;margin-bottom:3px}
+.result-sub{font-size:12px;margin-bottom:10px;opacity:.75}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.tag{font-size:11px;font-weight:500;padding:2px 9px;border-radius:10px;background:rgba(0,0,0,.1)}
+.result-stats{font-size:12px;line-height:1.9;opacity:.85}
+.restart{margin-top:8px;font-size:12px;padding:5px 14px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.restart:hover{background:var(--color-background-secondary)}
+.ref-panel{display:flex;flex-direction:column;gap:6px}
+.ref-card{border-radius:10px;border:1.5px solid transparent;overflow:hidden;transition:opacity .3s,transform .3s}
+.ref-header{padding:9px 12px 7px;display:flex;align-items:baseline;justify-content:space-between}
+.ref-db{font-size:13px;font-weight:500}
+.ref-type{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;opacity:.7}
+.ref-body{display:grid;grid-template-columns:1fr 1fr;gap:1px}
+.ref-cell{padding:7px 10px}
+.ref-cell-label{font-size:10px;margin-bottom:2px;opacity:.65}
+.ref-cell-val{font-size:12px;font-weight:500;font-family:var(--font-mono)}
+.bottom-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.metric-card{border-radius:10px;padding:11px 12px;border:0.5px solid var(--color-border-tertiary)}
+.metric-db{font-size:12px;font-weight:500;margin-bottom:6px}
+.metric-rows{display:flex;flex-direction:column;gap:4px}
+.metric-row{display:flex;justify-content:space-between;font-size:11px}
+.metric-lbl{color:var(--color-text-secondary)}
+.metric-val{font-family:var(--font-mono);font-size:11px;font-weight:500}
+
+/* ── TAB 2: sharding ── */
+.shard-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.shard-card{border-radius:12px;padding:14px 16px;border:1px solid transparent}
+.shard-title{font-size:13px;font-weight:500;margin-bottom:4px}
+.shard-sub{font-size:11px;margin-bottom:10px;opacity:.75;line-height:1.5}
+.pro-con{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;line-height:1.6}
+.key-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.key-card{border-radius:10px;padding:12px 13px;border:1px solid transparent}
+.key-title{font-size:12px;font-weight:500;margin-bottom:4px}
+.key-sub{font-size:11px;opacity:.75;line-height:1.5;margin-bottom:8px}
+.pill{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;margin:2px 2px 0 0}
+
+/* ── TAB 3: scaling ── */
+.calc-section{background:var(--color-background-secondary);border-radius:12px;padding:16px;margin-bottom:14px}
+.slider-row{margin-bottom:12px}
+.slider-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:5px}
+.slider-name{color:var(--color-text-secondary);font-weight:500}
+.slider-val{font-family:var(--font-mono);font-weight:500;font-size:13px}
+input[type=range]{width:100%}
+
+/* DB picker */
+.db-picker-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:8px}
+.db-picker{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:14px}
+.db-pill{border-radius:10px;padding:10px 8px;border:1.5px solid transparent;cursor:pointer;transition:transform .15s,border-width .15s;text-align:center;user-select:none}
+.db-pill:hover{transform:scale(1.03)}
+.db-pill.selected{border-width:2.5px;transform:scale(1.04)}
+.db-pill.disabled{opacity:.35;cursor:not-allowed;transform:none}
+.db-pill-name{font-size:12px;font-weight:500;margin-bottom:3px}
+.db-pill-r{font-size:10px;font-family:var(--font-mono)}
+.db-pill-w{font-size:10px;font-family:var(--font-mono)}
+
+/* comparison output */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.compare-card{border-radius:12px;padding:14px 16px;border:1.5px solid transparent}
+.compare-title{font-size:13px;font-weight:500;margin-bottom:10px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid rgba(0,0,0,.07);font-size:12px}
+.stat-row:last-child{border-bottom:none}
+.stat-lbl{opacity:.7}
+.stat-val{font-family:var(--font-mono);font-weight:500;font-size:12px}
+.status-pill{font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px}
+
+/* strategy */
+.strategy-box{border-radius:12px;padding:14px 16px;border:1.5px solid transparent;margin-bottom:10px}
+.strategy-title{font-size:13px;font-weight:500;margin-bottom:6px}
+.strategy-body{font-size:12px;line-height:1.7;opacity:.85}
+
+/* cache strategy cards */
+.cache-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.cache-card{border-radius:10px;padding:12px 13px;border:1px solid transparent}
+.cache-card-title{font-size:12px;font-weight:500;margin-bottom:4px}
+.cache-card-sub{font-size:11px;opacity:.75;line-height:1.5;margin-bottom:8px}
+.cache-when{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;opacity:.6}
+.cache-item{font-size:11px;line-height:1.6;opacity:.8}
+</style>
+
+<div class="root">
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('dt',this)">Decision tree</button>
+  <button class="tab-btn" onclick="switchTab('shard',this)">How to shard</button>
+  <button class="tab-btn" onclick="switchTab('scale',this)">Scaling calculator</button>
+</div>
+
+<!-- ════════════════════════════════
+     TAB 1 — DECISION TREE
+════════════════════════════════ -->
+<div id="tab-dt" class="tab-pane active">
+  <div class="two-col">
+    <div>
+      <p class="sec-label">Database decision tree</p>
+      <div id="crumbs" class="crumbs"></div>
+      <div id="step"></div>
+    </div>
+    <div class="ref-panel">
+      <p class="sec-label">DB reference</p>
+      <div id="ref-postgres" class="ref-card" style="border-color:#185FA5">
+        <div class="ref-header" style="background:#E6F1FB"><span class="ref-db" style="color:#0C447C">PostgreSQL</span><span class="ref-type" style="color:#185FA5">Relational</span></div>
+        <div class="ref-body"><div class="ref-cell" style="background:#EEF5FC"><div class="ref-cell-label" style="color:#185FA5">Reads/s</div><div class="ref-cell-val" style="color:#0C447C">10K–50K</div></div><div class="ref-cell" style="background:#E6F1FB"><div class="ref-cell-label" style="color:#185FA5">Writes/s</div><div class="ref-cell-val" style="color:#0C447C">5K–10K</div></div></div>
+      </div>
+      <div id="ref-cassandra" class="ref-card" style="border-color:#1D9E75">
+        <div class="ref-header" style="background:#E1F5EE"><span class="ref-db" style="color:#085041">Cassandra</span><span class="ref-type" style="color:#0F6E56">Wide-column</span></div>
+        <div class="ref-body"><div class="ref-cell" style="background:#EEF9F4"><div class="ref-cell-label" style="color:#0F6E56">Reads/s</div><div class="ref-cell-val" style="color:#085041">20K–50K</div></div><div class="ref-cell" style="background:#E1F5EE"><div class="ref-cell-label" style="color:#0F6E56">Writes/s</div><div class="ref-cell-val" style="color:#085041">20K–50K</div></div></div>
+      </div>
+      <div id="ref-mongo" class="ref-card" style="border-color:#534AB7">
+        <div class="ref-header" style="background:#EEEDFE"><span class="ref-db" style="color:#3C3489">MongoDB</span><span class="ref-type" style="color:#534AB7">Document</span></div>
+        <div class="ref-body"><div class="ref-cell" style="background:#F4F3FE"><div class="ref-cell-label" style="color:#534AB7">Reads/s</div><div class="ref-cell-val" style="color:#3C3489">20K–50K</div></div><div class="ref-cell" style="background:#EEEDFE"><div class="ref-cell-label" style="color:#534AB7">Writes/s</div><div class="ref-cell-val" style="color:#3C3489">10K–30K</div></div></div>
+      </div>
+      <div id="ref-redis" class="ref-card" style="border-color:#993C1D">
+        <div class="ref-header" style="background:#FAECE7"><span class="ref-db" style="color:#712B13">Redis</span><span class="ref-type" style="color:#993C1D">Key-Value</span></div>
+        <div class="ref-body"><div class="ref-cell" style="background:#FCF3EF"><div class="ref-cell-label" style="color:#993C1D">Ops/s</div><div class="ref-cell-val" style="color:#712B13">100K–150K</div></div><div class="ref-cell" style="background:#FAECE7"><div class="ref-cell-label" style="color:#993C1D">Latency</div><div class="ref-cell-val" style="color:#712B13">&lt;1ms</div></div></div>
+      </div>
+      <div id="ref-es" class="ref-card" style="border-color:#854F0B">
+        <div class="ref-header" style="background:#FAEEDA"><span class="ref-db" style="color:#633806">Elasticsearch</span><span class="ref-type" style="color:#854F0B">Search</span></div>
+        <div class="ref-body"><div class="ref-cell" style="background:#FCF4E8"><div class="ref-cell-label" style="color:#854F0B">Reads/s</div><div class="ref-cell-val" style="color:#633806">5K–20K</div></div><div class="ref-cell" style="background:#FAEEDA"><div class="ref-cell-label" style="color:#854F0B">Writes/s</div><div class="ref-cell-val" style="color:#633806">2K–10K</div></div></div>
+      </div>
+    </div>
+  </div>
+  <hr class="divider">
+  <p class="sec-label">Cache &amp; queue throughput</p>
+  <div class="bottom-grid">
+    <div class="metric-card" style="background:#FAECE7;border-color:#D85A30"><div class="metric-db" style="color:#712B13">Redis (L3 cluster)</div><div class="metric-rows"><div class="metric-row"><span class="metric-lbl">Ops/sec</span><span class="metric-val" style="color:#993C1D">100K–150K</span></div><div class="metric-row"><span class="metric-lbl">Latency</span><span class="metric-val" style="color:#993C1D">0.5–2ms</span></div><div class="metric-row"><span class="metric-lbl">Redis 7+</span><span class="metric-val" style="color:#993C1D">~500K</span></div></div></div>
+    <div class="metric-card" style="background:#EEEDFE;border-color:#534AB7"><div class="metric-db" style="color:#3C3489">Memcached</div><div class="metric-rows"><div class="metric-row"><span class="metric-lbl">Ops/sec</span><span class="metric-val" style="color:#534AB7">200K–500K</span></div><div class="metric-row"><span class="metric-lbl">Latency</span><span class="metric-val" style="color:#534AB7">0.5–1ms</span></div><div class="metric-row"><span class="metric-lbl">Persistence</span><span class="metric-val" style="color:#534AB7">None</span></div></div></div>
+    <div class="metric-card" style="background:#E1F5EE;border-color:#0F6E56"><div class="metric-db" style="color:#085041">Kafka (per broker)</div><div class="metric-rows"><div class="metric-row"><span class="metric-lbl">Publish/sec</span><span class="metric-val" style="color:#0F6E56">500K–1M</span></div><div class="metric-row"><span class="metric-lbl">Consume/sec</span><span class="metric-val" style="color:#0F6E56">matches pub</span></div><div class="metric-row"><span class="metric-lbl">Latency</span><span class="metric-val" style="color:#0F6E56">~5ms</span></div></div></div>
+    <div class="metric-card" style="background:#E6F1FB;border-color:#185FA5"><div class="metric-db" style="color:#0C447C">L1 cache (in-JVM)</div><div class="metric-rows"><div class="metric-row"><span class="metric-lbl">Ops/sec</span><span class="metric-val" style="color:#185FA5">5M–10M</span></div><div class="metric-row"><span class="metric-lbl">Latency</span><span class="metric-val" style="color:#185FA5">&lt;0.1ms</span></div><div class="metric-row"><span class="metric-lbl">Scope</span><span class="metric-val" style="color:#185FA5">per node</span></div></div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     TAB 2 — HOW TO SHARD
+════════════════════════════════ -->
+<div id="tab-shard" class="tab-pane">
+  <p class="sec-label">Sharding techniques</p>
+  <div class="shard-grid">
+    <div class="shard-card" style="background:#E6F1FB;border-color:#185FA5">
+      <div class="shard-title" style="color:#0C447C">Hash sharding</div>
+      <div class="shard-sub" style="color:#0C447C">hash(shard_key) % N nodes. Uniform distribution, no natural ordering.</div>
+      <div class="pro-con">
+        <div><div style="font-size:10px;font-weight:500;color:#085041;margin-bottom:3px">PROS</div><div style="color:#085041">Even load distribution<br>No hotspots<br>Simple routing logic</div></div>
+        <div><div style="font-size:10px;font-weight:500;color:#712B13;margin-bottom:3px">CONS</div><div style="color:#712B13">Range queries need scatter-gather<br>Resharding costly<br>No locality</div></div>
+      </div>
+    </div>
+    <div class="shard-card" style="background:#E1F5EE;border-color:#0F6E56">
+      <div class="shard-title" style="color:#085041">Range sharding</div>
+      <div class="shard-sub" style="color:#085041">Partition by value range — A–M on shard 1, N–Z on shard 2, or by date.</div>
+      <div class="pro-con">
+        <div><div style="font-size:10px;font-weight:500;color:#085041;margin-bottom:3px">PROS</div><div style="color:#085041">Range queries fast<br>Simple mental model<br>Good for time-series reads</div></div>
+        <div><div style="font-size:10px;font-weight:500;color:#712B13;margin-bottom:3px">CONS</div><div style="color:#712B13">Hotspot on latest shard<br>Uneven load<br>Manual rebalancing</div></div>
+      </div>
+    </div>
+    <div class="shard-card" style="background:#EEEDFE;border-color:#534AB7">
+      <div class="shard-title" style="color:#3C3489">Consistent hashing</div>
+      <div class="shard-sub" style="color:#3C3489">Nodes placed on a ring. Each key maps to nearest node clockwise. Virtual nodes even the load.</div>
+      <div class="pro-con">
+        <div><div style="font-size:10px;font-weight:500;color:#085041;margin-bottom:3px">PROS</div><div style="color:#085041">Minimal key remapping<br>Add/remove nodes gracefully<br>Used by Cassandra, DynamoDB</div></div>
+        <div><div style="font-size:10px;font-weight:500;color:#712B13;margin-bottom:3px">CONS</div><div style="color:#712B13">Uneven without vnodes<br>Complex to implement<br>Hot node risk</div></div>
+      </div>
+    </div>
+    <div class="shard-card" style="background:#FAEEDA;border-color:#854F0B">
+      <div class="shard-title" style="color:#633806">Directory / lookup sharding</div>
+      <div class="shard-sub" style="color:#633806">A lookup service maps each key to its shard explicitly. Full control over placement.</div>
+      <div class="pro-con">
+        <div><div style="font-size:10px;font-weight:500;color:#085041;margin-bottom:3px">PROS</div><div style="color:#085041">Full flexibility<br>Easy custom rebalancing<br>Supports heterogeneous nodes</div></div>
+        <div><div style="font-size:10px;font-weight:500;color:#712B13;margin-bottom:3px">CONS</div><div style="color:#712B13">Lookup table = SPOF<br>Extra hop per request<br>Cache the lookup or pay latency</div></div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <p class="sec-label">Shard key selection</p>
+  <div class="key-grid">
+    <div class="key-card" style="background:#E1F5EE;border-color:#0F6E56">
+      <div class="key-title" style="color:#085041">Good shard keys</div>
+      <div class="key-sub" style="color:#085041">High cardinality · Even distribution · No natural hotspot</div>
+      <span class="pill" style="background:#9FE1CB;color:#04342C">user_id</span>
+      <span class="pill" style="background:#9FE1CB;color:#04342C">order_id</span>
+      <span class="pill" style="background:#9FE1CB;color:#04342C">UUID</span>
+      <span class="pill" style="background:#9FE1CB;color:#04342C">device_id</span>
+    </div>
+    <div class="key-card" style="background:#FAECE7;border-color:#993C1D">
+      <div class="key-title" style="color:#712B13">Bad shard keys</div>
+      <div class="key-sub" style="color:#712B13">Low cardinality or monotonic = hotspot guaranteed</div>
+      <span class="pill" style="background:#F5C4B3;color:#4A1B0C">status</span>
+      <span class="pill" style="background:#F5C4B3;color:#4A1B0C">country</span>
+      <span class="pill" style="background:#F5C4B3;color:#4A1B0C">created_at</span>
+      <span class="pill" style="background:#F5C4B3;color:#4A1B0C">boolean</span>
+    </div>
+    <div class="key-card" style="background:#EEEDFE;border-color:#534AB7">
+      <div class="key-title" style="color:#3C3489">Timestamp hotspot fix</div>
+      <div class="key-sub" style="color:#3C3489">All writes land on the latest shard. Solutions:</div>
+      <span class="pill" style="background:#CECBF6;color:#26215C">hash prefix + timestamp</span>
+      <span class="pill" style="background:#CECBF6;color:#26215C">bucket by time + hash</span>
+      <span class="pill" style="background:#CECBF6;color:#26215C">write spreading</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <p class="sec-label">When to shard vs replicate</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div class="card" style="border-color:#0F6E56">
+      <div style="font-size:12px;font-weight:500;color:#085041;margin-bottom:6px">Replicate when</div>
+      <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.8">Read traffic is high, writes are manageable<br>Data fits on a single node (&lt;1TB)<br>Single-node write QPS is not exceeded<br>You want simplicity first</div>
+    </div>
+    <div class="card" style="border-color:#185FA5">
+      <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:6px">Shard when</div>
+      <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.8">Write throughput exceeds single node limit<br>Data volume &gt; 1TB or growing fast<br>Single-node read replicas are not enough<br>You need horizontal write scale</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     TAB 3 — SCALING CALCULATOR
+════════════════════════════════ -->
+<div id="tab-scale" class="tab-pane">
+
+  <!-- SLIDERS -->
+  <div class="calc-section">
+    <p class="sec-label" style="margin-bottom:12px">Traffic inputs</p>
+    <div class="slider-row">
+      <div class="slider-label">
+        <span class="slider-name" style="color:#0C447C">Reads / sec</span>
+        <span class="slider-val" style="color:#185FA5" id="rv">10,000</span>
+      </div>
+      <input type="range" min="1000" max="200000" step="1000" value="10000" id="rsl" oninput="calc()">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label">
+        <span class="slider-name" style="color:#085041">Writes / sec</span>
+        <span class="slider-val" style="color:#0F6E56" id="wv">2,000</span>
+      </div>
+      <input type="range" min="500" max="100000" step="500" value="2000" id="wsl" oninput="calc()">
+    </div>
+    <div class="slider-row" style="margin-bottom:0">
+      <div class="slider-label">
+        <span class="slider-name" style="color:#633806">Cache hit rate</span>
+        <span class="slider-val" style="color:#854F0B" id="cv">70%</span>
+      </div>
+      <input type="range" min="0" max="95" step="5" value="70" id="csl" oninput="calc()">
+    </div>
+  </div>
+
+  <!-- DB PICKER -->
+  <p class="sec-label">Select up to 2 databases to compare</p>
+  <div class="db-picker">
+    <div class="db-pill" id="pill-pg" style="background:#E6F1FB;border-color:#185FA5" onclick="toggleDB('pg')">
+      <div class="db-pill-name" style="color:#0C447C">PostgreSQL</div>
+      <div class="db-pill-r" style="color:#185FA5">R: 50K/s</div>
+      <div class="db-pill-w" style="color:#185FA5">W: 10K/s</div>
+    </div>
+    <div class="db-pill" id="pill-cs" style="background:#E1F5EE;border-color:#1D9E75" onclick="toggleDB('cs')">
+      <div class="db-pill-name" style="color:#085041">Cassandra</div>
+      <div class="db-pill-r" style="color:#0F6E56">R: 50K/s</div>
+      <div class="db-pill-w" style="color:#0F6E56">W: 50K/s</div>
+    </div>
+    <div class="db-pill" id="pill-mg" style="background:#EEEDFE;border-color:#534AB7" onclick="toggleDB('mg')">
+      <div class="db-pill-name" style="color:#3C3489">MongoDB</div>
+      <div class="db-pill-r" style="color:#534AB7">R: 50K/s</div>
+      <div class="db-pill-w" style="color:#534AB7">W: 30K/s</div>
+    </div>
+    <div class="db-pill" id="pill-rd" style="background:#FAECE7;border-color:#993C1D" onclick="toggleDB('rd')">
+      <div class="db-pill-name" style="color:#712B13">Redis</div>
+      <div class="db-pill-r" style="color:#993C1D">R: 150K/s</div>
+      <div class="db-pill-w" style="color:#993C1D">W: 150K/s</div>
+    </div>
+    <div class="db-pill" id="pill-sc" style="background:#E1F5EE;border-color:#085041" onclick="toggleDB('sc')">
+      <div class="db-pill-name" style="color:#04342C">ScyllaDB</div>
+      <div class="db-pill-r" style="color:#085041">R: 500K/s</div>
+      <div class="db-pill-w" style="color:#085041">W: 500K/s</div>
+    </div>
+  </div>
+
+  <!-- COMPARISON OUTPUT -->
+  <div id="compare-out" style="display:none">
+    <hr class="divider">
+    <p class="sec-label">Side-by-side analysis</p>
+    <div class="compare-grid" id="compare-grid"></div>
+    <div id="strategy-out"></div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- CACHE STRATEGY CARDS -->
+  <p class="sec-label">Cache vs replication vs combination</p>
+  <div class="cache-grid">
+    <div class="cache-card" style="background:#FAECE7;border-color:#993C1D">
+      <div class="cache-card-title" style="color:#712B13">Cache only</div>
+      <div class="cache-card-sub" style="color:#712B13">Read-heavy workload, data is mostly static or tolerates stale reads</div>
+      <div class="cache-when" style="color:#993C1D">Use when</div>
+      <div class="cache-item" style="color:#712B13">Hit rate &gt; 80%<br>Read:write ratio &gt; 20:1<br>Latency SLA &lt; 5ms<br>e.g. product catalog, session store</div>
+    </div>
+    <div class="cache-card" style="background:#E6F1FB;border-color:#185FA5">
+      <div class="cache-card-title" style="color:#0C447C">Replication only</div>
+      <div class="cache-card-sub" style="color:#0C447C">Reads distributed across replicas, writes go to primary</div>
+      <div class="cache-when" style="color:#185FA5">Use when</div>
+      <div class="cache-item" style="color:#0C447C">Read:write ratio 5:1–20:1<br>Strong consistency needed<br>Data too dynamic to cache<br>e.g. financial ledger, inventory</div>
+    </div>
+    <div class="cache-card" style="background:#E1F5EE;border-color:#0F6E56">
+      <div class="cache-card-title" style="color:#085041">Cache + replication</div>
+      <div class="cache-card-sub" style="color:#085041">Cache absorbs read spikes, replicas handle cache misses and consistency</div>
+      <div class="cache-when" style="color:#0F6E56">Use when</div>
+      <div class="cache-item" style="color:#085041">Mixed read/write workload<br>Cache hit rate 60–80%<br>Scale beyond single node<br>e.g. social feed, user profiles</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const DBS={
+  pg:{name:'PostgreSQL',rCap:50000,wCap:10000,bg:'#E6F1FB',border:'#185FA5',text:'#0C447C',mid:'#185FA5'},
+  cs:{name:'Cassandra',rCap:50000,wCap:50000,bg:'#E1F5EE',border:'#1D9E75',text:'#085041',mid:'#0F6E56'},
+  mg:{name:'MongoDB',rCap:50000,wCap:30000,bg:'#EEEDFE',border:'#534AB7',text:'#3C3489',mid:'#534AB7'},
+  rd:{name:'Redis',rCap:150000,wCap:150000,bg:'#FAECE7',border:'#993C1D',text:'#712B13',mid:'#993C1D'},
+  sc:{name:'ScyllaDB',rCap:500000,wCap:500000,bg:'#E1F5EE',border:'#085041',text:'#04342C',mid:'#085041'},
+};
+const PALETTE_DT={
+  q1:{bg:'#E6F1FB',border:'#185FA5',text:'#0C447C',crumbBg:'#B5D4F4',crumbText:'#042C53'},
+  q2:{bg:'#E1F5EE',border:'#0F6E56',text:'#085041',crumbBg:'#9FE1CB',crumbText:'#04342C'},
+  q3:{bg:'#EEEDFE',border:'#534AB7',text:'#3C3489',crumbBg:'#CECBF6',crumbText:'#26215C'},
+  q4:{bg:'#FAEEDA',border:'#854F0B',text:'#633806',crumbBg:'#FAC775',crumbText:'#412402'},
+};
+const DT_RESULTS={
+  relational:{bg:'#E6F1FB',border:'#185FA5',text:'#0C447C',title:'PostgreSQL / MySQL',sub:'Strong consistency · ACID · Complex joins',tags:['ACID','Joins','Transactions','Financial'],stats:'Reads: 10K–50K/s\nWrites: 5K–10K/s\nDefault starting point for most systems',hl:'ref-postgres'},
+  widecolumn:{bg:'#E1F5EE',border:'#0F6E56',text:'#085041',title:'Cassandra / ScyllaDB',sub:'High write throughput · Time-series · Append-heavy',tags:['High writes','Time-series','Leaderless'],stats:'Cassandra: 20K–50K writes/s\nScyllaDB: up to 500K writes/s',hl:'ref-cassandra'},
+  document:{bg:'#EEEDFE',border:'#534AB7',text:'#3C3489',title:'MongoDB / Firestore',sub:'Flexible schema · Nested objects · Catalogs',tags:['Flexible schema','Documents','Schemaless'],stats:'Reads: 20K–50K/s\nWrites: 10K–30K/s',hl:'ref-mongo'},
+  search:{bg:'#FAEEDA',border:'#854F0B',text:'#633806',title:'Elasticsearch',sub:'Full-text search · Log analytics · Autocomplete',tags:['Full-text','Autocomplete','Logs'],stats:'Reads: 5K–20K/s\nWrites: 2K–10K/s\nPair with a primary DB',hl:'ref-es'},
+  keyvalue:{bg:'#FAECE7',border:'#993C1D',text:'#712B13',title:'Redis / DynamoDB',sub:'Sessions · Simple lookups · Caching layer',tags:['Sessions','Cache','O(1) lookups'],stats:'Redis: 100K–150K ops/s  <1ms\nDynamoDB: unlimited (provisioned)',hl:'ref-redis'},
+};
+const DT_STEPS=[
+  {id:'q1',pal:'q1',q:'Is ACID compliance or complex joins required?',hint:'e.g. financial transactions, order management, billing',yes:'relational',no:'q2'},
+  {id:'q2',pal:'q2',q:'Is write throughput the primary bottleneck?',hint:'e.g. >10K writes/sec, event logs, time-series',yes:'q3',no:'q4'},
+  {id:'q3',pal:'q3',q:'Is the data schema flexible or frequently evolving?',hint:'e.g. variable fields, nested documents, catalogs',yes:'document',no:'widecolumn'},
+  {id:'q4',pal:'q4',q:'Is full-text search or analytics the primary need?',hint:'e.g. search bar, autocomplete, log dashboards',yes:'search',no:'keyvalue'},
+];
+const ALL_REFS=['ref-postgres','ref-cassandra','ref-mongo','ref-redis','ref-es'];
+let dtHistory=[],dtCur='q1';
+function getDTStep(id){return DT_STEPS.find(s=>s.id===id)}
+function hlRef(id){ALL_REFS.forEach(r=>{const e=document.getElementById(r);e.style.opacity=r===id?'1':'0.3';e.style.transform=r===id?'scale(1.03)':'scale(1)';e.style.borderWidth=r===id?'2px':'1.5px';})}
+function resetRef(){ALL_REFS.forEach(r=>{const e=document.getElementById(r);e.style.opacity='1';e.style.transform='scale(1)';e.style.borderWidth='1.5px';})}
+function renderCrumbs(){const el=document.getElementById('crumbs');if(!dtHistory.length){el.innerHTML='';return;}el.innerHTML=dtHistory.map((h,i)=>`<span class="crumb" style="background:${h.pal.crumbBg};color:${h.pal.crumbText}">${h.label}</span>${i<dtHistory.length-1?'<span class="crumb-sep">›</span>':''}`).join('');}
+function renderDTStep(id){const s=getDTStep(id);if(!s){renderDTResult(id);return;}dtCur=id;const p=PALETTE_DT[s.pal];resetRef();document.getElementById('step').innerHTML=`<div class="q-card" style="background:${p.bg};border-color:${p.border}"><div class="q-label" style="color:${p.text}">Question ${dtHistory.length+1}</div><div class="q-text" style="color:${p.text}">${s.q}</div><div class="q-hint" style="color:${p.text}">${s.hint}</div><div class="q-btns"><button class="q-btn" style="border-color:${p.border};color:${p.text}" onclick="dtChoose('Yes','${s.yes}','${s.id}')">Yes</button><button class="q-btn" style="border-color:${p.border};color:${p.text}" onclick="dtChoose('No','${s.no}','${s.id}')">No</button></div></div>`;renderCrumbs();}
+function dtChoose(label,next,fromId){const s=getDTStep(fromId);dtHistory.push({label:s.q.replace('?','')+' → '+label,pal:PALETTE_DT[s.pal]});renderDTStep(next);}
+function renderDTResult(id){const r=DT_RESULTS[id];hlRef(r.hl);document.getElementById('step').innerHTML=`<div class="result-card" style="background:${r.bg};border-color:${r.border}"><div class="result-title" style="color:${r.text}">${r.title}</div><div class="result-sub" style="color:${r.text}">${r.sub}</div><div class="tags">${r.tags.map(t=>`<span class="tag" style="color:${r.text}">${t}</span>`).join('')}</div><div class="result-stats" style="color:${r.text};white-space:pre-line">${r.stats}</div></div><button class="restart" onclick="dtRestart()">↺ Start over</button>`;renderCrumbs();}
+function dtRestart(){dtHistory=[];dtCur='q1';resetRef();renderDTStep('q1');}
+renderDTStep('q1');
+
+/* ── SCALING CALCULATOR ── */
+let selectedDBs=[];
+function fmt(n){return n>=1000?Math.round(n/1000)+'K':n}
+function fmtFull(n){return n.toLocaleString()}
+
+function toggleDB(id){
+  if(selectedDBs.includes(id)){
+    selectedDBs=selectedDBs.filter(x=>x!==id);
+    document.getElementById('pill-'+id).classList.remove('selected');
+  } else {
+    if(selectedDBs.length>=2){
+      const removed=selectedDBs.shift();
+      document.getElementById('pill-'+removed).classList.remove('selected');
+      document.getElementById('pill-'+removed).classList.remove('disabled');
+    }
+    selectedDBs.push(id);
+    document.getElementById('pill-'+id).classList.add('selected');
+  }
+  updateDisabled();
+  calc();
+}
+
+function updateDisabled(){
+  Object.keys(DBS).forEach(id=>{
+    const el=document.getElementById('pill-'+id);
+    if(selectedDBs.length>=2&&!selectedDBs.includes(id)){el.classList.add('disabled');}
+    else{el.classList.remove('disabled');}
+  });
+}
+
+function statusPill(ok,okText,warnText,bg,text){
+  const good=ok;
+  return `<span class="status-pill" style="background:${good?'#E1F5EE':'#FAECE7'};color:${good?'#085041':'#712B13'}">${good?okText:warnText}</span>`;
+}
+
+function calcForDB(db,reads,writes,hit){
+  const dbReads=Math.round(reads*(1-(hit/100)));
+  const readReplicas=Math.max(1,Math.ceil(dbReads/db.rCap));
+  const writeShards=Math.max(1,Math.ceil(writes/db.wCap));
+  const needsShard=writes>db.wCap;
+  const cacheOk=hit>=60;
+  return {dbReads,readReplicas,writeShards,needsShard,cacheOk};
+}
+
+function strategyText(db,res,reads,writes,hit){
+  const lines=[];
+  if(res.needsShard){
+    lines.push(`Write load of ${fmtFull(writes)}/s exceeds ${db.name}'s single-node limit of ${fmtFull(db.wCap)}/s — you need ${res.writeShards} write shard${res.writeShards>1?'s':''}.`);
+  } else {
+    lines.push(`Write load of ${fmtFull(writes)}/s is within ${db.name}'s single-node capacity of ${fmtFull(db.wCap)}/s — no sharding required for writes.`);
+  }
+  if(hit>=80){
+    lines.push(`Cache hit rate of ${hit}% is strong — DB read load drops to ${fmtFull(res.dbReads)}/s. ${res.readReplicas} read replica${res.readReplicas>1?'s':''} should be sufficient.`);
+  } else if(hit>=50){
+    lines.push(`Cache hit rate of ${hit}% provides moderate relief. DB still sees ${fmtFull(res.dbReads)}/s — provision ${res.readReplicas} read replica${res.readReplicas>1?'s':''} and consider raising hit rate.`);
+  } else {
+    lines.push(`Cache hit rate of ${hit}% is low. DB absorbs ${fmtFull(res.dbReads)}/s — ${res.readReplicas} read replica${res.readReplicas>1?'s':''} needed. Prioritize caching to reduce replica count.`);
+  }
+  return lines.join(' ');
+}
+
+function calc(){
+  const reads=+document.getElementById('rsl').value;
+  const writes=+document.getElementById('wsl').value;
+  const hit=+document.getElementById('csl').value;
+  document.getElementById('rv').textContent=fmtFull(reads);
+  document.getElementById('wv').textContent=fmtFull(writes);
+  document.getElementById('cv').textContent=hit+'%';
+
+  const out=document.getElementById('compare-out');
+  if(selectedDBs.length===0){out.style.display='none';return;}
+  out.style.display='block';
+
+  const cards=selectedDBs.map(id=>{
+    const db=DBS[id];
+    const res=calcForDB(db,reads,writes,hit);
+    return `<div class="compare-card" style="background:${db.bg};border-color:${db.border}">
+      <div class="compare-title" style="color:${db.text}">${db.name}</div>
+      <div class="stat-row"><span class="stat-lbl" style="color:${db.text}">DB reads after cache</span><span class="stat-val" style="color:${db.text}">${fmtFull(res.dbReads)}/s</span></div>
+      <div class="stat-row"><span class="stat-lbl" style="color:${db.text}">Node read cap</span><span class="stat-val" style="color:${db.text}">${fmtFull(db.rCap)}/s</span></div>
+      <div class="stat-row"><span class="stat-lbl" style="color:${db.text}">Read replicas needed</span><span class="stat-val" style="color:${db.text}">${res.readReplicas}</span></div>
+      <div class="stat-row"><span class="stat-lbl" style="color:${db.text}">Node write cap</span><span class="stat-val" style="color:${db.text}">${fmtFull(db.wCap)}/s</span></div>
+      <div class="stat-row"><span class="stat-lbl" style="color:${db.text}">Write shards needed</span><span class="stat-val" style="color:${db.text}">${res.writeShards}</span></div>
+      <div class="stat-row" style="border-bottom:none;margin-top:4px"><span class="stat-lbl" style="color:${db.text}">Write status</span>${statusPill(!res.needsShard,'Within capacity','Sharding required','','')}</div>
+    </div>`;
+  });
+  document.getElementById('compare-grid').innerHTML=cards.join('');
+
+  const stratHTML=selectedDBs.map(id=>{
+    const db=DBS[id];
+    const res=calcForDB(db,reads,writes,hit);
+    const strat=strategyText(db,res,reads,writes,hit);
+    return `<div class="strategy-box" style="background:${db.bg};border-color:${db.border}">
+      <div class="strategy-title" style="color:${db.text}">${db.name} — recommendation</div>
+      <div class="strategy-body" style="color:${db.text}">${strat}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('strategy-out').innerHTML=stratHTML;
+}
+
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
