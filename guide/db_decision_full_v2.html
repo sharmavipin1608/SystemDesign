@@ -1,0 +1,302 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.root{padding:.75rem 0;font-size:13px;color:var(--color-text-primary)}
+.layout{display:grid;grid-template-columns:1fr 290px;gap:12px;align-items:start}
+.sec-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--color-text-tertiary);margin-bottom:8px}
+
+.crumbs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:24px}
+.crumb{font-size:11px;padding:3px 10px;border-radius:12px;font-weight:500}
+.crumb-sep{font-size:11px;color:var(--color-text-tertiary);align-self:center}
+
+.q-card{border-radius:12px;padding:14px 16px;border:1px solid transparent;margin-bottom:8px}
+.q-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;opacity:.75}
+.q-text{font-size:14px;font-weight:500;line-height:1.4;margin-bottom:5px}
+.q-hint{font-size:11px;margin-bottom:12px;opacity:.7}
+.q-btns{display:flex;gap:8px}
+.q-btn{font-size:12px;font-weight:500;padding:6px 18px;border-radius:20px;border:1.5px solid transparent;cursor:pointer;background:rgba(255,255,255,.35);transition:background .15s,transform .1s}
+.q-btn:hover{background:rgba(255,255,255,.6)}
+.q-btn:active{transform:scale(.97)}
+
+.result-card{border-radius:12px;padding:16px;border:1px solid transparent;margin-bottom:8px}
+.result-title{font-size:16px;font-weight:500;margin-bottom:3px}
+.result-sub{font-size:12px;margin-bottom:10px;opacity:.75}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.tag{font-size:11px;font-weight:500;padding:2px 9px;border-radius:10px;background:rgba(0,0,0,.1)}
+.result-stats{font-size:12px;line-height:1.9;opacity:.85}
+.restart{margin-top:8px;font-size:12px;padding:5px 14px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.restart:hover{background:var(--color-background-secondary)}
+
+/* === RIGHT PANEL — fixed === */
+.ref-panel{display:flex;flex-direction:column;gap:6px}
+.ref-card{border-radius:10px;border:1.5px solid transparent;overflow:hidden;transition:opacity .3s,transform .3s,border-color .3s}
+.ref-header{padding:9px 12px 7px;display:flex;align-items:baseline;justify-content:space-between}
+.ref-db{font-size:13px;font-weight:500}
+.ref-type{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;opacity:.7}
+.ref-body{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(0,0,0,.08)}
+.ref-cell{padding:7px 10px}
+.ref-cell-label{font-size:10px;margin-bottom:2px;opacity:.65;font-weight:400}
+.ref-cell-val{font-size:12px;font-weight:500;font-family:var(--font-mono)}
+
+/* === BOTTOM === */
+.bottom-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.metric-card{border-radius:10px;padding:11px 12px;border:0.5px solid var(--color-border-tertiary)}
+.metric-db{font-size:12px;font-weight:500;margin-bottom:6px}
+.metric-rows{display:flex;flex-direction:column;gap:3px}
+.metric-row{display:flex;justify-content:space-between;align-items:center;font-size:11px}
+.metric-label{color:var(--color-text-secondary)}
+.metric-val{font-family:var(--font-mono);font-size:11px;font-weight:500}
+.section-divider{border:none;border-top:0.5px solid var(--color-border-tertiary);margin:14px 0 12px}
+</style>
+
+<div class="root">
+<div class="layout">
+
+<!-- LEFT -->
+<div>
+  <p class="sec-label">Database decision tree</p>
+  <div id="crumbs" class="crumbs"></div>
+  <div id="step"></div>
+</div>
+
+<!-- RIGHT -->
+<div class="ref-panel">
+  <p class="sec-label">DB reference</p>
+
+  <div id="ref-postgres" class="ref-card" style="border-color:#185FA5">
+    <div class="ref-header" style="background:#E6F1FB">
+      <span class="ref-db" style="color:#0C447C">PostgreSQL</span>
+      <span class="ref-type" style="color:#185FA5">Relational</span>
+    </div>
+    <div class="ref-body" style="background:rgba(24,95,165,.1)">
+      <div class="ref-cell" style="background:#EEF5FC">
+        <div class="ref-cell-label" style="color:#185FA5">Reads/s</div>
+        <div class="ref-cell-val" style="color:#0C447C">10K–50K</div>
+      </div>
+      <div class="ref-cell" style="background:#E6F1FB">
+        <div class="ref-cell-label" style="color:#185FA5">Writes/s</div>
+        <div class="ref-cell-val" style="color:#0C447C">5K–10K</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ref-cassandra" class="ref-card" style="border-color:#1D9E75">
+    <div class="ref-header" style="background:#E1F5EE">
+      <span class="ref-db" style="color:#085041">Cassandra</span>
+      <span class="ref-type" style="color:#0F6E56">Wide-column</span>
+    </div>
+    <div class="ref-body">
+      <div class="ref-cell" style="background:#EEF9F4">
+        <div class="ref-cell-label" style="color:#0F6E56">Reads/s</div>
+        <div class="ref-cell-val" style="color:#085041">20K–50K</div>
+      </div>
+      <div class="ref-cell" style="background:#E1F5EE">
+        <div class="ref-cell-label" style="color:#0F6E56">Writes/s</div>
+        <div class="ref-cell-val" style="color:#085041">20K–50K</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ref-mongo" class="ref-card" style="border-color:#534AB7">
+    <div class="ref-header" style="background:#EEEDFE">
+      <span class="ref-db" style="color:#3C3489">MongoDB</span>
+      <span class="ref-type" style="color:#534AB7">Document</span>
+    </div>
+    <div class="ref-body">
+      <div class="ref-cell" style="background:#F4F3FE">
+        <div class="ref-cell-label" style="color:#534AB7">Reads/s</div>
+        <div class="ref-cell-val" style="color:#3C3489">20K–50K</div>
+      </div>
+      <div class="ref-cell" style="background:#EEEDFE">
+        <div class="ref-cell-label" style="color:#534AB7">Writes/s</div>
+        <div class="ref-cell-val" style="color:#3C3489">10K–30K</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ref-redis" class="ref-card" style="border-color:#993C1D">
+    <div class="ref-header" style="background:#FAECE7">
+      <span class="ref-db" style="color:#712B13">Redis</span>
+      <span class="ref-type" style="color:#993C1D">Key-Value</span>
+    </div>
+    <div class="ref-body">
+      <div class="ref-cell" style="background:#FCF3EF">
+        <div class="ref-cell-label" style="color:#993C1D">Ops/s</div>
+        <div class="ref-cell-val" style="color:#712B13">100K–150K</div>
+      </div>
+      <div class="ref-cell" style="background:#FAECE7">
+        <div class="ref-cell-label" style="color:#993C1D">Latency</div>
+        <div class="ref-cell-val" style="color:#712B13">&lt;1ms</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ref-es" class="ref-card" style="border-color:#854F0B">
+    <div class="ref-header" style="background:#FAEEDA">
+      <span class="ref-db" style="color:#633806">Elasticsearch</span>
+      <span class="ref-type" style="color:#854F0B">Search</span>
+    </div>
+    <div class="ref-body">
+      <div class="ref-cell" style="background:#FCF4E8">
+        <div class="ref-cell-label" style="color:#854F0B">Reads/s</div>
+        <div class="ref-cell-val" style="color:#633806">5K–20K</div>
+      </div>
+      <div class="ref-cell" style="background:#FAEEDA">
+        <div class="ref-cell-label" style="color:#854F0B">Writes/s</div>
+        <div class="ref-cell-val" style="color:#633806">2K–10K</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- BOTTOM -->
+<hr class="section-divider">
+<p class="sec-label">Cache & queue throughput</p>
+<div class="bottom-grid">
+  <div class="metric-card" style="background:#FAECE7;border-color:#D85A30">
+    <div class="metric-db" style="color:#712B13">Redis (L3 cluster)</div>
+    <div class="metric-rows">
+      <div class="metric-row"><span class="metric-label" style="color:#993C1D">Ops/sec</span><span class="metric-val" style="color:#712B13">100K–150K</span></div>
+      <div class="metric-row"><span class="metric-label" style="color:#993C1D">Latency</span><span class="metric-val" style="color:#712B13">0.5–2ms</span></div>
+      <div class="metric-row"><span class="metric-label" style="color:#993C1D">Redis 7+ (I/O)</span><span class="metric-val" style="color:#712B13">~500K</span></div>
+    </div>
+  </div>
+  <div class="metric-card" style="background:#EEEDFE;border-color:#534AB7">
+    <div class="metric-db" style="color:#3C3489">Memcached</div>
+    <div class="metric-rows">
+      <div class="metric-row"><span class="metric-label" style="color:#534AB7">Ops/sec</span><span class="metric-val" style="color:#3C3489">200K–500K</span></div>
+      <div class="metric-row"><span class="metric-label" style="color:#534AB7">Latency</span><span class="metric-val" style="color:#3C3489">0.5–1ms</span></div>
+      <div class="metric-row"><span class="metric-label" style="color:#534AB7">Persistence</span><span class="metric-val" style="color:#3C3489">None</span></div>
+    </div>
+  </div>
+  <div class="metric-card" style="background:#E1F5EE;border-color:#0F6E56">
+    <div class="metric-db" style="color:#085041">Kafka (per broker)</div>
+    <div class="metric-rows">
+      <div class="metric-row"><span class="metric-label" style="color:#0F6E56">Publish/sec</span><span class="metric-val" style="color:#085041">500K–1M</span></div>
+      <div class="metric-row"><span class="metric-label" style="color:#0F6E56">Consume/sec</span><span class="metric-val" style="color:#085041">matches pub</span></div>
+      <div class="metric-row"><span class="metric-label" style="color:#0F6E56">Latency</span><span class="metric-val" style="color:#085041">~5ms</span></div>
+    </div>
+  </div>
+  <div class="metric-card" style="background:#E6F1FB;border-color:#185FA5">
+    <div class="metric-db" style="color:#0C447C">L1 cache (in-JVM)</div>
+    <div class="metric-rows">
+      <div class="metric-row"><span class="metric-label" style="color:#185FA5">Ops/sec</span><span class="metric-val" style="color:#0C447C">5M–10M</span></div>
+      <div class="metric-row"><span class="metric-label" style="color:#185FA5">Latency</span><span class="metric-val" style="color:#0C447C">&lt;0.1ms</span></div>
+      <div class="metric-row"><span class="metric-label" style="color:#185FA5">Scope</span><span class="metric-val" style="color:#0C447C">per node</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const PALETTE={
+  q1:{bg:'#E6F1FB',border:'#185FA5',text:'#0C447C',btnBorder:'#185FA5',crumbBg:'#B5D4F4',crumbText:'#042C53'},
+  q2:{bg:'#E1F5EE',border:'#0F6E56',text:'#085041',btnBorder:'#0F6E56',crumbBg:'#9FE1CB',crumbText:'#04342C'},
+  q3:{bg:'#EEEDFE',border:'#534AB7',text:'#3C3489',btnBorder:'#534AB7',crumbBg:'#CECBF6',crumbText:'#26215C'},
+  q4:{bg:'#FAEEDA',border:'#854F0B',text:'#633806',btnBorder:'#BA7517',crumbBg:'#FAC775',crumbText:'#412402'},
+};
+const RESULTS={
+  relational:{bg:'#E6F1FB',border:'#185FA5',text:'#0C447C',tagBg:'rgba(24,95,165,.15)',
+    title:'PostgreSQL / MySQL',sub:'Strong consistency · ACID transactions · Complex joins',
+    tags:['ACID','Joins','Transactions','Financial'],
+    stats:'Reads: 10K–50K/s\nWrites: 5K–10K/s\nDefault starting point for most systems',highlight:'ref-postgres'},
+  widecolumn:{bg:'#E1F5EE',border:'#0F6E56',text:'#085041',tagBg:'rgba(15,110,86,.15)',
+    title:'Cassandra / ScyllaDB',sub:'High write throughput · Time-series · Append-heavy',
+    tags:['High writes','Time-series','Leaderless','Tunable consistency'],
+    stats:'Cassandra: 20K–50K writes/s\nScyllaDB: up to 500K writes/s\nNo single point of failure',highlight:'ref-cassandra'},
+  document:{bg:'#EEEDFE',border:'#534AB7',text:'#3C3489',tagBg:'rgba(83,74,183,.15)',
+    title:'MongoDB / Firestore',sub:'Flexible schema · Nested objects · Catalogs',
+    tags:['Flexible schema','Documents','Nested data','Schemaless'],
+    stats:'Reads: 20K–50K/s\nWrites: 10K–30K/s\nAvoid for high write + strict consistency',highlight:'ref-mongo'},
+  search:{bg:'#FAEEDA',border:'#854F0B',text:'#633806',tagBg:'rgba(133,79,11,.15)',
+    title:'Elasticsearch',sub:'Full-text search · Log analytics · Autocomplete',
+    tags:['Full-text','Autocomplete','Log analytics','Near real-time'],
+    stats:'Reads: 5K–20K/s\nWrites: 2K–10K/s\nNot a primary DB — pair with Postgres/Mongo',highlight:'ref-es'},
+  keyvalue:{bg:'#FAECE7',border:'#993C1D',text:'#712B13',tagBg:'rgba(153,60,29,.15)',
+    title:'Redis / DynamoDB',sub:'Sessions · Simple lookups · Caching layer',
+    tags:['Sessions','Leaderboards','Cache','O(1) lookups'],
+    stats:'Redis: 100K–150K ops/s  <1ms latency\nDynamoDB: unlimited (provisioned RCU/WCU)\nAlways pair with a primary DB',highlight:'ref-redis'},
+};
+const STEPS=[
+  {id:'q1',pal:'q1',q:'Is ACID compliance or complex joins required?',hint:'e.g. financial transactions, order management, billing',yes:'relational',no:'q2'},
+  {id:'q2',pal:'q2',q:'Is write throughput the primary bottleneck?',hint:'e.g. > 10K writes/sec, event logs, time-series metrics',yes:'q3',no:'q4'},
+  {id:'q3',pal:'q3',q:'Is the data schema flexible or frequently evolving?',hint:'e.g. variable fields, nested documents, product catalogs',yes:'document',no:'widecolumn'},
+  {id:'q4',pal:'q4',q:'Is full-text search or analytics the primary need?',hint:'e.g. search bar, autocomplete, log dashboards',yes:'search',no:'keyvalue'},
+];
+const ALL_REFS=['ref-postgres','ref-cassandra','ref-mongo','ref-redis','ref-es'];
+let history=[],cur='q1';
+
+function getStep(id){return STEPS.find(s=>s.id===id)}
+
+function highlightRef(id){
+  ALL_REFS.forEach(rid=>{
+    const el=document.getElementById(rid);
+    el.style.opacity=rid===id?'1':'0.35';
+    el.style.transform=rid===id?'scale(1.03)':'scale(1)';
+    el.style.borderWidth=rid===id?'2px':'1.5px';
+  });
+}
+function resetRef(){
+  ALL_REFS.forEach(rid=>{
+    const el=document.getElementById(rid);
+    el.style.opacity='1';el.style.transform='scale(1)';el.style.borderWidth='1.5px';
+  });
+}
+
+function renderCrumbs(){
+  const el=document.getElementById('crumbs');
+  if(!history.length){el.innerHTML='';return;}
+  el.innerHTML=history.map((h,i)=>`
+    <span class="crumb" style="background:${h.pal.crumbBg};color:${h.pal.crumbText}">${h.label}</span>
+    ${i<history.length-1?'<span class="crumb-sep">›</span>':''}
+  `).join('');
+}
+
+function renderStep(id){
+  const s=getStep(id);
+  if(!s){renderResult(id);return;}
+  cur=id;
+  const p=PALETTE[s.pal];
+  resetRef();
+  document.getElementById('step').innerHTML=`
+    <div class="q-card" style="background:${p.bg};border-color:${p.border}">
+      <div class="q-label" style="color:${p.text}">Question ${history.length+1}</div>
+      <div class="q-text" style="color:${p.text}">${s.q}</div>
+      <div class="q-hint" style="color:${p.text}">${s.hint}</div>
+      <div class="q-btns">
+        <button class="q-btn" style="border-color:${p.btnBorder};color:${p.text}" onclick="choose('Yes','${s.yes}','${s.id}')">Yes</button>
+        <button class="q-btn" style="border-color:${p.btnBorder};color:${p.text}" onclick="choose('No','${s.no}','${s.id}')">No</button>
+      </div>
+    </div>`;
+  renderCrumbs();
+}
+
+function choose(label,next,fromId){
+  const s=getStep(fromId);
+  const p=PALETTE[s.pal];
+  history.push({label:s.q.replace('?','')+' → '+label,pal:p});
+  renderStep(next);
+}
+
+function renderResult(id){
+  const r=RESULTS[id];
+  highlightRef(r.highlight);
+  document.getElementById('step').innerHTML=`
+    <div class="result-card" style="background:${r.bg};border-color:${r.border}">
+      <div class="result-title" style="color:${r.text}">${r.title}</div>
+      <div class="result-sub" style="color:${r.text}">${r.sub}</div>
+      <div class="tags">${r.tags.map(t=>`<span class="tag" style="color:${r.text}">${t}</span>`).join('')}</div>
+      <div class="result-stats" style="color:${r.text};white-space:pre-line">${r.stats}</div>
+    </div>
+    <button class="restart" onclick="restart()">↺ Start over</button>`;
+  renderCrumbs();
+}
+
+function restart(){
+  history=[];cur='q1';resetRef();renderStep('q1');
+}
+
+renderStep('q1');
+</script>
