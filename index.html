@@ -309,75 +309,88 @@
         </div>
     </nav>
 
-    <!-- Home Page -->
-    <div id="home-view">
-        <div class="hero">
-            <h1>Expert Guides</h1>
-            <p>High-fidelity interactive cheat sheets for distributed systems, databases, and large-scale architecture.</p>
+    <main>
+        <!-- Home Page -->
+        <div id="home-view">
+            <div class="hero">
+                <h1 id="hero-title">Expert Guides</h1>
+                <p id="hero-subtitle">High-fidelity interactive cheat sheets for distributed systems, databases, and large-scale architecture.</p>
+            </div>
+
+            <div id="guides-loading" class="loading">
+                <div class="spinner"></div>
+                <p>Scanning ecosystem...</p>
+            </div>
+
+            <div id="guide-grid" class="guide-grid" style="display: none;">
+                <!-- Guides injected here -->
+            </div>
         </div>
 
-        <div id="guides-loading" class="loading">
-            <div class="spinner"></div>
-            <p>Scanning ecosystem...</p>
+        <!-- Reader Page -->
+        <div id="reader-view">
+            <div class="reader-header">
+                <button class="back-btn" id="reader-back-btn" onclick="goBack()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Back
+                </button>
+                <span id="reader-title" style="font-weight: 600; font-family: var(--font-title); font-size: 1.1rem; color: var(--color-text-secondary)"></span>
+            </div>
+            <div id="guide-content">
+                <!-- Content loaded here -->
+            </div>
         </div>
-
-        <div id="guide-grid" class="guide-grid" style="display: none;">
-            <!-- Guides injected here -->
-        </div>
-    </div>
-
-    <!-- Reader Page -->
-    <div id="reader-view">
-        <div class="reader-header">
-            <button class="back-btn" onclick="showHome()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                Back to Library
-            </button>
-            <span id="reader-title" style="font-weight: 600; font-family: var(--font-title); font-size: 1.1rem; color: var(--color-text-secondary)"></span>
-        </div>
-        <div id="guide-content">
-            <!-- Content loaded here -->
-        </div>
-    </div>
+    </main>
 
     <footer>
-        &copy; System Design Knowledge Base • Automatically generated from repository contents
+        <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto; width: 100%;">
+            <span>&copy; System Design Knowledge Base</span>
+            <a href="#" id="archive-toggle" class="nav-btn" onclick="toggleArchive(); return false;">Browse Archive</a>
+        </div>
     </footer>
 
     <script>
         const CONFIG = {
             owner: 'sharmavipin1608',
             repo: 'SystemDesign',
-            path: 'guide'
+            basePath: 'guide'
         };
 
         const state = {
             guides: [],
-            currentGuide: null
+            currentPath: CONFIG.basePath,
+            isArchive: false
         };
 
         async function init() {
             // Handle Direct Links via Hash
             const hash = window.location.hash.substring(1);
-            if (hash && hash.startsWith('guide/')) {
-                const filename = hash.split('/').pop();
-                loadGuide(filename);
+            if (hash) {
+                if (hash === 'archive') {
+                    showArchive(true);
+                } else if (hash.startsWith('guide/')) {
+                    const path = hash;
+                    loadGuide(path, false);
+                }
+            } else {
+                fetchGuides();
             }
-            
-            await fetchGuides();
             
             // Listen for back/forward
             window.onpopstate = () => {
                 const h = window.location.hash.substring(1);
                 if (!h) showHome(false);
-                else if (h.startsWith('guide/')) loadGuide(h.split('/').pop(), false);
+                else if (h === 'archive') showArchive(false);
+                else if (h.startsWith('guide/')) loadGuide(h, false);
             };
         }
 
         async function fetchGuides() {
+            document.getElementById('guide-grid').style.display = 'none';
+            document.getElementById('guides-loading').style.display = 'flex';
+            
             try {
-                // We use the GitHub API to list the directory
-                const response = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.path}`);
+                const response = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${state.currentPath}`);
                 if (!response.ok) throw new Error('API Error');
                 
                 const files = await response.json();
@@ -395,7 +408,7 @@
                 document.getElementById('guide-grid').style.display = 'grid';
             } catch (err) {
                 console.error(err);
-                document.getElementById('guides-loading').innerHTML = '<p style="color:red">Failed to load guides. Repository may be private or rate limited.</p>';
+                document.getElementById('guides-loading').innerHTML = '<p style="color:#ef4444">Failed to load guides. Repository may be private or rate limited.</p>';
             }
         }
 
@@ -410,7 +423,7 @@
         function renderGrid() {
             const grid = document.getElementById('guide-grid');
             grid.innerHTML = state.guides.map(g => `
-                <div class="guide-card" onclick="loadGuide('${g.filename}')">
+                <div class="guide-card" onclick="loadGuide('${g.path}')">
                     <div class="guide-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
                     </div>
@@ -420,48 +433,96 @@
             `).join('');
         }
 
-        async function loadGuide(filename, updateHistory = true) {
+        async function loadGuide(path, updateHistory = true) {
             document.getElementById('home-view').style.display = 'none';
             document.getElementById('reader-view').style.display = 'block';
+            
+            const filename = path.split('/').pop();
             document.getElementById('reader-title').textContent = formatTitle(filename);
+            document.getElementById('reader-back-btn').textContent = state.isArchive ? 'Back to Archive' : 'Back to Library';
             
             const container = document.getElementById('guide-content');
             container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Injecting content...</p></div>';
 
             if (updateHistory) {
-                window.location.hash = `guide/${filename}`;
+                window.location.hash = path;
             }
 
             try {
                 // Fetch the actual local file
-                const response = await fetch(`${CONFIG.path}/${filename}`);
+                const response = await fetch(path);
                 const html = await response.text();
                 
                 // Content is usually a fragment with <style> and <div class="root">
                 container.innerHTML = html;
                 
-                // IMPORTANT: Since these fragments have scripts, we need to manually execute them
+                // Manually execute scripts
                 const scripts = container.querySelectorAll('script');
-                scripts.forEach(oldScript => {
-                    const newScript = document.createElement('script');
-                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-                    oldScript.parentNode.replaceChild(newScript, oldScript);
-                });
+                for (const oldScript of scripts) {
+                    try {
+                        const newScript = document.createElement('script');
+                        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                        
+                        let code = oldScript.textContent;
+                        code = code.replace(/\bconst\s+/g, 'var ');
+                        code = code.replace(/\blet\s+/g, 'var ');
+                        newScript.textContent = code;
+                        
+                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                    } catch (e) {
+                        console.error('Script error in ' + filename, e);
+                    }
+                }
 
                 window.scrollTo(0, 0);
             } catch (err) {
-                container.innerHTML = `<div class="loading"><p style="color:red">Failed to load ${filename}</p></div>`;
+                container.innerHTML = `<div class="loading"><p style="color:#ef4444">Failed to load ${filename}</p></div>`;
             }
         }
 
         function showHome(updateHistory = true) {
+            state.isArchive = false;
+            state.currentPath = CONFIG.basePath;
+            updateUI();
+            if (updateHistory) window.location.hash = '';
+            fetchGuides();
+        }
+
+        function showArchive(updateHistory = true) {
+            state.isArchive = true;
+            state.currentPath = CONFIG.basePath + '/archive';
+            updateUI();
+            if (updateHistory) window.location.hash = 'archive';
+            fetchGuides();
+        }
+
+        function toggleArchive() {
+            if (state.isArchive) showHome();
+            else showArchive();
+        }
+
+        function goBack() {
+            if (state.isArchive) showArchive();
+            else showHome();
+        }
+
+        function updateUI() {
+            const h1 = document.getElementById('hero-title');
+            const p = document.getElementById('hero-subtitle');
+            const toggle = document.getElementById('archive-toggle');
+            
+            if (state.isArchive) {
+                h1.textContent = 'Guide Archive';
+                p.textContent = 'View historical patterns and deprecated system design templates.';
+                toggle.textContent = 'Back to Active Library';
+            } else {
+                h1.textContent = 'Expert Guides';
+                p.textContent = 'High-fidelity interactive cheat sheets for distributed systems, databases, and large-scale architecture.';
+                toggle.textContent = 'Browse Archive';
+            }
+            
             document.getElementById('home-view').style.display = 'block';
             document.getElementById('reader-view').style.display = 'none';
-            if (updateHistory) {
-                window.location.hash = '';
-            }
-            window.scrollTo(0, 0);
         }
 
         init();
