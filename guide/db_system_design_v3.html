@@ -1,0 +1,554 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.root{padding:.75rem 0;font-size:13px;color:var(--color-text-primary)}
+.sl{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--color-text-tertiary);margin-bottom:8px}
+.tab-bar{display:flex;border-bottom:1.5px solid var(--color-border-tertiary);margin-bottom:16px}
+.tb{font-size:13px;font-weight:500;padding:8px 18px;border:none;background:transparent;color:var(--color-text-secondary);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:color .15s,border-color .15s;white-space:nowrap}
+.tb:hover{color:var(--color-text-primary)}
+.tb.active{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary)}
+.tp{display:none}.tp.active{display:block}
+.two-col{display:grid;grid-template-columns:1fr 280px;gap:12px;align-items:start}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:14px 16px}
+.div{border:none;border-top:0.5px solid var(--color-border-tertiary);margin:14px 0}
+
+/* ── DT ── */
+.crumbs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:22px}
+.crumb{font-size:11px;padding:3px 10px;border-radius:12px;font-weight:500}
+.csep{font-size:11px;color:var(--color-text-tertiary);align-self:center}
+.qc{border-radius:12px;padding:14px 16px;border:1px solid transparent;margin-bottom:8px}
+.ql{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;opacity:.7}
+.qt{font-size:14px;font-weight:500;line-height:1.4;margin-bottom:4px}
+.qh{font-size:11px;margin-bottom:5px;opacity:.65;line-height:1.5}
+.qs{font-size:11px;margin-bottom:12px;opacity:.6;font-style:italic;line-height:1.5;padding-left:8px;border-left:2px solid rgba(0,0,0,.15)}
+.qbtns{display:flex;gap:8px;flex-wrap:wrap}
+.qb{font-size:12px;font-weight:500;padding:6px 16px;border-radius:20px;border:1.5px solid transparent;cursor:pointer;background:rgba(255,255,255,.35);transition:background .15s,transform .1s;white-space:nowrap}
+.qb:hover{background:rgba(255,255,255,.6)}.qb:active{transform:scale(.97)}
+.rc{border-radius:12px;padding:16px;border:1.5px solid transparent;margin-bottom:8px}
+.rt{font-size:15px;font-weight:500;margin-bottom:3px}
+.rs{font-size:12px;margin-bottom:8px;opacity:.75}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.tag{font-size:11px;font-weight:500;padding:2px 9px;border-radius:10px;background:rgba(0,0,0,.1)}
+.rstats{font-size:12px;line-height:1.8;opacity:.85}
+.rgotcha{font-size:11px;margin-top:8px;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,.07);line-height:1.5}
+.restart{margin-top:8px;font-size:12px;padding:5px 14px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.restart:hover{background:var(--color-background-secondary)}
+.ref-panel{display:flex;flex-direction:column;gap:6px}
+.rfc{border-radius:10px;border:1.5px solid transparent;overflow:hidden;transition:opacity .3s,transform .3s}
+.rfh{padding:8px 11px 7px;display:flex;align-items:baseline;justify-content:space-between}
+.rfd{font-size:12px;font-weight:500}
+.rft{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;opacity:.65}
+.rfb{display:grid;grid-template-columns:1fr 1fr;gap:1px}
+.rfc2{padding:6px 10px}
+.rfcl{font-size:10px;margin-bottom:1px;opacity:.6}
+.rfcv{font-size:12px;font-weight:500;font-family:var(--font-mono)}
+.bgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.mc{border-radius:10px;padding:10px 12px;border:0.5px solid var(--color-border-tertiary)}
+.mdb{font-size:12px;font-weight:500;margin-bottom:5px}
+.mrows{display:flex;flex-direction:column;gap:3px}
+.mrow{display:flex;justify-content:space-between;font-size:11px}
+.ml{color:var(--color-text-secondary)}.mv{font-family:var(--font-mono);font-size:11px;font-weight:500}
+.gr-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.gr-card{border-radius:10px;padding:10px 12px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.gr-num{font-size:18px;font-weight:500;margin-bottom:4px;opacity:.35}
+.gr-text{font-size:11px;line-height:1.6;color:var(--color-text-secondary)}
+
+/* ── SHARD ── */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.sc{border-radius:12px;padding:14px 16px;border:1px solid transparent}
+.st{font-size:13px;font-weight:500;margin-bottom:3px}
+.ss{font-size:11px;margin-bottom:8px;opacity:.75;line-height:1.5}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;line-height:1.7;margin-bottom:8px}
+.gotcha{font-size:11px;padding:6px 9px;border-radius:7px;background:rgba(0,0,0,.07);line-height:1.5}
+.kg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.kc{border-radius:10px;padding:12px 13px;border:1px solid transparent}
+.kt{font-size:12px;font-weight:500;margin-bottom:4px}
+.ks2{font-size:11px;opacity:.75;line-height:1.5;margin-bottom:7px}
+.pill{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;margin:2px 2px 0 0}
+.rvsrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ── SCALE ── */
+.csec{background:var(--color-background-secondary);border-radius:12px;padding:16px;margin-bottom:14px}
+.srow{margin-bottom:12px}
+.slabel{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:5px}
+.sname{font-weight:500}.sval{font-family:var(--font-mono);font-weight:500;font-size:13px}
+input[type=range]{width:100%}
+.db-picker{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:14px}
+.dbp{border-radius:10px;padding:10px 8px;border:1.5px solid transparent;cursor:pointer;transition:transform .15s;text-align:center;user-select:none}
+.dbp:hover{transform:scale(1.03)}
+.dbp.sel{border-width:2.5px;transform:scale(1.04)}
+.dbp.dis{opacity:.3;cursor:not-allowed;transform:none!important}
+.dpn{font-size:12px;font-weight:500;margin-bottom:4px}
+.dpr{font-size:10px;font-family:var(--font-mono);margin-bottom:1px}
+.dpw{font-size:10px;font-family:var(--font-mono)}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.cc{border-radius:12px;padding:14px 16px;border:1.5px solid transparent}
+.cct{font-size:13px;font-weight:500;margin-bottom:10px}
+.sstat{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid rgba(0,0,0,.08);font-size:12px}
+.sstat:last-child{border-bottom:none}
+.ssl{opacity:.7}.ssv{font-family:var(--font-mono);font-weight:500;font-size:12px}
+.spill{font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px}
+.stbox{border-radius:12px;padding:13px 15px;border:1.5px solid transparent;margin-bottom:8px}
+.stbt{font-size:12px;font-weight:500;margin-bottom:5px}
+.stbb{font-size:12px;line-height:1.7;opacity:.85}
+.warn-box{border-radius:8px;padding:8px 11px;background:#FAEEDA;border:0.5px solid #854F0B;font-size:11px;color:#633806;line-height:1.6;margin-bottom:10px}
+.cache3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.cachec{border-radius:10px;padding:12px 13px;border:1px solid transparent}
+.cachet{font-size:12px;font-weight:500;margin-bottom:4px}
+.caches{font-size:11px;opacity:.75;line-height:1.5;margin-bottom:8px}
+.cachew{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;opacity:.6}
+.cachei{font-size:11px;line-height:1.7;opacity:.8}
+</style>
+
+<div class="root">
+<div class="tab-bar">
+  <button class="tb active" onclick="sw('dt',this)">Decision tree</button>
+  <button class="tb" onclick="sw('sh',this)">How to shard</button>
+  <button class="tb" onclick="sw('sc',this)">Scaling calculator</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 1 — DECISION TREE
+══════════════════════════════════════ -->
+<div id="tab-dt" class="tp active">
+<div class="two-col">
+<div>
+  <p class="sl">Database decision tree</p>
+  <div id="crumbs" class="crumbs"></div>
+  <div id="step"></div>
+</div>
+<div class="ref-panel">
+  <p class="sl">DB reference</p>
+  <div id="ref-pg" class="rfc" style="border-color:#185FA5"><div class="rfh" style="background:#E6F1FB"><span class="rfd" style="color:#0C447C">PostgreSQL</span><span class="rft" style="color:#185FA5">Relational</span></div><div class="rfb"><div class="rfc2" style="background:#EEF5FC"><div class="rfcl" style="color:#185FA5">PK lookup/s</div><div class="rfcv" style="color:#0C447C">~50K</div></div><div class="rfc2" style="background:#E6F1FB"><div class="rfcl" style="color:#185FA5">JOIN/s</div><div class="rfcv" style="color:#0C447C">~15K</div></div><div class="rfc2" style="background:#EEF5FC"><div class="rfcl" style="color:#185FA5">Aggregation/s</div><div class="rfcv" style="color:#0C447C">~3K</div></div><div class="rfc2" style="background:#E6F1FB"><div class="rfcl" style="color:#185FA5">Writes/s</div><div class="rfcv" style="color:#0C447C">5K–10K</div></div></div></div>
+  <div id="ref-cs" class="rfc" style="border-color:#1D9E75"><div class="rfh" style="background:#E1F5EE"><span class="rfd" style="color:#085041">Cassandra</span><span class="rft" style="color:#0F6E56">Wide-column</span></div><div class="rfb"><div class="rfc2" style="background:#EEF9F4"><div class="rfcl" style="color:#0F6E56">Reads/s</div><div class="rfcv" style="color:#085041">20K–50K</div></div><div class="rfc2" style="background:#E1F5EE"><div class="rfcl" style="color:#0F6E56">Writes/s</div><div class="rfcv" style="color:#085041">20K–50K</div></div><div class="rfc2" style="background:#EEF9F4"><div class="rfcl" style="color:#0F6E56">Latency</div><div class="rfcv" style="color:#085041">&lt;1ms</div></div><div class="rfc2" style="background:#E1F5EE"><div class="rfcl" style="color:#0F6E56">Model</div><div class="rfcv" style="color:#085041">Leaderless</div></div></div></div>
+  <div id="ref-mg" class="rfc" style="border-color:#534AB7"><div class="rfh" style="background:#EEEDFE"><span class="rfd" style="color:#3C3489">MongoDB</span><span class="rft" style="color:#534AB7">Document</span></div><div class="rfb"><div class="rfc2" style="background:#F4F3FE"><div class="rfcl" style="color:#534AB7">Reads/s</div><div class="rfcv" style="color:#3C3489">20K–50K</div></div><div class="rfc2" style="background:#EEEDFE"><div class="rfcl" style="color:#534AB7">Writes/s</div><div class="rfcv" style="color:#3C3489">10K–30K</div></div><div class="rfc2" style="background:#F4F3FE"><div class="rfcl" style="color:#534AB7">Schema</div><div class="rfcv" style="color:#3C3489">Flexible</div></div><div class="rfc2" style="background:#EEEDFE"><div class="rfcl" style="color:#534AB7">Model</div><div class="rfcv" style="color:#3C3489">Leader-fol</div></div></div></div>
+  <div id="ref-rd" class="rfc" style="border-color:#993C1D"><div class="rfh" style="background:#FAECE7"><span class="rfd" style="color:#712B13">Redis</span><span class="rft" style="color:#993C1D">Key-Value</span></div><div class="rfb"><div class="rfc2" style="background:#FCF3EF"><div class="rfcl" style="color:#993C1D">Ops/s</div><div class="rfcv" style="color:#712B13">100K–150K</div></div><div class="rfc2" style="background:#FAECE7"><div class="rfcl" style="color:#993C1D">Latency</div><div class="rfcv" style="color:#712B13">&lt;1ms</div></div><div class="rfc2" style="background:#FCF3EF"><div class="rfcl" style="color:#993C1D">Redis 7+</div><div class="rfcv" style="color:#712B13">~500K</div></div><div class="rfc2" style="background:#FAECE7"><div class="rfcl" style="color:#993C1D">Persist</div><div class="rfcv" style="color:#712B13">AOF/RDB</div></div></div></div>
+  <div id="ref-es" class="rfc" style="border-color:#854F0B"><div class="rfh" style="background:#FAEEDA"><span class="rfd" style="color:#633806">Elasticsearch</span><span class="rft" style="color:#854F0B">Search</span></div><div class="rfb"><div class="rfc2" style="background:#FCF4E8"><div class="rfcl" style="color:#854F0B">Searches/s</div><div class="rfcv" style="color:#633806">5K–10K</div></div><div class="rfc2" style="background:#FAEEDA"><div class="rfcl" style="color:#854F0B">Writes/s</div><div class="rfcv" style="color:#633806">2K–10K</div></div><div class="rfc2" style="background:#FCF4E8"><div class="rfcl" style="color:#854F0B">Index lag</div><div class="rfcv" style="color:#633806">1–5s</div></div><div class="rfc2" style="background:#FAEEDA"><div class="rfcl" style="color:#854F0B">Note</div><div class="rfcv" style="color:#633806">Not primary</div></div></div></div>
+</div>
+</div>
+<hr class="div">
+<p class="sl">Cache &amp; queue throughput</p>
+<div class="bgrid">
+  <div class="mc" style="background:#FAECE7;border-color:#D85A30"><div class="mdb" style="color:#712B13">Redis L3 cluster</div><div class="mrows"><div class="mrow"><span class="ml">Ops/sec</span><span class="mv" style="color:#993C1D">100K–150K</span></div><div class="mrow"><span class="ml">Latency</span><span class="mv" style="color:#993C1D">0.5–2ms</span></div><div class="mrow"><span class="ml">Redis 7+</span><span class="mv" style="color:#993C1D">~500K</span></div></div></div>
+  <div class="mc" style="background:#EEEDFE;border-color:#534AB7"><div class="mdb" style="color:#3C3489">Memcached</div><div class="mrows"><div class="mrow"><span class="ml">Ops/sec</span><span class="mv" style="color:#534AB7">200K–500K</span></div><div class="mrow"><span class="ml">Latency</span><span class="mv" style="color:#534AB7">0.5–1ms</span></div><div class="mrow"><span class="ml">Persistence</span><span class="mv" style="color:#534AB7">None</span></div></div></div>
+  <div class="mc" style="background:#E1F5EE;border-color:#0F6E56"><div class="mdb" style="color:#085041">Kafka per broker</div><div class="mrows"><div class="mrow"><span class="ml">Publish/sec</span><span class="mv" style="color:#0F6E56">500K–1M</span></div><div class="mrow"><span class="ml">Latency</span><span class="mv" style="color:#0F6E56">~5ms</span></div><div class="mrow"><span class="ml">Retention</span><span class="mv" style="color:#0F6E56">Forever</span></div></div></div>
+  <div class="mc" style="background:#E6F1FB;border-color:#185FA5"><div class="mdb" style="color:#0C447C">L1 in-JVM (Caffeine)</div><div class="mrows"><div class="mrow"><span class="ml">Ops/sec</span><span class="mv" style="color:#185FA5">5M–10M</span></div><div class="mrow"><span class="ml">Latency</span><span class="mv" style="color:#185FA5">&lt;0.1ms</span></div><div class="mrow"><span class="ml">Scope</span><span class="mv" style="color:#185FA5">Per node</span></div></div></div>
+</div>
+<hr class="div">
+<p class="sl">Golden rules</p>
+<div class="gr-strip">
+  <div class="gr-card"><div class="gr-num">01</div><div class="gr-text">Exhaust Postgres before migrating. Most scaling problems are a missing index.</div></div>
+  <div class="gr-card"><div class="gr-num">02</div><div class="gr-text">Redis cache solves most read problems in a day. A DB migration takes weeks.</div></div>
+  <div class="gr-card"><div class="gr-num">03</div><div class="gr-text">Add a Kafka write buffer before sharding. It buys months of runway.</div></div>
+  <div class="gr-card"><div class="gr-num">04</div><div class="gr-text">Never run analytics queries on your OLTP primary. They lock rows and kill perf.</div></div>
+  <div class="gr-card"><div class="gr-num">05</div><div class="gr-text">Batch inserts: 100 rows in 1 INSERT is 10–50× faster than 100 single inserts.</div></div>
+  <div class="gr-card"><div class="gr-num">06</div><div class="gr-text">Never make Elasticsearch your source of truth. It's an index, not a database.</div></div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 2 — HOW TO SHARD
+══════════════════════════════════════ -->
+<div id="tab-sh" class="tp">
+<div class="card" style="background:#E1F5EE;border-color:#0F6E56;margin-bottom:14px">
+  <div style="font-size:12px;font-weight:500;color:#085041;margin-bottom:6px">Try these before sharding</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:11px;color:#085041">
+    <div style="background:rgba(255,255,255,.5);border-radius:8px;padding:8px 10px"><div style="font-weight:500;margin-bottom:2px">1. Missing index</div><div style="opacity:.8">Run EXPLAIN ANALYZE. Most "scaling" issues are unindexed queries.</div></div>
+    <div style="background:rgba(255,255,255,.5);border-radius:8px;padding:8px 10px"><div style="font-weight:500;margin-bottom:2px">2. pgBouncer</div><div style="opacity:.8">100 connections → 10K virtual. Free throughput with zero schema change.</div></div>
+    <div style="background:rgba(255,255,255,.5);border-radius:8px;padding:8px 10px"><div style="font-weight:500;margin-bottom:2px">3. Read replicas</div><div style="opacity:.8">1 replica ≈ 2–4× read capacity. Route SELECTs there, writes to primary.</div></div>
+    <div style="background:rgba(255,255,255,.5);border-radius:8px;padding:8px 10px"><div style="font-weight:500;margin-bottom:2px">4. Partitioning</div><div style="opacity:.8">Declarative time partitions on a 2B-row table. Often obviates sharding.</div></div>
+  </div>
+</div>
+
+<p class="sl">Sharding techniques</p>
+<div class="sg">
+  <div class="sc" style="background:#E6F1FB;border-color:#185FA5">
+    <div class="st" style="color:#0C447C">Hash sharding</div>
+    <div class="ss" style="color:#0C447C">hash(shard_key) % N — uniform spread, no natural ordering.</div>
+    <div class="pc">
+      <div><div style="font-size:10px;font-weight:500;color:#085041;margin-bottom:2px">PROS</div><div style="color:#085041">Even load · No hotspots · Simple routing</div></div>
+      <div><div style="font-size:10px;font-weight:500;color:#712B13;margin-bottom:2px">CONS</div><div style="color:#712B13">Range queries scatter-gather · Resharding remaps ~all keys</div></div>
+    </div>
+    <div class="gotcha" style="color:#0C447C">Gotcha: resharding with mod-N remaps ~(N-1)/N of all keys. Use consistent hashing instead if you expect node changes.</div>
+  </div>
+  <div class="sc" style="background:#E1F5EE;border-color:#0F6E56">
+    <div class="st" style="color:#085041">Range sharding</div>
+    <div class="ss" style="color:#085041">Partition by value range — A–M on shard 1, N–Z on shard 2, or by date.</div>
+    <div class="pc">
+      <div><div style="font-size:10px;font-weight:500;color:#085041;margin-bottom:2px">PROS</div><div style="color:#085041">Range queries fast · Simple mental model</div></div>
+      <div><div style="font-size:10px;font-weight:500;color:#712B13;margin-bottom:2px">CONS</div><div style="color:#712B13">Hotspot on latest shard · Manual rebalancing</div></div>
+    </div>
+    <div class="gotcha" style="color:#085041">Gotcha: timestamp range sharding → all writes hit the latest shard. Fix: hash prefix + timestamp, or bucket by time + hash.</div>
+  </div>
+  <div class="sc" style="background:#EEEDFE;border-color:#534AB7">
+    <div class="st" style="color:#3C3489">Consistent hashing</div>
+    <div class="ss" style="color:#3C3489">Nodes on a ring. Each key maps to nearest node clockwise. Virtual nodes even the load.</div>
+    <div class="pc">
+      <div><div style="font-size:10px;font-weight:500;color:#085041;margin-bottom:2px">PROS</div><div style="color:#085041">Minimal remapping on resize · Used by Cassandra, DynamoDB</div></div>
+      <div><div style="font-size:10px;font-weight:500;color:#712B13;margin-bottom:2px">CONS</div><div style="color:#712B13">Uneven without vnodes · Complex to implement</div></div>
+    </div>
+    <div class="gotcha" style="color:#3C3489">Gotcha: without virtual nodes one physical node can own 40%+ of the ring. Always configure vnodes (Cassandra default: 256).</div>
+  </div>
+  <div class="sc" style="background:#FAEEDA;border-color:#854F0B">
+    <div class="st" style="color:#633806">Directory / lookup sharding</div>
+    <div class="ss" style="color:#633806">A lookup service maps each key to its shard explicitly. Full control over placement.</div>
+    <div class="pc">
+      <div><div style="font-size:10px;font-weight:500;color:#085041;margin-bottom:2px">PROS</div><div style="color:#085041">Full flexibility · Easy custom rebalancing</div></div>
+      <div><div style="font-size:10px;font-weight:500;color:#712B13;margin-bottom:2px">CONS</div><div style="color:#712B13">Lookup table = SPOF · Extra hop per request</div></div>
+    </div>
+    <div class="gotcha" style="color:#633806">Gotcha: if the lookup service goes down, nothing routes. Cache the lookup aggressively and replicate it — it's on the critical path.</div>
+  </div>
+</div>
+
+<hr class="div">
+<p class="sl">Shard key selection</p>
+<div class="kg">
+  <div class="kc" style="background:#E1F5EE;border-color:#0F6E56">
+    <div class="kt" style="color:#085041">Good shard keys</div>
+    <div class="ks2" style="color:#085041">High cardinality · Even distribution · No natural hotspot</div>
+    <span class="pill" style="background:#9FE1CB;color:#04342C">user_id</span>
+    <span class="pill" style="background:#9FE1CB;color:#04342C">order_id</span>
+    <span class="pill" style="background:#9FE1CB;color:#04342C">UUID</span>
+    <span class="pill" style="background:#9FE1CB;color:#04342C">device_id</span>
+  </div>
+  <div class="kc" style="background:#FAECE7;border-color:#993C1D">
+    <div class="kt" style="color:#712B13">Bad shard keys</div>
+    <div class="ks2" style="color:#712B13">Low cardinality or monotonic = guaranteed hotspot</div>
+    <span class="pill" style="background:#F5C4B3;color:#4A1B0C">status</span>
+    <span class="pill" style="background:#F5C4B3;color:#4A1B0C">country</span>
+    <span class="pill" style="background:#F5C4B3;color:#4A1B0C">created_at</span>
+    <span class="pill" style="background:#F5C4B3;color:#4A1B0C">boolean</span>
+  </div>
+  <div class="kc" style="background:#EEEDFE;border-color:#534AB7">
+    <div class="kt" style="color:#3C3489">Choosing the right key</div>
+    <div class="ks2" style="color:#3C3489">Queries that include the shard key hit 1 shard. Without it — all shards queried in parallel (fan-out).</div>
+    <span class="pill" style="background:#CECBF6;color:#26215C">user_id for social</span>
+    <span class="pill" style="background:#CECBF6;color:#26215C">tenant_id for SaaS</span>
+    <span class="pill" style="background:#CECBF6;color:#26215C">geo for maps</span>
+  </div>
+</div>
+
+<hr class="div">
+<p class="sl">Replicate vs shard vs both</p>
+<div class="rvsrow">
+  <div class="card" style="border-color:#0F6E56">
+    <div style="font-size:12px;font-weight:500;color:#085041;margin-bottom:6px">Replicate when</div>
+    <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.8">Read traffic is high, writes are manageable<br>Data fits on a single node (&lt;1TB)<br>Write QPS under node limit<br>Want simplicity first</div>
+  </div>
+  <div class="card" style="border-color:#185FA5">
+    <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:6px">Shard when</div>
+    <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.8">Write throughput exceeds single node<br>Data volume &gt;1TB and growing fast<br>Read replicas alone aren't enough<br>Need horizontal write scale</div>
+  </div>
+</div>
+
+<hr class="div">
+<p class="sl">Golden rules — sharding</p>
+<div class="gr-strip">
+  <div class="gr-card"><div class="gr-num">01</div><div class="gr-text">Try declarative partitioning before sharding. Partitioning a 2B-row table by date is free and often enough.</div></div>
+  <div class="gr-card"><div class="gr-num">02</div><div class="gr-text">Choosing the shard key is the most important decision. Get it wrong and you're stuck with hotspots forever.</div></div>
+  <div class="gr-card"><div class="gr-num">03</div><div class="gr-text">Never choose a low-cardinality shard key. status, country, boolean — all writes for that value stack on one shard.</div></div>
+  <div class="gr-card"><div class="gr-num">04</div><div class="gr-text">Cross-shard JOINs are 5–10× slower than single-shard. Design your access patterns around the shard key.</div></div>
+  <div class="gr-card"><div class="gr-num">05</div><div class="gr-text">More than 5–7 read replicas adds WAL overhead on the primary and slows writes. Shard instead.</div></div>
+  <div class="gr-card"><div class="gr-num">06</div><div class="gr-text">Resharding is painful. Over-provision shard count early — adding shards later remaps data across the cluster.</div></div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 3 — SCALING CALCULATOR
+══════════════════════════════════════ -->
+<div id="tab-sc" class="tp">
+<div class="csec">
+  <p class="sl" style="margin-bottom:12px">Traffic inputs</p>
+  <div class="srow">
+    <div class="slabel"><span class="sname" style="color:#0C447C">Reads / sec</span><span class="sval" style="color:#185FA5" id="rv">10,000</span></div>
+    <input type="range" min="1000" max="200000" step="1000" value="10000" id="rsl" oninput="calc()">
+  </div>
+  <div class="srow">
+    <div class="slabel"><span class="sname" style="color:#085041">Writes / sec</span><span class="sval" style="color:#0F6E56" id="wv">2,000</span></div>
+    <input type="range" min="500" max="100000" step="500" value="2000" id="wsl" oninput="calc()">
+  </div>
+  <div class="srow" style="margin-bottom:0">
+    <div class="slabel"><span class="sname" style="color:#633806">Cache hit rate</span><span class="sval" style="color:#854F0B" id="cv">70%</span></div>
+    <input type="range" min="0" max="95" step="5" value="70" id="csl" oninput="calc()">
+  </div>
+</div>
+
+<p class="sl">Select up to 2 databases to compare</p>
+<div class="db-picker">
+  <div class="dbp" id="pill-pg" style="background:#E6F1FB;border-color:#185FA5" onclick="toggleDB('pg')">
+    <div class="dpn" style="color:#0C447C">PostgreSQL</div>
+    <div class="dpr" style="color:#185FA5">PK: 50K/s</div>
+    <div class="dpr" style="color:#185FA5">JOIN: 15K/s</div>
+    <div class="dpw" style="color:#185FA5">W: 10K/s</div>
+  </div>
+  <div class="dbp" id="pill-cs" style="background:#E1F5EE;border-color:#1D9E75" onclick="toggleDB('cs')">
+    <div class="dpn" style="color:#085041">Cassandra</div>
+    <div class="dpr" style="color:#0F6E56">R: 50K/s</div>
+    <div class="dpr" style="color:#0F6E56">W: 50K/s</div>
+    <div class="dpw" style="color:#0F6E56">Leaderless</div>
+  </div>
+  <div class="dbp" id="pill-mg" style="background:#EEEDFE;border-color:#534AB7" onclick="toggleDB('mg')">
+    <div class="dpn" style="color:#3C3489">MongoDB</div>
+    <div class="dpr" style="color:#534AB7">R: 50K/s</div>
+    <div class="dpr" style="color:#534AB7">W: 30K/s</div>
+    <div class="dpw" style="color:#534AB7">Flexible schema</div>
+  </div>
+  <div class="dbp" id="pill-rd" style="background:#FAECE7;border-color:#993C1D" onclick="toggleDB('rd')">
+    <div class="dpn" style="color:#712B13">Redis</div>
+    <div class="dpr" style="color:#993C1D">R: 150K/s</div>
+    <div class="dpr" style="color:#993C1D">W: 150K/s</div>
+    <div class="dpw" style="color:#993C1D">In-memory</div>
+  </div>
+  <div class="dbp" id="pill-sc" style="background:#E1F5EE;border-color:#085041" onclick="toggleDB('sc2')">
+    <div class="dpn" style="color:#04342C">ScyllaDB</div>
+    <div class="dpr" style="color:#085041">R: 500K/s</div>
+    <div class="dpr" style="color:#085041">W: 500K/s</div>
+    <div class="dpw" style="color:#085041">C++ Cassandra</div>
+  </div>
+</div>
+
+<div id="compare-out" style="display:none">
+  <hr class="div">
+  <p class="sl">Side-by-side analysis</p>
+  <div id="warn-out"></div>
+  <div class="cg" id="cg"></div>
+  <div id="st-out"></div>
+</div>
+
+<hr class="div">
+<p class="sl">Cache vs replication vs combination</p>
+<div class="cache3">
+  <div class="cachec" style="background:#FAECE7;border-color:#993C1D">
+    <div class="cachet" style="color:#712B13">Cache only</div>
+    <div class="caches" style="color:#712B13">Read-heavy, mostly static data, tolerates slight staleness</div>
+    <div class="cachew" style="color:#993C1D">Use when</div>
+    <div class="cachei" style="color:#712B13">Hit rate &gt;80%<br>Read:write &gt;20:1<br>Latency SLA &lt;5ms<br>e.g. product catalog, sessions</div>
+  </div>
+  <div class="cachec" style="background:#E6F1FB;border-color:#185FA5">
+    <div class="cachet" style="color:#0C447C">Replication only</div>
+    <div class="caches" style="color:#0C447C">Reads spread across replicas, strong consistency needed</div>
+    <div class="cachew" style="color:#185FA5">Use when</div>
+    <div class="cachei" style="color:#0C447C">Read:write 5:1–20:1<br>Data too dynamic to cache<br>Strong consistency required<br>e.g. financial ledger, inventory</div>
+  </div>
+  <div class="cachec" style="background:#E1F5EE;border-color:#0F6E56">
+    <div class="cachet" style="color:#085041">Cache + replication</div>
+    <div class="caches" style="color:#085041">Cache absorbs spikes, replicas handle misses and consistency</div>
+    <div class="cachew" style="color:#0F6E56">Use when</div>
+    <div class="cachei" style="color:#085041">Mixed read/write<br>Cache hit rate 60–80%<br>Scale beyond single node<br>e.g. social feed, user profiles</div>
+  </div>
+</div>
+
+<hr class="div">
+<p class="sl">Golden rules — scaling</p>
+<div class="gr-strip">
+  <div class="gr-card"><div class="gr-num">01</div><div class="gr-text">Cache hit rate is the multiplier. At 90% hit, 100K reads/s becomes 10K to the DB — 1 replica is fine.</div></div>
+  <div class="gr-card"><div class="gr-num">02</div><div class="gr-text">Never exceed 5–7 read replicas per primary. Beyond that, WAL shipping overhead slows writes. Shard instead.</div></div>
+  <div class="gr-card"><div class="gr-num">03</div><div class="gr-text">Design for the cache miss path, not the hit path. The miss path is what kills you under load.</div></div>
+  <div class="gr-card"><div class="gr-num">04</div><div class="gr-text">Read-your-own-writes: route a user's reads to primary for 5–10s after their write. Prevents "my post disappeared" bugs from replica lag.</div></div>
+  <div class="gr-card"><div class="gr-num">05</div><div class="gr-text">Add jitter to cache TTLs: TTL + random(0, 30s). Prevents cache stampede when hot keys expire simultaneously.</div></div>
+  <div class="gr-card"><div class="gr-num">06</div><div class="gr-text">Monitor consumer lag, not just throughput. Lag tells you if your scaling strategy is actually keeping up.</div></div>
+</div>
+</div>
+</div>
+
+<script>
+/* ── DT ── */
+const DT_P={
+  q1:{bg:'#E6F1FB',b:'#185FA5',t:'#0C447C',cb:'#B5D4F4',ct:'#042C53'},
+  q2:{bg:'#E1F5EE',b:'#0F6E56',t:'#085041',cb:'#9FE1CB',ct:'#04342C'},
+  q3:{bg:'#EEEDFE',b:'#534AB7',t:'#3C3489',cb:'#CECBF6',ct:'#26215C'},
+  q4:{bg:'#FAEEDA',b:'#854F0B',t:'#633806',cb:'#FAC775',ct:'#412402'},
+  q5:{bg:'#FAECE7',b:'#993C1D',t:'#712B13',cb:'#F5C4B3',ct:'#4A1B0C'},
+  q6:{bg:'#E6F1FB',b:'#185FA5',t:'#0C447C',cb:'#B5D4F4',ct:'#042C53'},
+};
+const DT_R={
+  r_cache:{bg:'#FAECE7',b:'#993C1D',t:'#712B13',
+    title:'Redis + Postgres read replica',sub:'Read-heavy · Key lookups · Sessions',
+    tags:['Cache-aside','Sub-ms','Read replica'],
+    stats:'Redis: 100K–150K ops/s  <1ms p99\n3 replicas + 90% cache hit ≈ unlimited reads for most apps\npgBouncer: 100 connections → 10K virtual',
+    gotcha:'Cache stampede: when a hot key expires, all concurrent misses hammer the DB simultaneously. Fix with TTL jitter + probabilistic early expiry.',
+    hl:'ref-rd'},
+  r_replicas:{bg:'#E6F1FB',b:'#185FA5',t:'#0C447C',
+    title:'Postgres + 3–5 read replicas',sub:'Relational reads · JOINs · Filters',
+    tags:['Read replicas','pgBouncer','SQL'],
+    stats:'1 replica ≈ 2–4× read capacity\n3 replicas + 90% cache hit ≈ 150K effective reads/s\nMax 5–7 replicas before WAL overhead slows writes',
+    gotcha:'More than 5–7 replicas per primary adds WAL shipping overhead that slows writes on the primary. Shard instead.',
+    hl:'ref-pg'},
+  r_analytics:{bg:'#FAEEDA',b:'#854F0B',t:'#633806',
+    title:'ClickHouse / BigQuery',sub:'Analytics · Dashboards · GROUP BY at scale',
+    tags:['Columnar','OLAP','Batch or real-time'],
+    stats:'ClickHouse: 1B row COUNT in ~0.1s\nBigQuery: $5/TB queried, serverless\nNever run analytics on your OLTP primary — it locks rows',
+    gotcha:'ClickHouse does not support row-level updates like Postgres. Use ReplacingMergeTree for updates — different mental model.',
+    hl:'ref-es'},
+  r_search:{bg:'#FAEEDA',b:'#854F0B',t:'#633806',
+    title:'Elasticsearch / OpenSearch',sub:'Full-text · Fuzzy · Relevance ranking',
+    tags:['Inverted index','Full-text','Autocomplete'],
+    stats:'5K–10K searches/s per node\nPostgres FTS comparison: ~200–500/s\nIndex lag: 1–5s behind source',
+    gotcha:'Elasticsearch is not a primary DB. If your cluster goes down, you must rebuild it from Postgres. If you cannot, your architecture is wrong.',
+    hl:'ref-es'},
+  r_kafka:{bg:'#E1F5EE',b:'#0F6E56',t:'#085041',
+    title:'Kafka write buffer + batch inserts',sub:'Bursty writes · Spike absorption · DB protection',
+    tags:['Kafka','Batch inserts','Async'],
+    stats:'Kafka: absorbs 1M writes/s to disk\nBatch 100 rows → 1 INSERT: 10–50× faster than singles\nConsumer drains at DB comfortable rate ~5–20K rows/s',
+    gotcha:'Writes are now async. A user gets a 200 OK but data is not in the DB yet. Use optimistic UI or return the write ID immediately from the queue.',
+    hl:'ref-cs'},
+  r_cassandra:{bg:'#E1F5EE',b:'#0F6E56',t:'#085041',
+    title:'Cassandra / ScyllaDB',sub:'Sustained writes · Time-series · Append-heavy',
+    tags:['Leaderless','LSM-tree','Tunable consistency'],
+    stats:'Cassandra: 20K–50K writes/s per node\nScyllaDB: 500K–1M writes/s per node (C++ rewrite)\nWrite p99 latency <1ms',
+    gotcha:'Write amplification: a Cassandra write hits memtable → commit log → multiple SSTables. Actual disk I/O is 10–30× logical data. Factor this into storage.',
+    hl:'ref-cs'},
+  r_pg_acid:{bg:'#E6F1FB',b:'#185FA5',t:'#0C447C',
+    title:'Postgres + Kafka + sharding (Citus)',sub:'Sustained writes · ACID required',
+    tags:['ACID','Sharding','Citus','Kafka'],
+    stats:'Batch inserts: 100 rows in 1 INSERT = 10–50× faster\n8 Citus shards × 10K writes/s = 80K aggregate\nWAL ceiling on NVMe SSD: ~30–50K rows/s sustained',
+    gotcha:'Cross-shard JOINs fan out to all shards — 5–10× slower. Choose a shard key where your most common queries include it.',
+    hl:'ref-pg'},
+  r_mixed_pg:{bg:'#E6F1FB',b:'#185FA5',t:'#0C447C',
+    title:'Full Postgres stack',sub:'Mixed workload · SQL required · Most apps',
+    tags:['Postgres primary','Read replicas','Redis','Kafka'],
+    stats:'This stack: ~500K reads/s (90% cache hit) + ~50K writes/s\nInstagram ran on Postgres for years. Shopify still does.\nEstimated AWS cost: $2K–5K/month',
+    gotcha:'This handles 90% of companies at "scale." Migrate off only after you have genuinely exhausted this stack.',
+    hl:'ref-pg'},
+  r_dynamo:{bg:'#FAECE7',b:'#993C1D',t:'#712B13',
+    title:'DynamoDB + DAX',sub:'Mixed key-value · Both reads and writes at any scale',
+    tags:['Unlimited scale','Zero ops','DAX'],
+    stats:'DynamoDB read p50: ~1ms · Write p50: ~1ms\nDAX (in-process cache): <100µs reads\nCrossover vs self-hosted Cassandra: ~100–500M writes/day',
+    gotcha:'Cannot do ad-hoc queries like Postgres. "Show all users who signed up last week" needs a GSI or a separate analytics store. Design access patterns first.',
+    hl:'ref-rd'},
+  r_cqrs:{bg:'#EEEDFE',b:'#534AB7',t:'#3C3489',
+    title:'CQRS — separate write and read stores',sub:'Asymmetric · Writes are appends, reads are projections',
+    tags:['CQRS','Event sourcing','Kafka','Read models'],
+    stats:'Write store (Kafka): ~1M events/s\nRead model build lag: 100ms–5s behind writes\nEngineering complexity: 8/10 — only when necessary',
+    gotcha:'Eventual consistency between write and read models creates subtle bugs that are hard to detect in production. Start with the full Postgres stack first.',
+    hl:'ref-cs'},
+};
+const DT_S=[
+  {id:'q1',pal:'q1',q:'What is your primary bottleneck?',
+   hint:'Be honest about what is actually slow before choosing a solution. The wrong diagnosis is the most common scaling mistake.',
+   signal:'Signs of reads: SELECTs slow, CPU high during reads, repeated identical queries in logs.\nSigns of writes: INSERT/UPDATE latency climbing, WAL disk growing, replication lag increasing.',
+   opts:['Read-heavy','Write-heavy','Mixed workload'],next:['q2','q4','q7']},
+  {id:'q2',pal:'q2',q:'What kind of reads are bottlenecked?',
+   hint:'The read pattern determines the solution. Key lookups, relational queries, analytics, and search each need completely different tools.',
+   signal:'',
+   opts:['Key lookups (fetch by ID, no JOINs)','Relational (JOINs, filters, aggregations)','Analytics (GROUP BY, dashboards, reports)','Full-text / search / autocomplete'],next:['q3','q3b','r_analytics','r_search']},
+  {id:'q3',pal:'q3',q:'Read volume and freshness requirement?',
+   hint:'Key lookups scale very differently depending on volume and how stale data can be.',
+   signal:'',
+   opts:['Under 50K/s, stale data OK for seconds','50K–500K/s or data changes every second','500K+ reads/s or need <10ms globally'],next:['r_cache','r_cache','r_dynamo']},
+  {id:'q3b',pal:'q3',q:'Relational read volume?',
+   hint:'Relational reads scale with replicas up to a point. After ~5–7 replicas WAL overhead becomes the bottleneck.',
+   signal:'1 replica ≈ 2–4× read capacity. Check slow query log for queries >100ms first — missing index is 10× more likely.',
+   opts:['Under 5K complex reads/s','5K–50K relational reads/s','50K+ reads/s or tables >500M rows'],next:['r_replicas','r_replicas','r_replicas']},
+  {id:'q4',pal:'q4',q:'Is the write load sustained or bursty?',
+   hint:'Bursty and sustained loads have completely different solutions. Confusing them leads to over-engineering.',
+   signal:'Bursty: lunch rush, ticket sales, batch imports. Spikes predictably then drops.\nSustained: IoT telemetry, event streaming, high-volume logging — high all the time.',
+   opts:['Bursty — spikes then quiet','Sustained — high volume all the time'],next:['r_kafka','q5']},
+  {id:'q5',pal:'q5',q:'Do you need ACID and relational integrity?',
+   hint:'SQL and ACID limit write scalability. If you genuinely need them you shard. If not, purpose-built stores are faster.',
+   signal:'ACID needed: orders + order_items consistent, inventory must not go negative, financial double-entry.\nACID not needed: event logs, sensor data, activity streams — each write is independent.',
+   opts:['Yes — need SQL, JOINs, ACID','No — append-only or eventual consistency OK'],next:['q6','q6b']},
+  {id:'q6',pal:'q6',q:'Sustained writes per second?',
+   hint:'',signal:'',
+   opts:['Under 10K writes/s','10K–100K writes/s','100K+ writes/s'],next:['r_pg_acid','r_pg_acid','r_pg_acid']},
+  {id:'q6b',pal:'q1',q:'What is the shape of the data?',
+   hint:'The data shape determines which write-optimised store fits best.',signal:'',
+   opts:['Wide rows — one entity, many ordered events','Flat key-value — one doc per key','Time-series — numeric metrics, monotonic timestamps'],next:['r_cassandra','r_dynamo','r_cassandra']},
+  {id:'q7',pal:'q2',q:'What best describes your data access pattern?',
+   hint:'Mixed workloads are often solved by separating concerns — one store for writes, a different one for reads.',signal:'',
+   opts:['Relational — JOINs, SQL, ACID on both reads and writes','Key-based — no JOINs, simple fetch and store','Asymmetric — writes are appends, reads are complex projections'],next:['r_mixed_pg','r_dynamo','r_cqrs']},
+];
+const ALL_REFS=['ref-pg','ref-cs','ref-mg','ref-rd','ref-es'];
+let dth=[],dtc='q1';
+function getDTS(id){return DT_S.find(s=>s.id===id)}
+function hlRef(id){ALL_REFS.forEach(r=>{const e=document.getElementById(r);if(!e)return;e.style.opacity=r===id?'1':'0.3';e.style.transform=r===id?'scale(1.03)':'scale(1)';e.style.borderWidth=r===id?'2px':'1.5px';})}
+function resetRef(){ALL_REFS.forEach(r=>{const e=document.getElementById(r);if(!e)return;e.style.opacity='1';e.style.transform='scale(1)';e.style.borderWidth='1.5px';})}
+function renderCrumbs(){const el=document.getElementById('crumbs');if(!dth.length){el.innerHTML='';return;}el.innerHTML=dth.map((h,i)=>`<span class="crumb" style="background:${h.cb};color:${h.ct}">${h.label}</span>${i<dth.length-1?'<span class="csep">›</span>':''}`).join('');}
+function renderDTS(id){
+  const s=getDTS(id);
+  if(!s){renderDTR(id);return;}
+  dtc=id;const p=DT_P[s.pal];resetRef();
+  const sigLines=s.signal?s.signal.split('\n').map(l=>`<div>${l}</div>`).join(''):'';
+  const btns=s.opts.map((o,i)=>`<button class="qb" style="border-color:${p.b};color:${p.t}" onclick="dtChoose('${o.replace(/'/g,"\\'")}','${s.next[i]}','${s.id}')">${o}</button>`).join('');
+  document.getElementById('step').innerHTML=`<div class="qc" style="background:${p.bg};border-color:${p.b}"><div class="ql" style="color:${p.t}">Step ${dth.length+1}</div><div class="qt" style="color:${p.t}">${s.q}</div><div class="qh" style="color:${p.t}">${s.hint}</div>${sigLines?`<div class="qs" style="color:${p.t};border-left-color:${p.b}30;font-size:11px;line-height:1.6">${sigLines}</div>`:''}<div class="qbtns">${btns}</div></div>`;
+  renderCrumbs();
+}
+function dtChoose(label,next,fromId){const s=getDTS(fromId);const p=DT_P[s.pal];dth.push({label,cb:p.cb,ct:p.ct});renderDTS(next);}
+function renderDTR(id){
+  const r=DT_R[id];if(!r)return;
+  hlRef(r.hl);
+  document.getElementById('step').innerHTML=`<div class="rc" style="background:${r.bg};border-color:${r.b}"><div class="rt" style="color:${r.t}">${r.title}</div><div class="rs" style="color:${r.t}">${r.sub}</div><div class="tags">${r.tags.map(t=>`<span class="tag" style="color:${r.t}">${t}</span>`).join('')}</div><div class="rstats" style="color:${r.t};white-space:pre-line">${r.stats}</div><div class="rgotcha" style="color:${r.t}">⚠ ${r.gotcha}</div></div><button class="restart" onclick="dtRestart()">↺ Start over</button>`;
+  renderCrumbs();
+}
+function dtRestart(){dth=[];dtc='q1';resetRef();renderDTS('q1');}
+renderDTS('q1');
+
+/* ── SCALING ── */
+const DBS={
+  pg:{name:'PostgreSQL',rCap:50000,wCap:10000,bg:'#E6F1FB',b:'#185FA5',t:'#0C447C'},
+  cs:{name:'Cassandra',rCap:50000,wCap:50000,bg:'#E1F5EE',b:'#1D9E75',t:'#085041'},
+  mg:{name:'MongoDB',rCap:50000,wCap:30000,bg:'#EEEDFE',b:'#534AB7',t:'#3C3489'},
+  rd:{name:'Redis',rCap:150000,wCap:150000,bg:'#FAECE7',b:'#993C1D',t:'#712B13'},
+  sc2:{name:'ScyllaDB',rCap:500000,wCap:500000,bg:'#E1F5EE',b:'#085041',t:'#04342C'},
+};
+let selDBs=[];
+function fmt(n){return n.toLocaleString()}
+function toggleDB(id){
+  if(selDBs.includes(id)){selDBs=selDBs.filter(x=>x!==id);document.getElementById('pill-'+id).classList.remove('sel');}
+  else{
+    if(selDBs.length>=2){const r=selDBs.shift();document.getElementById('pill-'+r).classList.remove('sel');document.getElementById('pill-'+r).classList.remove('dis');}
+    selDBs.push(id);document.getElementById('pill-'+id).classList.add('sel');
+  }
+  Object.keys(DBS).forEach(id2=>{const el=document.getElementById('pill-'+id2);if(!el)return;el.classList.toggle('dis',selDBs.length>=2&&!selDBs.includes(id2));});
+  calc();
+}
+function calcDB(db,reads,writes,hit){
+  const dbR=Math.round(reads*(1-hit/100));
+  const reps=Math.min(Math.max(1,Math.ceil(dbR/db.rCap)),7);
+  const shards=Math.max(1,Math.ceil(writes/db.wCap));
+  const overRep=Math.ceil(dbR/db.rCap)>7;
+  const needShard=writes>db.wCap;
+  return{dbR,reps,shards,overRep,needShard};
+}
+function stratText(db,res,reads,writes,hit){
+  let lines=[];
+  if(res.overRep){lines.push(`DB reads after cache (${fmt(res.dbR)}/s) exceed 7-replica ceiling. Recommend sharding + cache rather than more replicas.`);}
+  else if(res.reps<=2&&hit>=70){lines.push(`Cache hit rate of ${hit}% is strong. DB sees only ${fmt(res.dbR)}/s — ${res.reps} read replica${res.reps>1?'s':''} is sufficient.`);}
+  else{lines.push(`With ${hit}% cache hit rate, DB read load is ${fmt(res.dbR)}/s — provision ${res.reps} read replica${res.reps>1?'s':''}.`);}
+  if(res.needShard){lines.push(`Write load of ${fmt(writes)}/s exceeds ${db.name}'s single-node write cap of ${fmt(db.wCap)}/s — you need ${res.shards} write shard${res.shards>1?'s':''}.`);}
+  else{lines.push(`Write load of ${fmt(writes)}/s is within ${db.name}'s single-node capacity of ${fmt(db.wCap)}/s — no sharding required for writes.`);}
+  return lines.join(' ');
+}
+function calc(){
+  const reads=+document.getElementById('rsl').value;
+  const writes=+document.getElementById('wsl').value;
+  const hit=+document.getElementById('csl').value;
+  document.getElementById('rv').textContent=fmt(reads);
+  document.getElementById('wv').textContent=fmt(writes);
+  document.getElementById('cv').textContent=hit+'%';
+  const out=document.getElementById('compare-out');
+  if(!selDBs.length){out.style.display='none';return;}
+  out.style.display='block';
+  let warnHTML='';
+  selDBs.forEach(id=>{const db=DBS[id];const res=calcDB(db,reads,writes,hit);if(res.overRep){warnHTML+=`<div class="warn-box">⚠ ${db.name}: DB reads after cache (${fmt(res.dbR)}/s) exceed the 5–7 replica ceiling. Adding more replicas adds WAL overhead. Switch to sharding.</div>`;}});
+  document.getElementById('warn-out').innerHTML=warnHTML;
+  const cards=selDBs.map(id=>{
+    const db=DBS[id];const res=calcDB(db,reads,writes,hit);
+    const wpill=`<span class="spill" style="background:${res.needShard?'#FAECE7':'#E1F5EE'};color:${res.needShard?'#712B13':'#085041'}">${res.needShard?'Sharding required':'Within capacity'}</span>`;
+    const rpill=`<span class="spill" style="background:${res.overRep?'#FAEEDA':'#E1F5EE'};color:${res.overRep?'#633806':'#085041'}">${res.overRep?'Replica ceiling hit':res.reps+' replica'+(res.reps>1?'s':'')}</span>`;
+    return`<div class="cc" style="background:${db.bg};border-color:${db.b}"><div class="cct" style="color:${db.t}">${db.name}</div><div class="sstat"><span class="ssl" style="color:${db.t}">DB reads after cache</span><span class="ssv" style="color:${db.t}">${fmt(res.dbR)}/s</span></div><div class="sstat"><span class="ssl" style="color:${db.t}">Node read cap</span><span class="ssv" style="color:${db.t}">${fmt(db.rCap)}/s</span></div><div class="sstat"><span class="ssl" style="color:${db.t}">Read replicas</span>${rpill}</div><div class="sstat"><span class="ssl" style="color:${db.t}">Node write cap</span><span class="ssv" style="color:${db.t}">${fmt(db.wCap)}/s</span></div><div class="sstat"><span class="ssl" style="color:${db.t}">Write shards needed</span><span class="ssv" style="color:${db.t}">${res.shards}</span></div><div class="sstat" style="border:none;margin-top:4px"><span class="ssl" style="color:${db.t}">Write status</span>${wpill}</div></div>`;
+  }).join('');
+  document.getElementById('cg').innerHTML=cards;
+  document.getElementById('st-out').innerHTML=selDBs.map(id=>{
+    const db=DBS[id];const res=calcDB(db,reads,writes,hit);
+    return`<div class="stbox" style="background:${db.bg};border-color:${db.b}"><div class="stbt" style="color:${db.t}">${db.name} — recommendation</div><div class="stbb" style="color:${db.t}">${stratText(db,res,reads,writes,hit)}</div></div>`;
+  }).join('');
+}
+
+function sw(id,btn){
+  document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
