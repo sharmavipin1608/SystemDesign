@@ -1,0 +1,2764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spring Framework — Debug-Focused Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sidebar-w: 260px;
+  --max-content-w: 850px;
+  --ink: #1a1714;
+  --ink-mid: #3d3830;
+  --ink-light: #7a7068;
+  --paper: #faf8f5;
+  --paper-warm: #f3efe8;
+  --paper-mid: #ece7de;
+  --rule: #ddd8cf;
+  --accent: #2d7a4f;
+  --accent-light: #d8f0e4;
+  --accent-deep: #1e5c39;
+  --blue: #2a5fa5;
+  --blue-light: #dce8f7;
+  --green: #2d7a4f;
+  --green-light: #d8f0e4;
+  --gold: #b07d20;
+  --gold-light: #f5edda;
+  --purple: #5e3d8f;
+  --purple-light: #ebe0fa;
+  --red: #b53535;
+  --red-light: #fde8e8;
+  --code-bg: #1a1c1a;
+}
+html { font-size: 17px; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  line-height: 1.72;
+  letter-spacing: -0.008em;
+  color: var(--ink-mid);
+  background: var(--paper);
+}
+h2 { font-family: 'Playfair Display', serif; font-weight: 900; line-height: 1.08; letter-spacing: -0.02em; }
+h3 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: clamp(1.3rem, 2.5vw, 1.7rem); line-height: 1.2; color: var(--ink); margin-bottom: 0.6rem; margin-top: 1.8rem; }
+h4 { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.95rem; line-height: 1.4; color: var(--ink); margin-bottom: 0.4rem; margin-top: 1.2rem; }
+p { margin-bottom: 1rem; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; background: var(--paper-mid); padding: 0.1em 0.35em; border-radius: 3px; color: var(--ink); }
+pre { background: var(--code-bg); border-radius: 8px; padding: 1.2rem 1.4rem; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; font-size: 0.82rem; color: #e8e4df; line-height: 1.6; }
+.kw { color: #7ec8a0; }
+.an { color: #f0b060; }
+.cm { color: #7a8a7a; font-style: italic; }
+.st { color: #e8b06a; }
+.ty { color: #82c8e8; }
+.nu { color: #d0a0f0; }
+
+/* Layout */
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--ink);
+  overflow-y: auto;
+  z-index: 100;
+  padding: 0 0 40px;
+}
+.sidebar-brand {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 12px;
+}
+.sidebar-brand-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  font-size: 0.78rem;
+  color: #fff;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+.sidebar-brand-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: #c8c0b8;
+  letter-spacing: 0.04em;
+  margin-top: 3px;
+}
+.nav-group { padding: 10px 20px 6px; }
+.nav-group-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #7a7068;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+  display: block;
+}
+.nav-link {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: #c8c0b8;
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  white-space: normal;
+  line-height: 1.4;
+  margin-bottom: 2px;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+}
+.nav-link:hover { background: rgba(255,255,255,0.07); color: #fff; text-decoration: none; }
+.nav-link.active { background: var(--accent); color: #fff; font-weight: 500; }
+
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 90;
+}
+.sidebar-overlay.open { display: block; }
+
+.mobile-header {
+  display: none;
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 52px;
+  background: var(--ink);
+  z-index: 110;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+}
+.hamburger {
+  background: none; border: none; cursor: pointer;
+  display: flex; flex-direction: column; gap: 5px; padding: 4px;
+}
+.hamburger span {
+  display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px;
+}
+.mobile-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: #fff;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+.main {
+  margin-left: var(--sidebar-w);
+  width: calc(100% - var(--sidebar-w));
+}
+
+.progress-bar {
+  position: sticky; top: 0; z-index: 50;
+  height: 3px; background: var(--rule);
+}
+.progress-bar #prog {
+  height: 100%; width: 0%;
+  background: var(--accent);
+  transition: width .25s ease;
+}
+
+.section { display: none; }
+.section.active { display: block; }
+
+/* Hero */
+.hero {
+  background: var(--ink);
+  padding: 56px 32px 48px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(45,122,79,0.15) 0%, transparent 60%);
+}
+.hero-inner { max-width: var(--max-content-w); margin: 0 auto; position: relative; }
+.chapter-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--accent-light);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+  display: block;
+}
+.hero h2 {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  color: #fff;
+  margin-bottom: 16px;
+}
+.hero-sub {
+  font-size: 1.08rem;
+  font-weight: 300;
+  color: #c8c0b8;
+  max-width: 600px;
+  line-height: 1.6;
+}
+.pills {
+  padding: 16px 32px;
+  display: flex; flex-wrap: wrap; gap: 8px;
+  max-width: var(--max-content-w); margin: 0 auto;
+  border-bottom: 1px solid var(--rule);
+}
+.pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  background: var(--paper-mid);
+  color: var(--ink-light);
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+.content { max-width: var(--max-content-w); margin: 0 auto; padding: 32px 32px 0; }
+.lead {
+  font-size: 1.08rem;
+  font-style: italic;
+  color: var(--ink-mid);
+  border-left: 3px solid var(--accent);
+  padding-left: 16px;
+  margin-bottom: 2rem;
+  line-height: 1.7;
+}
+
+/* Cards */
+.cards { display: grid; gap: 16px; margin: 1.5rem 0; }
+.cards.two { grid-template-columns: repeat(2, 1fr); }
+.cards.three { grid-template-columns: repeat(3, 1fr); }
+.card {
+  background: var(--paper-warm);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex; flex-direction: column; height: 100%;
+}
+.card-head {
+  padding: 12px 16px 10px;
+  background: var(--paper-mid);
+  border-bottom: 1px solid var(--rule);
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.card-body {
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  color: var(--ink-light);
+  flex-grow: 1;
+  line-height: 1.6;
+}
+.card-body code { font-size: 0.78rem; }
+
+/* Callout */
+.callout {
+  display: flex;
+  gap: 14px;
+  background: var(--gold-light);
+  border: 1px solid #e0c878;
+  border-left: 4px solid var(--gold);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 2rem 0;
+}
+.callout.red { background: var(--red-light); border-color: #f0a0a0; border-left-color: var(--red); }
+.callout.blue { background: var(--blue-light); border-color: #a0bce0; border-left-color: var(--blue); }
+.callout.green { background: var(--green-light); border-color: #a0d0b8; border-left-color: var(--green); }
+.callout-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+.callout-body { flex: 1; font-size: 0.95rem; line-height: 1.65; }
+.callout-body strong { font-weight: 600; color: var(--ink); display: block; margin-bottom: 4px; }
+
+/* Analogy */
+.analogy {
+  background: #fef3e2;
+  border: 1px solid #f0d890;
+  border-left: 4px solid var(--gold);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin: 1.5rem 0;
+}
+.analogy-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  display: block;
+}
+.analogy p { color: #3d2e1a; font-size: 0.95rem; margin-bottom: 0; line-height: 1.7; }
+
+/* Steps */
+.steps { margin: 1.5rem 0; }
+.step { display: flex; gap: 16px; margin-bottom: 16px; }
+.step-num {
+  width: 28px; height: 28px;
+  background: var(--ink);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #fff;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.step-content { flex: 1; }
+.step-title { font-weight: 600; color: var(--ink); font-size: 0.9rem; margin-bottom: 3px; }
+.step-desc { font-size: 0.85rem; color: var(--ink-light); line-height: 1.6; }
+
+/* Table */
+.table-wrap { overflow-x: auto; margin: 1.5rem 0; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+th {
+  background: var(--paper-mid);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 2px solid var(--rule);
+}
+td { padding: 10px 14px; border-bottom: 1px solid var(--rule); color: var(--ink-mid); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--paper-warm); }
+
+/* Scenario chips */
+.scenario-nav {
+  max-width: var(--max-content-w); margin: 0 auto;
+  padding: 8px 32px 0;
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.scenario-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.scenario-chip:hover { opacity: 0.8; text-decoration: none; }
+.chip-num { font-size: 0.65rem; opacity: 0.7; }
+.chip-green { background: var(--green-light); color: var(--green); }
+.chip-gold { background: var(--gold-light); color: var(--gold); }
+.chip-purple { background: var(--purple-light); color: var(--purple); }
+.chip-red { background: var(--red-light); color: var(--red); }
+.chip-blue { background: var(--blue-light); color: var(--blue); }
+
+/* Example section */
+.example-section { max-width: var(--max-content-w); margin: 24px auto 0; padding: 0 32px; }
+.example-section h3 { margin-top: 0; }
+.test-case {
+  background: var(--paper-warm);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.test-case-head {
+  padding: 10px 16px;
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--rule);
+}
+.badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.badge-green { background: var(--green-light); color: var(--green); }
+.badge-gold { background: var(--gold-light); color: var(--gold); }
+.badge-purple { background: var(--purple-light); color: var(--purple); }
+.badge-red { background: var(--red-light); color: var(--red); }
+.badge-blue { background: var(--blue-light); color: var(--blue); }
+.test-case-title { font-weight: 600; font-size: 0.88rem; color: var(--ink); }
+.test-case-body { padding: 16px; }
+.test-case-body pre { margin: 0.5rem 0; }
+.test-case-body p { font-size: 0.88rem; margin-bottom: 0.5rem; }
+.test-case-body p:last-child { margin-bottom: 0; }
+
+/* Quiz */
+.quiz {
+  background: #f0f8f4;
+  border: 1px solid #b0d8c0;
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 2rem 0;
+}
+.quiz-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+  display: block;
+}
+.quiz-q { font-weight: 600; color: var(--ink); margin-bottom: 8px; font-size: 0.95rem; }
+.quiz-options { list-style: none; margin-bottom: 12px; }
+.quiz-options li {
+  padding: 7px 12px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s;
+}
+.quiz-options li:hover { background: var(--green-light); border-color: #90c8a8; }
+.quiz-options li.correct { background: var(--green-light); border-color: var(--green); font-weight: 600; }
+.quiz-options li.wrong { background: var(--red-light); border-color: var(--red); }
+.quiz-explain {
+  display: none;
+  font-size: 0.85rem;
+  color: var(--ink-mid);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #b0d8c0;
+  line-height: 1.65;
+}
+.quiz-explain.show { display: block; }
+
+/* Chapter nav */
+.chapter-nav {
+  display: flex; justify-content: space-between; align-items: stretch;
+  gap: 12px; padding: 24px 32px 40px;
+  max-width: var(--max-content-w); margin: 0 auto;
+}
+.nav-btn {
+  display: flex; align-items: center; gap: 12px; flex: 1;
+  background: var(--paper-warm); border: 1px solid var(--rule);
+  border-radius: 8px; padding: 14px 18px; cursor: pointer;
+  font-family: inherit; text-align: left; transition: background 0.15s, border-color 0.15s;
+}
+.nav-btn:hover { background: var(--accent-light); border-color: var(--accent); }
+.nav-next { justify-content: flex-end; text-align: right; }
+.nav-arrow { font-size: 1.2rem; color: var(--accent); flex-shrink: 0; }
+.nav-hint { display: block; font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: var(--ink-light); text-transform: uppercase; letter-spacing: .08em; }
+.nav-title { display: block; font-size: 0.9rem; font-weight: 600; color: var(--ink-mid); }
+
+/* highlight box */
+.highlight-box {
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+  background: var(--paper-warm);
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin: 1rem 0;
+  font-size: 0.92rem;
+}
+.highlight-box strong { color: var(--ink); }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .main { margin-left: 0; width: 100%; padding-top: 52px; }
+  .mobile-header { display: flex; }
+  .cards.three { grid-template-columns: repeat(2, 1fr); }
+  .cards.two { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .cards.three { grid-template-columns: 1fr; }
+  .hero { padding: 40px 20px 36px; }
+  .content { padding: 24px 20px 0; }
+  .scenario-nav { padding: 8px 20px 0; }
+  .example-section { padding: 0 20px; }
+  .chapter-nav { padding: 20px 20px 32px; }
+  .pills { padding: 12px 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<header class="mobile-header">
+  <button class="hamburger" onclick="toggleSidebar()">
+    <span></span><span></span><span></span>
+  </button>
+  <span class="mobile-title">Spring Debug Guide</span>
+</header>
+
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-title">Spring Framework</div>
+    <div class="sidebar-brand-sub">Debug-Focused Study Guide</div>
+  </div>
+  <div class="nav-group">
+    <span class="nav-group-label">Foundations</span>
+    <button class="nav-link active" onclick="show(0)">01 · Core Concepts & Beans</button>
+    <button class="nav-link" onclick="show(1)">02 · @Transactional Deep Dive</button>
+  </div>
+  <div class="nav-group">
+    <span class="nav-group-label">Web & Data</span>
+    <button class="nav-link" onclick="show(2)">03 · Spring MVC</button>
+    <button class="nav-link" onclick="show(3)">04 · Dependency Injection Bugs</button>
+    <button class="nav-link" onclick="show(4)">05 · Spring Data JPA</button>
+  </div>
+  <div class="nav-group">
+    <span class="nav-group-label">Configuration</span>
+    <button class="nav-link" onclick="show(5)">06 · Config & Properties</button>
+    <button class="nav-link" onclick="show(6)">07 · AOP Basics</button>
+  </div>
+  <div class="nav-group">
+    <span class="nav-group-label">Reference</span>
+    <button class="nav-link" onclick="show(7)">08 · Concepts & Tools</button>
+    <button class="nav-link" onclick="show(8)">09 · Interview Prep</button>
+  </div>
+</aside>
+
+<main class="main">
+<div class="progress-bar"><div id="prog"></div></div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 0 -->
+<div class="section active" id="s0">
+  <div class="hero">
+    <div class="hero-inner">
+      <span class="chapter-label">Chapter 01 · Foundations</span>
+      <h2>Core Concepts &amp; Bean Lifecycle</h2>
+      <p class="hero-sub">The Spring container, ApplicationContext, bean lifecycle, and the annotations that hold everything together.</p>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill">ApplicationContext</span>
+    <span class="pill">Bean Lifecycle</span>
+    <span class="pill">@Component</span>
+    <span class="pill">@Service</span>
+    <span class="pill">@Repository</span>
+    <span class="pill">@Configuration</span>
+    <span class="pill">@Bean</span>
+    <span class="pill">ComponentScan</span>
+  </div>
+  <div class="content">
+    <p class="lead">Spring is fundamentally a container that manages object creation and wiring. If you understand what the container does — and what breaks when you step outside it — you can debug almost anything.</p>
+
+    <h3>What Is the Spring Container?</h3>
+    <p>The Spring container (ApplicationContext) is responsible for creating objects (beans), injecting their dependencies, and managing their lifecycle. When you write <code>@Service</code> on a class, you are telling the container: <em>"Please manage this object for me."</em></p>
+
+    <div class="analogy">
+      <span class="analogy-label">🏭 Analogy</span>
+      <p>Think of Spring as a <strong>factory + warehouse</strong>. You submit blueprints (annotated classes). The factory produces exactly one copy of each object (singleton by default) and stores it in the warehouse. When any other object needs it, the factory delivers it — you never call <code>new</code> yourself. The moment you call <code>new</code> manually, Spring has no idea that object exists, and nothing gets injected into it.</p>
+    </div>
+
+    <h3>Bean Lifecycle (Step by Step)</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Container starts up</div>
+          <div class="step-desc">Spring scans the classpath for annotated classes (<code>@Component</code>, <code>@Service</code>, etc.) or reads <code>@Bean</code> methods in <code>@Configuration</code> classes.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Bean instantiation</div>
+          <div class="step-desc">Spring calls the constructor. At this point, <code>@Autowired</code> fields are <strong>not yet set</strong>. Never do real work in a constructor that depends on injected fields.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Dependency injection</div>
+          <div class="step-desc">Spring sets all <code>@Autowired</code> fields, constructor params, and setter params. Only after this step are dependencies available.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">@PostConstruct / InitializingBean</div>
+          <div class="step-desc">If the bean has a method annotated <code>@PostConstruct</code>, it runs now. This is the right place for initialization that depends on injected fields.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Bean is ready for use</div>
+          <div class="step-desc">The bean enters the container and can be injected into other beans or used by the application.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <div class="step-title">@PreDestroy / shutdown</div>
+          <div class="step-desc">When the context closes, Spring calls <code>@PreDestroy</code> methods for cleanup.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>The Core Stereotype Annotations</h3>
+    <div class="cards three">
+      <div class="card">
+        <div class="card-head">@Component</div>
+        <div class="card-body">Generic Spring-managed bean. All other stereotypes extend this. Use when no other specific annotation fits.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">@Service</div>
+        <div class="card-body">Marks business logic classes. Semantically means "this is a service layer class." No extra behaviour over @Component currently, but communicates intent clearly.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">@Repository</div>
+        <div class="card-body">Marks data access classes. Unlike the others, it <strong>enables exception translation</strong> — raw SQL exceptions are wrapped into Spring's <code>DataAccessException</code> hierarchy.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">@Controller</div>
+        <div class="card-body">Marks web layer classes for Spring MVC. Methods return view names by default. Add <code>@ResponseBody</code> to return JSON/data instead.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">@RestController</div>
+        <div class="card-body">Shorthand for <code>@Controller + @ResponseBody</code>. All methods return the value directly as the HTTP response body — no view resolution.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">@Configuration</div>
+        <div class="card-body">Marks a class that contains <code>@Bean</code> methods. Spring enhances the class via CGLIB so that <code>@Bean</code> method calls are intercepted and return cached instances.</div>
+      </div>
+    </div>
+
+    <h3>@Bean vs @Component</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>@Bean</th><th>@Component</th></tr></thead>
+        <tbody>
+          <tr><td>Where</td><td>Inside a <code>@Configuration</code> class, on a method</td><td>On the class itself</td></tr>
+          <tr><td>Use case</td><td>Third-party classes you can't annotate (e.g. ObjectMapper)</td><td>Your own classes</td></tr>
+          <tr><td>Instantiation</td><td>You write the construction code in the method body</td><td>Spring calls the constructor automatically</td></tr>
+          <tr><td>Common bug</td><td>Calling one <code>@Bean</code> method from another outside <code>@Configuration</code></td><td>Missing from component scan path</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Component Scanning</h3>
+    <p>Spring only discovers beans in packages it scans. By default in Spring Boot, it scans the package of the class annotated with <code>@SpringBootApplication</code> and all sub-packages.</p>
+    <div class="callout red">
+      <div class="callout-icon">🚨</div>
+      <div class="callout-body"><strong>Common Bug: Bean Not Found</strong> If you put a <code>@Service</code> class in a package <em>outside</em> the base package, Spring never finds it. You'll get <code>NoSuchBeanDefinitionException</code>. Fix: move the class into the scan path or add <code>@ComponentScan("com.example.other")</code>.</div>
+    </div>
+  </div>
+
+  <nav class="scenario-nav">
+    <a class="scenario-chip chip-green" href="#tc0-1"><span class="chip-num">01</span> Correct bean setup</a>
+    <a class="scenario-chip chip-red" href="#tc0-2"><span class="chip-num">02</span> Missing annotation</a>
+    <a class="scenario-chip chip-purple" href="#tc0-3"><span class="chip-num">03</span> new vs Spring-managed</a>
+    <a class="scenario-chip chip-gold" href="#tc0-4"><span class="chip-num">04</span> @Bean in non-@Configuration</a>
+    <a class="scenario-chip chip-blue" href="#tc0-5"><span class="chip-num">05</span> @PostConstruct NPE trap</a>
+  </nav>
+
+  <div class="example-section">
+    <div class="test-case" id="tc0-1">
+      <div class="test-case-head"><span class="badge badge-green">✓ Correct</span><span class="test-case-title">Well-formed service bean with constructor injection</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">OrderService</span> {
+
+    <span class="kw">private final</span> <span class="ty">OrderRepository</span> orderRepository;
+
+    <span class="cm">// Constructor injection — preferred. Spring calls this.</span>
+    <span class="kw">public</span> <span class="ty">OrderService</span>(<span class="ty">OrderRepository</span> orderRepository) {
+        <span class="kw">this</span>.orderRepository = orderRepository;
+    }
+
+    <span class="kw">public</span> <span class="ty">Order</span> findById(<span class="ty">Long</span> id) {
+        <span class="kw">return</span> orderRepository.findById(id).orElseThrow();
+    }
+}</code></pre>
+        <p>✅ <code>@Service</code> tells Spring to manage this class. <code>OrderRepository</code> is injected via constructor — the field is <code>final</code>, meaning it can never be null after construction.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc0-2">
+      <div class="test-case-head"><span class="badge badge-red">✗ Bug</span><span class="test-case-title">Missing @Service — bean not in container</span></div>
+      <div class="test-case-body">
+<pre><code><span class="cm">// No annotation — Spring doesn't know this class exists</span>
+<span class="kw">public class</span> <span class="ty">PaymentService</span> {
+
+    <span class="an">@Autowired</span>
+    <span class="kw">private</span> <span class="ty">PaymentRepository</span> repo; <span class="cm">// ← never injected</span>
+
+    <span class="kw">public void</span> processPayment() {
+        repo.save(...); <span class="cm">// NullPointerException at runtime</span>
+    }
+}</code></pre>
+        <p>❌ Without <code>@Service</code> (or <code>@Component</code>), Spring never creates this bean. Any class that tries to <code>@Autowired PaymentService</code> will fail with <code>NoSuchBeanDefinitionException</code>.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc0-3">
+      <div class="test-case-head"><span class="badge badge-purple">✗ Bug</span><span class="test-case-title">Using new keyword — Spring can't inject</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">CheckoutService</span> {
+
+    <span class="cm">// WRONG: Creating directly — Spring has no control over this object</span>
+    <span class="kw">private</span> <span class="ty">TaxService</span> taxService = <span class="kw">new</span> <span class="ty">TaxService</span>();
+
+    <span class="kw">public</span> <span class="ty">BigDecimal</span> calculateTotal(<span class="ty">Cart</span> cart) {
+        <span class="cm">// TaxService fields annotated @Autowired are all null here</span>
+        <span class="kw">return</span> taxService.calculate(cart);
+    }
+}</code></pre>
+        <p>❌ When you call <code>new TaxService()</code>, you create a raw Java object — Spring never touches it. Any <code>@Autowired</code> fields inside <code>TaxService</code> will be <code>null</code>.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc0-4">
+      <div class="test-case-head"><span class="badge badge-gold">⚠ Edge Case</span><span class="test-case-title">@Bean method called directly — bypasses proxy</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Configuration</span>
+<span class="kw">public class</span> <span class="ty">AppConfig</span> {
+
+    <span class="an">@Bean</span>
+    <span class="kw">public</span> <span class="ty">DataSource</span> dataSource() { <span class="kw">return new</span> <span class="ty">HikariDataSource</span>(...); }
+
+    <span class="an">@Bean</span>
+    <span class="kw">public</span> <span class="ty">JdbcTemplate</span> jdbcTemplate() {
+        <span class="cm">// ✅ Correct: CGLIB proxy intercepts, returns singleton DataSource</span>
+        <span class="kw">return new</span> <span class="ty">JdbcTemplate</span>(dataSource());
+    }
+}
+
+<span class="cm">// What if @Configuration is missing?</span>
+<span class="kw">public class</span> <span class="ty">AppConfig</span> { <span class="cm">// no @Configuration !</span>
+    <span class="an">@Bean</span>
+    <span class="kw">public</span> <span class="ty">JdbcTemplate</span> jdbcTemplate() {
+        <span class="cm">// ❌ dataSource() is a plain Java method call — creates a NEW DataSource</span>
+        <span class="kw">return new</span> <span class="ty">JdbcTemplate</span>(dataSource());
+    }
+}</code></pre>
+        <p>⚠ Without <code>@Configuration</code>, <code>@Bean</code> methods behave as normal Java methods. Each call creates a new instance — you lose singleton semantics.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc0-5">
+      <div class="test-case-head"><span class="badge badge-blue">@PostConstruct</span><span class="test-case-title">NPE trap: using @Autowired field in constructor</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">CacheService</span> {
+
+    <span class="an">@Autowired</span>
+    <span class="kw">private</span> <span class="ty">UserRepository</span> userRepo;
+
+    <span class="cm">// ❌ WRONG: userRepo is null here — injection hasn't happened yet</span>
+    <span class="kw">public</span> <span class="ty">CacheService</span>() {
+        userRepo.findAll(); <span class="cm">// NullPointerException</span>
+    }
+
+    <span class="cm">// ✅ CORRECT: runs AFTER all @Autowired fields are set</span>
+    <span class="an">@PostConstruct</span>
+    <span class="kw">public void</span> init() {
+        userRepo.findAll(); <span class="cm">// safe — userRepo is injected</span>
+    }
+}</code></pre>
+        <p>✅ <code>@PostConstruct</code> is the correct hook for initialization logic that depends on injected beans.</p>
+      </div>
+    </div>
+
+    <div class="quiz">
+      <span class="quiz-label">🧠 Quiz — Chapter 1</span>
+      <div class="quiz-q">Q1. A class annotated with <code>@Service</code> has an <code>@Autowired</code> field that is always null at runtime. What is the most likely cause?</div>
+      <ul class="quiz-options" id="q01">
+        <li onclick="answer('q01',0)">A) The field type has no default value</li>
+        <li onclick="answer('q01',1)">B) The object was instantiated with <code>new</code> instead of being injected by Spring</li>
+        <li onclick="answer('q01',2)">C) @Service is only for method-level use</li>
+        <li onclick="answer('q01',3)">D) Spring doesn't support field injection</li>
+      </ul>
+      <div class="quiz-explain" id="q01-exp">✅ <strong>Answer: B.</strong> When you use <code>new MyService()</code>, Spring never processes the object. All <code>@Autowired</code> fields remain null. Always obtain Spring beans via injection, not direct construction.</div>
+
+      <div class="quiz-q" style="margin-top:16px">Q2. You move a <code>@Repository</code> class from <code>com.app.data</code> to <code>com.util.data</code>. Suddenly it's not found. Why?</div>
+      <ul class="quiz-options" id="q02">
+        <li onclick="answer('q02',0)">A) @Repository doesn't work outside <code>com.app</code></li>
+        <li onclick="answer('q02',1)">B) The new package is outside the component scan base package</li>
+        <li onclick="answer('q02',2)">C) You need to restart the JVM</li>
+        <li onclick="answer('q02',3)">D) @Repository only works in web applications</li>
+      </ul>
+      <div class="quiz-explain" id="q02-exp">✅ <strong>Answer: B.</strong> Spring Boot scans from the <code>@SpringBootApplication</code> package downward. Moving a class outside that tree means Spring never discovers it. Fix: add <code>@ComponentScan("com.util")</code> or move the class back.</div>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body"><strong>Key Takeaway</strong> The Spring container only knows about objects it created. The moment you use <code>new</code>, you step outside the container — no injection, no AOP, no transactions. This single rule explains 80% of Spring bugs.</div>
+    </div>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn nav-next" onclick="show(1)">
+      <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">@Transactional Deep Dive</span></span>
+      <span class="nav-arrow">→</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 1 -->
+<div class="section" id="s1">
+  <div class="hero">
+    <div class="hero-inner">
+      <span class="chapter-label">Chapter 02 · Critical Topic ⚠</span>
+      <h2>@Transactional Deep Dive</h2>
+      <p class="hero-sub">The most tested annotation in Spring interviews. Understand the proxy, propagation, rollback rules, and all the silent failure modes.</p>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill">AOP Proxy</span>
+    <span class="pill">Propagation</span>
+    <span class="pill">Isolation</span>
+    <span class="pill">rollbackFor</span>
+    <span class="pill">Self-Invocation</span>
+    <span class="pill">Checked Exceptions</span>
+    <span class="pill">Private Methods</span>
+    <span class="pill">readOnly</span>
+  </div>
+  <div class="content">
+    <p class="lead">@Transactional is powered by a proxy. Every rule — why self-invocation fails, why private methods don't work, why checked exceptions don't rollback — follows from this one fact.</p>
+
+    <h3>How @Transactional Works Under the Hood</h3>
+    <div class="analogy">
+      <span class="analogy-label">🔀 Analogy — The Proxy Bouncer</span>
+      <p>Imagine your <code>OrderService</code> is a VIP room. Spring wraps it in a <strong>proxy bouncer</strong> that stands at the door. When external code calls <code>orderService.placeOrder()</code>, the bouncer intercepts the call, <em>opens a transaction</em>, lets the call through, and then <em>commits or rolls back</em> based on outcome. But if <code>placeOrder()</code> calls <code>this.validateOrder()</code> directly inside the room — the bouncer never sees it. Self-calls bypass the proxy entirely.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Spring creates a proxy around your bean</div>
+          <div class="step-desc">At startup, if any method has <code>@Transactional</code>, Spring wraps the bean in a CGLIB subclass or JDK proxy that intercepts method calls.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">External call hits the proxy</div>
+          <div class="step-desc">The proxy checks: does this method have <code>@Transactional</code>? If yes, it begins a transaction, then delegates to the real method.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Method executes</div>
+          <div class="step-desc">The real bean method runs inside the transaction context.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Proxy decides: commit or rollback</div>
+          <div class="step-desc">If the method returns normally → commit. If it throws an unchecked exception (RuntimeException/Error) → rollback. Checked exceptions → commit by default (dangerous!).</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Propagation Types — The Most Tested</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Propagation</th><th>Behaviour</th><th>Use case</th></tr></thead>
+        <tbody>
+          <tr><td><code>REQUIRED</code> (default)</td><td>Join existing tx if one exists, else create new</td><td>Most service methods</td></tr>
+          <tr><td><code>REQUIRES_NEW</code></td><td>Always create a new tx; suspend outer tx</td><td>Audit logging — must commit even if outer tx rolls back</td></tr>
+          <tr><td><code>NESTED</code></td><td>Create a savepoint inside existing tx; inner rollback doesn't roll back outer</td><td>Partial rollback scenarios</td></tr>
+          <tr><td><code>SUPPORTS</code></td><td>Run in tx if one exists, else run without tx</td><td>Read-only queries that don't care about tx</td></tr>
+          <tr><td><code>NOT_SUPPORTED</code></td><td>Always run outside tx; suspend existing tx</td><td>Batch jobs that should not be transactional</td></tr>
+          <tr><td><code>NEVER</code></td><td>Throw exception if a tx is active</td><td>Methods that must never run in a transaction</td></tr>
+          <tr><td><code>MANDATORY</code></td><td>Must run inside an existing tx, else throw</td><td>Ensuring callers always provide a tx</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Isolation Levels</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Isolation</th><th>Dirty Read</th><th>Non-repeatable Read</th><th>Phantom Read</th></tr></thead>
+        <tbody>
+          <tr><td><code>READ_UNCOMMITTED</code></td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+          <tr><td><code>READ_COMMITTED</code> (default in most DBs)</td><td>No</td><td>Yes</td><td>Yes</td></tr>
+          <tr><td><code>REPEATABLE_READ</code></td><td>No</td><td>No</td><td>Yes</td></tr>
+          <tr><td><code>SERIALIZABLE</code></td><td>No</td><td>No</td><td>No</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Rollback Rules — The Tricky Default</h3>
+    <div class="callout red">
+      <div class="callout-icon">🚨</div>
+      <div class="callout-body"><strong>Default: Only RuntimeException and Error trigger rollback.</strong> If your method throws a checked exception (e.g. <code>IOException</code>, <code>SQLException</code>), Spring will <strong>commit the transaction</strong> by default! To rollback on checked exceptions: <code>@Transactional(rollbackFor = Exception.class)</code></div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>rollbackFor vs noRollbackFor</strong><br>
+      <code>@Transactional(rollbackFor = MyCheckedException.class)</code> — rollback on this checked exception too.<br>
+      <code>@Transactional(noRollbackFor = ItemNotFoundException.class)</code> — do NOT rollback even though it's a RuntimeException.
+    </div>
+
+    <h3>Silent Failure Modes — The Big 4</h3>
+    <div class="cards two">
+      <div class="card">
+        <div class="card-head">❌ Self-Invocation</div>
+        <div class="card-body">Calling a <code>@Transactional</code> method from <em>within the same class</em> using <code>this.method()</code>. The call goes directly to the object, bypassing the proxy. No transaction is created.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">❌ Private Method</div>
+        <div class="card-body"><code>@Transactional</code> on a <code>private</code> method is silently ignored. The proxy cannot override private methods. Spring won't warn you — the annotation is simply ineffective.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">❌ final Class/Method</div>
+        <div class="card-body">CGLIB creates a subclass of your bean. If the class or method is <code>final</code>, CGLIB can't override it. The transaction annotation is ignored. No warning.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">❌ Checked Exception</div>
+        <div class="card-body">Throwing <code>IOException</code> from a <code>@Transactional</code> method. Spring commits the transaction — your data changes are persisted even though an exception was thrown.</div>
+      </div>
+    </div>
+
+    <h3>readOnly = true</h3>
+    <p>Setting <code>@Transactional(readOnly = true)</code> is a performance hint. The database driver and JPA can skip dirty checking, flush operations, and lock acquisition. Use it for all query-only methods.</p>
+    <div class="callout">
+      <div class="callout-icon">⚠️</div>
+      <div class="callout-body"><strong>readOnly does not enforce read-only.</strong> It's a hint, not a constraint. You can still accidentally modify data — but the changes may or may not be flushed to the DB depending on the JPA provider.</div>
+    </div>
+  </div>
+
+  <nav class="scenario-nav">
+    <a class="scenario-chip chip-green" href="#tc1-1"><span class="chip-num">01</span> Correct @Transactional</a>
+    <a class="scenario-chip chip-red" href="#tc1-2"><span class="chip-num">02</span> Self-invocation bug</a>
+    <a class="scenario-chip chip-red" href="#tc1-3"><span class="chip-num">03</span> Private method bug</a>
+    <a class="scenario-chip chip-gold" href="#tc1-4"><span class="chip-num">04</span> Checked exception no rollback</a>
+    <a class="scenario-chip chip-blue" href="#tc1-5"><span class="chip-num">05</span> REQUIRES_NEW audit log</a>
+    <a class="scenario-chip chip-purple" href="#tc1-6"><span class="chip-num">06</span> Class-level vs method-level</a>
+  </nav>
+
+  <div class="example-section">
+    <div class="test-case" id="tc1-1">
+      <div class="test-case-head"><span class="badge badge-green">✓ Correct</span><span class="test-case-title">Proper @Transactional on a public service method</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">OrderService</span> {
+
+    <span class="an">@Transactional</span>
+    <span class="kw">public void</span> placeOrder(<span class="ty">Order</span> order) {
+        orderRepo.save(order);
+        inventoryService.deduct(order);
+        <span class="cm">// If any RuntimeException is thrown → both are rolled back</span>
+    }
+
+    <span class="an">@Transactional</span>(readOnly = <span class="kw">true</span>)
+    <span class="kw">public</span> <span class="ty">List</span>&lt;<span class="ty">Order</span>&gt; getOrders(<span class="ty">Long</span> userId) {
+        <span class="kw">return</span> orderRepo.findByUserId(userId);
+    }
+}</code></pre>
+        <p>✅ Public method, annotated directly on service. readOnly for queries. Any <code>RuntimeException</code> in <code>placeOrder</code> rolls back both saves atomically.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc1-2">
+      <div class="test-case-head"><span class="badge badge-red">✗ Bug</span><span class="test-case-title">Self-invocation — proxy bypassed</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">NotificationService</span> {
+
+    <span class="an">@Transactional</span>
+    <span class="kw">public void</span> sendBulk(<span class="ty">List</span>&lt;<span class="ty">User</span>&gt; users) {
+        <span class="kw">for</span> (<span class="ty">User</span> u : users) {
+            <span class="cm">// ❌ Calling this.sendOne() — goes directly to the real object</span>
+            <span class="cm">// The @Transactional on sendOne() is IGNORED</span>
+            sendOne(u);
+        }
+    }
+
+    <span class="an">@Transactional</span>(propagation = Propagation.REQUIRES_NEW)
+    <span class="kw">public void</span> sendOne(<span class="ty">User</span> user) {
+        <span class="cm">// Intended: each sendOne gets its own transaction</span>
+        <span class="cm">// Actual: runs in the same transaction as sendBulk (or no tx)</span>
+        repo.save(<span class="kw">new</span> <span class="ty">Notification</span>(user));
+    }
+}
+
+<span class="cm">// FIX: Inject a self-reference or extract sendOne to a separate bean</span>
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">NotificationService</span> {
+    <span class="an">@Autowired</span> <span class="kw">private</span> <span class="ty">NotificationService</span> self; <span class="cm">// Spring injects the proxy</span>
+
+    <span class="kw">public void</span> sendBulk(<span class="ty">List</span>&lt;<span class="ty">User</span>&gt; users) {
+        <span class="kw">for</span> (<span class="ty">User</span> u : users) self.sendOne(u); <span class="cm">// ✅ goes through proxy</span>
+    }
+}</code></pre>
+        <p>❌ <code>this.sendOne()</code> bypasses the Spring proxy. The <code>REQUIRES_NEW</code> propagation is never applied. The fix is to call through the proxy by injecting a self-reference.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc1-3">
+      <div class="test-case-head"><span class="badge badge-red">✗ Bug</span><span class="test-case-title">@Transactional on private method — silently ignored</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">PaymentService</span> {
+
+    <span class="kw">public void</span> processPayment(<span class="ty">Payment</span> p) {
+        doProcess(p); <span class="cm">// calls the private method below</span>
+    }
+
+    <span class="cm">// ❌ @Transactional on private method — proxy cannot override this</span>
+    <span class="an">@Transactional</span>
+    <span class="kw">private void</span> doProcess(<span class="ty">Payment</span> p) {
+        paymentRepo.save(p);
+        ledgerRepo.record(p);
+        <span class="cm">// No transaction wraps this — if ledgerRepo.record() throws,</span>
+        <span class="cm">// paymentRepo.save() is NOT rolled back</span>
+    }
+}</code></pre>
+        <p>❌ Spring generates no warning. The annotation is silently discarded. Always put <code>@Transactional</code> on <code>public</code> methods.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc1-4">
+      <div class="test-case-head"><span class="badge badge-gold">⚠ Tricky</span><span class="test-case-title">Checked exception does NOT rollback by default</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">FileService</span> {
+
+    <span class="cm">// ❌ IOException is a checked exception</span>
+    <span class="cm">// Spring will COMMIT even if IOException is thrown</span>
+    <span class="an">@Transactional</span>
+    <span class="kw">public void</span> importData(<span class="ty">File</span> file) <span class="kw">throws</span> <span class="ty">IOException</span> {
+        dataRepo.save(parseFile(file)); <span class="cm">// saved to DB</span>
+        fileStorage.move(file);         <span class="cm">// throws IOException</span>
+        <span class="cm">// dataRepo.save IS committed despite the exception!</span>
+    }
+
+    <span class="cm">// ✅ Fix: explicitly rollback on checked exceptions</span>
+    <span class="an">@Transactional</span>(rollbackFor = <span class="ty">Exception</span>.class)
+    <span class="kw">public void</span> importDataFixed(<span class="ty">File</span> file) <span class="kw">throws</span> <span class="ty">IOException</span> {
+        dataRepo.save(parseFile(file));
+        fileStorage.move(file); <span class="cm">// now this WILL trigger rollback</span>
+    }
+}</code></pre>
+        <p>⚠ This is a frequent interview question. Default rollback triggers only on <code>RuntimeException</code> and <code>Error</code>. For checked exceptions, always add <code>rollbackFor</code>.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc1-5">
+      <div class="test-case-head"><span class="badge badge-blue">Pattern</span><span class="test-case-title">REQUIRES_NEW for independent audit logging</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">AuditService</span> {
+
+    <span class="cm">// REQUIRES_NEW: always commits independently of outer transaction</span>
+    <span class="an">@Transactional</span>(propagation = <span class="ty">Propagation</span>.REQUIRES_NEW)
+    <span class="kw">public void</span> log(<span class="ty">String</span> event) {
+        auditRepo.save(<span class="kw">new</span> <span class="ty">AuditEntry</span>(event));
+    }
+}
+
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">OrderService</span> {
+    <span class="an">@Autowired</span> <span class="ty">AuditService</span> auditService;
+
+    <span class="an">@Transactional</span>
+    <span class="kw">public void</span> placeOrder(<span class="ty">Order</span> order) {
+        orderRepo.save(order);
+        auditService.log(<span class="st">"ORDER_PLACED"</span>); <span class="cm">// commits in its own tx</span>
+        <span class="kw">throw new</span> <span class="ty">RuntimeException</span>(<span class="st">"Something went wrong"</span>);
+        <span class="cm">// orderRepo.save IS rolled back</span>
+        <span class="cm">// auditService.log IS committed (separate tx already committed)</span>
+    }
+}</code></pre>
+        <p>✅ Audit log is committed even when the outer transaction rolls back. This is the canonical use case for <code>REQUIRES_NEW</code>.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc1-6">
+      <div class="test-case-head"><span class="badge badge-purple">Pattern</span><span class="test-case-title">Class-level vs method-level @Transactional</span></div>
+      <div class="test-case-body">
+<pre><code><span class="cm">// Class-level: applies to ALL public methods as default</span>
+<span class="an">@Service</span>
+<span class="an">@Transactional</span>(readOnly = <span class="kw">true</span>)
+<span class="kw">public class</span> <span class="ty">ProductService</span> {
+
+    <span class="kw">public</span> <span class="ty">Product</span> findById(<span class="ty">Long</span> id) {
+        <span class="kw">return</span> repo.findById(id).orElseThrow(); <span class="cm">// inherits readOnly=true</span>
+    }
+
+    <span class="cm">// Method-level overrides class-level</span>
+    <span class="an">@Transactional</span>  <span class="cm">// readOnly=false (default)</span>
+    <span class="kw">public void</span> updatePrice(<span class="ty">Long</span> id, <span class="ty">BigDecimal</span> price) {
+        <span class="ty">Product</span> p = repo.findById(id).orElseThrow();
+        p.setPrice(price);
+        repo.save(p); <span class="cm">// write-capable transaction</span>
+    }
+}</code></pre>
+        <p>✅ Class-level annotation is the default for all methods. Individual methods can override with their own <code>@Transactional</code>. Useful pattern: class-level <code>readOnly=true</code>, override on write methods.</p>
+      </div>
+    </div>
+
+    <div class="quiz">
+      <span class="quiz-label">🧠 Quiz — Chapter 2</span>
+      <div class="quiz-q">Q1. A <code>@Transactional</code> method throws an <code>IOException</code>. What happens to the transaction?</div>
+      <ul class="quiz-options" id="q03">
+        <li onclick="answer('q03',0)">A) Transaction is rolled back automatically</li>
+        <li onclick="answer('q03',1)">B) Transaction is committed — IOException is checked, not rolled back by default</li>
+        <li onclick="answer('q03',2)">C) Transaction is suspended</li>
+        <li onclick="answer('q03',3)">D) Spring converts it to a RuntimeException</li>
+      </ul>
+      <div class="quiz-explain" id="q03-exp">✅ <strong>Answer: B.</strong> Spring only rolls back on <code>RuntimeException</code> and <code>Error</code> by default. <code>IOException</code> is a checked exception — the transaction commits. Use <code>rollbackFor = Exception.class</code> to change this.</div>
+
+      <div class="quiz-q" style="margin-top:16px">Q2. Method A (no @Transactional) calls Method B (REQUIRES_NEW) in the same class. What happens to Method B's transaction?</div>
+      <ul class="quiz-options" id="q04">
+        <li onclick="answer('q04',0)">A) A new transaction is created for Method B</li>
+        <li onclick="answer('q04',1)">B) Method B runs without a transaction</li>
+        <li onclick="answer('q04',2)">C) Method B shares Method A's transaction</li>
+        <li onclick="answer('q04',3)">D) A transaction exception is thrown</li>
+      </ul>
+      <div class="quiz-explain" id="q04-exp">✅ <strong>Answer: B.</strong> Since A calls B as <code>this.B()</code>, it bypasses the proxy entirely. The <code>REQUIRES_NEW</code> annotation is never processed. B runs with no transaction at all — exactly as if there were no annotation.</div>
+
+      <div class="quiz-q" style="margin-top:16px">Q3. You annotate a <code>private</code> method with <code>@Transactional</code>. What happens?</div>
+      <ul class="quiz-options" id="q05">
+        <li onclick="answer('q05',0)">A) Spring throws a startup error</li>
+        <li onclick="answer('q05',1)">B) Spring warns you in the logs</li>
+        <li onclick="answer('q05',2)">C) The annotation is silently ignored — no transaction is created</li>
+        <li onclick="answer('q05',3)">D) A transaction is created but can't be committed</li>
+      </ul>
+      <div class="quiz-explain" id="q05-exp">✅ <strong>Answer: C.</strong> Spring silently ignores <code>@Transactional</code> on private methods. No error, no warning. The proxy cannot override private methods, so the advice is never applied.</div>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-icon">🔑</div>
+      <div class="callout-body"><strong>The One Rule for @Transactional</strong> It works via a proxy that wraps your bean. Any scenario that bypasses the proxy (self-invocation, private methods, final classes, calling <code>new MyService()</code>) silently disables the transaction. Always verify: is this call going through the proxy?</div>
+    </div>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn nav-prev" onclick="show(0)">
+      <span class="nav-arrow">←</span>
+      <span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Core Concepts &amp; Beans</span></span>
+    </button>
+    <button class="nav-btn nav-next" onclick="show(2)">
+      <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Spring MVC</span></span>
+      <span class="nav-arrow">→</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 2 -->
+<div class="section" id="s2">
+  <div class="hero">
+    <div class="hero-inner">
+      <span class="chapter-label">Chapter 03 · Web Layer</span>
+      <h2>Spring MVC</h2>
+      <p class="hero-sub">Controllers, request mapping, input binding, and the annotations that decide what your endpoints return.</p>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill">@RestController</span>
+    <span class="pill">@RequestMapping</span>
+    <span class="pill">@RequestBody</span>
+    <span class="pill">@PathVariable</span>
+    <span class="pill">@RequestParam</span>
+    <span class="pill">@ResponseStatus</span>
+    <span class="pill">@ExceptionHandler</span>
+    <span class="pill">@ControllerAdvice</span>
+  </div>
+  <div class="content">
+    <p class="lead">The web layer is where inputs enter and outputs leave your application. Wrong annotations mean wrong HTTP codes, null parameters, or views instead of JSON — all classic interview bugs.</p>
+
+    <h3>@Controller vs @RestController</h3>
+    <div class="analogy">
+      <span class="analogy-label">📺 Analogy</span>
+      <p><code>@Controller</code> is a TV director — it returns a <strong>script name</strong> (view name) and the template engine renders the actual show. <code>@RestController</code> is a live broadcast — it returns the <strong>content itself</strong> directly to the viewer with no template engine involved.</p>
+    </div>
+    <div class="cards two">
+      <div class="card">
+        <div class="card-head">@Controller</div>
+        <div class="card-body">Return value is treated as a <strong>view name</strong> resolved by a template engine (Thymeleaf, JSP). To return data directly, you must add <code>@ResponseBody</code> on the method or class.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">@RestController</div>
+        <div class="card-body">= <code>@Controller + @ResponseBody</code>. Every method's return value is serialized (usually to JSON) and written directly into the HTTP response body.</div>
+      </div>
+    </div>
+
+    <h3>Input Binding Annotations</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Annotation</th><th>Source</th><th>Example URL</th><th>Example Usage</th></tr></thead>
+        <tbody>
+          <tr><td><code>@PathVariable</code></td><td>URL path segment</td><td><code>/orders/42</code></td><td><code>@GetMapping("/orders/{id}")</code> → <code>@PathVariable Long id</code></td></tr>
+          <tr><td><code>@RequestParam</code></td><td>Query string</td><td><code>/orders?status=OPEN</code></td><td><code>@RequestParam String status</code></td></tr>
+          <tr><td><code>@RequestBody</code></td><td>HTTP request body (JSON)</td><td>POST body</td><td><code>@RequestBody OrderDto dto</code></td></tr>
+          <tr><td><code>@RequestHeader</code></td><td>HTTP header</td><td><code>Authorization: Bearer ...</code></td><td><code>@RequestHeader("Authorization") String token</code></td></tr>
+          <tr><td><code>@CookieValue</code></td><td>HTTP cookie</td><td>Cookie in request</td><td><code>@CookieValue("SESSION") String session</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>HTTP Status Codes</h3>
+    <p>By default, a successful controller method returns <strong>200 OK</strong>. Use <code>@ResponseStatus</code> to override, or return a <code>ResponseEntity</code> with explicit status.</p>
+    <div class="cards three">
+      <div class="card">
+        <div class="card-head">@ResponseStatus</div>
+        <div class="card-body">On a method: always returns that status.<br>On an exception class: when that exception is thrown, return that status.<br><code>@ResponseStatus(HttpStatus.CREATED)</code></div>
+      </div>
+      <div class="card">
+        <div class="card-head">ResponseEntity</div>
+        <div class="card-body">Full control. Set status, headers, and body programmatically.<br><code>return ResponseEntity.status(201).body(created);</code></div>
+      </div>
+      <div class="card">
+        <div class="card-head">@ControllerAdvice</div>
+        <div class="card-body">Global exception handler. Centralize all <code>@ExceptionHandler</code> methods here instead of duplicating across controllers.</div>
+      </div>
+    </div>
+
+    <h3>produces and consumes</h3>
+    <p><code>produces</code> restricts what media type the endpoint returns. <code>consumes</code> restricts what it accepts. Mismatch → <strong>415 Unsupported Media Type</strong>.</p>
+    <div class="callout red">
+      <div class="callout-icon">🚨</div>
+      <div class="callout-body"><strong>Common Bug: Missing @ResponseBody</strong> If you use <code>@Controller</code> but forget <code>@ResponseBody</code>, the method returns a string that Spring treats as a <em>view name</em>. You'll see a "Whitelabel Error Page" saying view not found, or a <code>TemplateInputException</code>.</div>
+    </div>
+  </div>
+
+  <nav class="scenario-nav">
+    <a class="scenario-chip chip-green" href="#tc2-1"><span class="chip-num">01</span> Correct REST endpoint</a>
+    <a class="scenario-chip chip-red" href="#tc2-2"><span class="chip-num">02</span> Missing @ResponseBody</a>
+    <a class="scenario-chip chip-red" href="#tc2-3"><span class="chip-num">03</span> Wrong input annotation</a>
+    <a class="scenario-chip chip-gold" href="#tc2-4"><span class="chip-num">04</span> Global exception handler</a>
+    <a class="scenario-chip chip-blue" href="#tc2-5"><span class="chip-num">05</span> HTTP status control</a>
+  </nav>
+
+  <div class="example-section">
+    <div class="test-case" id="tc2-1">
+      <div class="test-case-head"><span class="badge badge-green">✓ Correct</span><span class="test-case-title">Well-formed REST controller</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@RestController</span>
+<span class="an">@RequestMapping</span>(<span class="st">"/api/orders"</span>)
+<span class="kw">public class</span> <span class="ty">OrderController</span> {
+
+    <span class="an">@GetMapping</span>(<span class="st">"/{id}"</span>)
+    <span class="kw">public</span> <span class="ty">OrderDto</span> getOrder(<span class="an">@PathVariable</span> <span class="ty">Long</span> id) {
+        <span class="kw">return</span> orderService.findById(id); <span class="cm">// serialized to JSON → 200 OK</span>
+    }
+
+    <span class="an">@PostMapping</span>
+    <span class="an">@ResponseStatus</span>(<span class="ty">HttpStatus</span>.CREATED)
+    <span class="kw">public</span> <span class="ty">OrderDto</span> createOrder(<span class="an">@RequestBody</span> <span class="ty">CreateOrderRequest</span> req) {
+        <span class="kw">return</span> orderService.create(req); <span class="cm">// 201 Created</span>
+    }
+
+    <span class="an">@GetMapping</span>
+    <span class="kw">public</span> <span class="ty">List</span>&lt;<span class="ty">OrderDto</span>&gt; listOrders(
+        <span class="an">@RequestParam</span>(defaultValue = <span class="st">"OPEN"</span>) <span class="ty">String</span> status) {
+        <span class="kw">return</span> orderService.findByStatus(status);
+    }
+}</code></pre>
+        <p>✅ <code>@RestController</code> handles JSON serialization. <code>@PathVariable</code> from URL, <code>@RequestBody</code> from POST body, <code>@RequestParam</code> from query string.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc2-2">
+      <div class="test-case-head"><span class="badge badge-red">✗ Bug</span><span class="test-case-title">@Controller without @ResponseBody — returns view name</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Controller</span>  <span class="cm">// ← NOT @RestController</span>
+<span class="kw">public class</span> <span class="ty">UserController</span> {
+
+    <span class="an">@GetMapping</span>(<span class="st">"/user/{id}"</span>)
+    <span class="kw">public</span> <span class="ty">UserDto</span> getUser(<span class="an">@PathVariable</span> <span class="ty">Long</span> id) {
+        <span class="cm">// ❌ Spring tries to resolve "UserDto@123abc" as a view template name</span>
+        <span class="cm">// Result: TemplateInputException — no template "UserDto@123abc" found</span>
+        <span class="kw">return</span> userService.findById(id);
+    }
+
+    <span class="cm">// ✅ Fix Option 1: Add @ResponseBody</span>
+    <span class="an">@GetMapping</span>(<span class="st">"/user/{id}"</span>)
+    <span class="an">@ResponseBody</span>
+    <span class="kw">public</span> <span class="ty">UserDto</span> getUser(<span class="an">@PathVariable</span> <span class="ty">Long</span> id) { ... }
+
+    <span class="cm">// ✅ Fix Option 2: Change to @RestController</span>
+}</code></pre>
+        <p>❌ Without <code>@ResponseBody</code>, Spring MVC treats the return value as a view name and tries to render a template. The fix is to either add <code>@ResponseBody</code> or switch to <code>@RestController</code>.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc2-3">
+      <div class="test-case-head"><span class="badge badge-red">✗ Bug</span><span class="test-case-title">Wrong input binding annotation</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@RestController</span>
+<span class="kw">public class</span> <span class="ty">ProductController</span> {
+
+    <span class="cm">// URL: POST /products/activate?productId=5</span>
+    <span class="an">@PostMapping</span>(<span class="st">"/products/activate"</span>)
+    <span class="kw">public void</span> activate(<span class="an">@PathVariable</span> <span class="ty">Long</span> productId) {
+        <span class="cm">// ❌ @PathVariable looks in the URL path {productId}</span>
+        <span class="cm">// But productId is a query param, not a path segment</span>
+        <span class="cm">// Result: MissingPathVariableException</span>
+    }
+
+    <span class="cm">// ✅ Fix</span>
+    <span class="an">@PostMapping</span>(<span class="st">"/products/activate"</span>)
+    <span class="kw">public void</span> activate(<span class="an">@RequestParam</span> <span class="ty">Long</span> productId) { ... }
+
+    <span class="cm">// Also wrong: using @RequestParam for a JSON body</span>
+    <span class="an">@PostMapping</span>(<span class="st">"/products"</span>)
+    <span class="kw">public void</span> create(<span class="an">@RequestParam</span> <span class="ty">ProductDto</span> dto) {
+        <span class="cm">// ❌ @RequestParam reads from query string, not body</span>
+        <span class="cm">// Fix: use @RequestBody</span>
+    }
+}</code></pre>
+        <p>❌ The most common annotation confusion: <code>@PathVariable</code> = URL segment, <code>@RequestParam</code> = query string, <code>@RequestBody</code> = JSON request body. Mixing them gives nulls or exceptions.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc2-4">
+      <div class="test-case-head"><span class="badge badge-gold">Pattern</span><span class="test-case-title">Global exception handler with @ControllerAdvice</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@ControllerAdvice</span>
+<span class="kw">public class</span> <span class="ty">GlobalExceptionHandler</span> {
+
+    <span class="an">@ExceptionHandler</span>(<span class="ty">EntityNotFoundException</span>.class)
+    <span class="an">@ResponseStatus</span>(<span class="ty">HttpStatus</span>.NOT_FOUND)
+    <span class="an">@ResponseBody</span>
+    <span class="kw">public</span> <span class="ty">ErrorResponse</span> handleNotFound(<span class="ty">EntityNotFoundException</span> ex) {
+        <span class="kw">return new</span> <span class="ty">ErrorResponse</span>(<span class="st">"NOT_FOUND"</span>, ex.getMessage());
+    }
+
+    <span class="an">@ExceptionHandler</span>(<span class="ty">MethodArgumentNotValidException</span>.class)
+    <span class="an">@ResponseStatus</span>(<span class="ty">HttpStatus</span>.BAD_REQUEST)
+    <span class="an">@ResponseBody</span>
+    <span class="kw">public</span> <span class="ty">ErrorResponse</span> handleValidation(<span class="ty">MethodArgumentNotValidException</span> ex) {
+        <span class="ty">String</span> msg = ex.getBindingResult().getFieldErrors().stream()
+            .map(<span class="ty">FieldError</span>::getDefaultMessage).collect(joining(<span class="st">", "</span>));
+        <span class="kw">return new</span> <span class="ty">ErrorResponse</span>(<span class="st">"VALIDATION_ERROR"</span>, msg);
+    }
+}</code></pre>
+        <p>✅ <code>@ControllerAdvice</code> applies globally across all controllers. Centralize all error mapping here rather than duplicating <code>@ExceptionHandler</code> in every controller.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc2-5">
+      <div class="test-case-head"><span class="badge badge-blue">Input/Output</span><span class="test-case-title">What HTTP status does each endpoint return?</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@RestController</span>
+<span class="kw">public class</span> <span class="ty">QuizController</span> {
+
+    <span class="an">@GetMapping</span>(<span class="st">"/a"</span>)
+    <span class="kw">public</span> <span class="ty">String</span> methodA() { <span class="kw">return</span> <span class="st">"hello"</span>; }
+    <span class="cm">// Output: 200 OK, body: hello</span>
+
+    <span class="an">@PostMapping</span>(<span class="st">"/b"</span>)
+    <span class="an">@ResponseStatus</span>(<span class="ty">HttpStatus</span>.CREATED)
+    <span class="kw">public void</span> methodB() {}
+    <span class="cm">// Output: 201 Created, empty body</span>
+
+    <span class="an">@DeleteMapping</span>(<span class="st">"/c"</span>)
+    <span class="kw">public</span> <span class="ty">ResponseEntity</span>&lt;<span class="ty">Void</span>&gt; methodC() {
+        <span class="kw">return</span> <span class="ty">ResponseEntity</span>.noContent().build();
+    }
+    <span class="cm">// Output: 204 No Content</span>
+
+    <span class="an">@GetMapping</span>(<span class="st">"/d"</span>)
+    <span class="kw">public</span> <span class="ty">String</span> methodD() { <span class="kw">throw new</span> <span class="ty">RuntimeException</span>(<span class="st">"fail"</span>); }
+    <span class="cm">// Output: 500 Internal Server Error (no handler configured)</span>
+}</code></pre>
+        <p>✅ Classic input/output question: know the default (200), <code>@ResponseStatus</code> overrides, <code>ResponseEntity</code> for programmatic control, and unhandled exceptions → 500.</p>
+      </div>
+    </div>
+
+    <div class="quiz">
+      <span class="quiz-label">🧠 Quiz — Chapter 3</span>
+      <div class="quiz-q">Q1. A <code>@Controller</code> method returns a <code>UserDto</code> object without any additional annotation. What does the client receive?</div>
+      <ul class="quiz-options" id="q06">
+        <li onclick="answer('q06',0)">A) JSON representation of UserDto with 200 OK</li>
+        <li onclick="answer('q06',1)">B) A template rendering error or 500 status</li>
+        <li onclick="answer('q06',2)">C) The toString() of UserDto</li>
+        <li onclick="answer('q06',3)">D) Empty 200 response</li>
+      </ul>
+      <div class="quiz-explain" id="q06-exp">✅ <strong>Answer: B.</strong> <code>@Controller</code> without <code>@ResponseBody</code> treats return values as view names. Spring will try to find a template with the name of the object's toString() and fail with a TemplateInputException or 500.</div>
+
+      <div class="quiz-q" style="margin-top:16px">Q2. URL: <code>GET /products?category=electronics</code>. Which annotation correctly binds <code>category</code>?</div>
+      <ul class="quiz-options" id="q07">
+        <li onclick="answer('q07',0)">A) @PathVariable String category</li>
+        <li onclick="answer('q07',1)">B) @RequestBody String category</li>
+        <li onclick="answer('q07',2)">C) @RequestParam String category</li>
+        <li onclick="answer('q07',3)">D) @RequestHeader String category</li>
+      </ul>
+      <div class="quiz-explain" id="q07-exp">✅ <strong>Answer: C.</strong> Query string parameters (<code>?key=value</code>) are bound with <code>@RequestParam</code>. <code>@PathVariable</code> is for URL path segments like <code>/products/{id}</code>.</div>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body"><strong>Key Takeaway</strong> Remember the three input annotations: <code>@PathVariable</code> (URL segment), <code>@RequestParam</code> (query string), <code>@RequestBody</code> (JSON body). And remember: <code>@Controller</code> needs <code>@ResponseBody</code> to return data — <code>@RestController</code> includes it automatically.</div>
+    </div>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn nav-prev" onclick="show(1)">
+      <span class="nav-arrow">←</span>
+      <span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">@Transactional Deep Dive</span></span>
+    </button>
+    <button class="nav-btn nav-next" onclick="show(3)">
+      <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Dependency Injection Bugs</span></span>
+      <span class="nav-arrow">→</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 3 -->
+<div class="section" id="s3">
+  <div class="hero">
+    <div class="hero-inner">
+      <span class="chapter-label">Chapter 04 · DI Bugs</span>
+      <h2>Dependency Injection Bugs</h2>
+      <p class="hero-sub">NoSuchBeanDefinitionException, NoUniqueBeanDefinitionException, circular dependencies, and scope mismatches.</p>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill">@Autowired</span>
+    <span class="pill">@Qualifier</span>
+    <span class="pill">@Primary</span>
+    <span class="pill">@Lazy</span>
+    <span class="pill">Circular Dependency</span>
+    <span class="pill">Scope Mismatch</span>
+    <span class="pill">NoSuchBeanDefinition</span>
+    <span class="pill">NoUniqueBeanDefinition</span>
+  </div>
+  <div class="content">
+    <p class="lead">Most DI bugs produce a clear exception message — if you know what to look for. Learn to read the error, locate the cause, and apply the right annotation fix.</p>
+
+    <h3>The Three DI Injection Styles</h3>
+    <div class="cards three">
+      <div class="card">
+        <div class="card-head">Field Injection ⚠</div>
+        <div class="card-body"><code>@Autowired private UserRepo repo;</code><br>Convenient but hides dependencies. Makes testing harder (can't inject mocks without reflection). Not recommended for production code.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">Constructor Injection ✅</div>
+        <div class="card-body"><code>public Service(UserRepo repo)</code><br>Preferred. Dependencies are explicit. Field can be <code>final</code>. Works with standard unit testing without Spring. Detects circular deps at startup.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">Setter Injection</div>
+        <div class="card-body"><code>@Autowired public void setRepo(UserRepo r)</code><br>Used when the dependency is truly optional. Less common. Cannot make the field <code>final</code>.</div>
+      </div>
+    </div>
+
+    <h3>Common DI Exceptions</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Exception</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td><code>NoSuchBeanDefinitionException</code></td><td>Spring can't find a bean of the requested type</td><td>Add missing annotation, fix scan path, add <code>@Bean</code></td></tr>
+          <tr><td><code>NoUniqueBeanDefinitionException</code></td><td>Multiple beans of the same type, Spring doesn't know which to inject</td><td>Add <code>@Qualifier</code> or mark one <code>@Primary</code></td></tr>
+          <tr><td><code>BeanCurrentlyInCreationException</code></td><td>Circular dependency (A needs B, B needs A)</td><td>Redesign, use setter injection, or <code>@Lazy</code></td></tr>
+          <tr><td><code>UnsatisfiedDependencyException</code></td><td>Wrapper for the above — check the cause message</td><td>Find root cause in the exception chain</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>@Qualifier and @Primary</h3>
+    <p>When two beans implement the same interface, Spring doesn't know which to inject. Use <code>@Primary</code> to designate the default, or <code>@Qualifier("name")</code> to pick a specific one.</p>
+
+    <h3>Scope Mismatch Bug</h3>
+    <div class="callout red">
+      <div class="callout-icon">🚨</div>
+      <div class="callout-body"><strong>Injecting a short-lived bean into a long-lived bean</strong> — e.g. injecting a <code>@RequestScope</code> bean into a <code>@Singleton</code>. The singleton is created once and holds a stale reference. Fix: use a scoped proxy: <code>@Scope(value="request", proxyMode=ScopedProxyMode.TARGET_CLASS)</code></div>
+    </div>
+
+    <h3>@Lazy</h3>
+    <p>By default, Spring creates all singleton beans at startup. <code>@Lazy</code> on a bean or injection point defers creation until first use. Useful for expensive beans or breaking circular dependency deadlocks at startup.</p>
+  </div>
+
+  <nav class="scenario-nav">
+    <a class="scenario-chip chip-green" href="#tc3-1"><span class="chip-num">01</span> Constructor injection</a>
+    <a class="scenario-chip chip-red" href="#tc3-2"><span class="chip-num">02</span> NoUniqueBeanDefinition</a>
+    <a class="scenario-chip chip-red" href="#tc3-3"><span class="chip-num">03</span> Circular dependency</a>
+    <a class="scenario-chip chip-gold" href="#tc3-4"><span class="chip-num">04</span> Scope mismatch</a>
+    <a class="scenario-chip chip-blue" href="#tc3-5"><span class="chip-num">05</span> Optional dependency</a>
+  </nav>
+
+  <div class="example-section">
+    <div class="test-case" id="tc3-1">
+      <div class="test-case-head"><span class="badge badge-green">✓ Correct</span><span class="test-case-title">Constructor injection — the preferred style</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">ReportService</span> {
+
+    <span class="kw">private final</span> <span class="ty">ReportRepository</span> repo;
+    <span class="kw">private final</span> <span class="ty">EmailService</span> emailService;
+
+    <span class="cm">// No @Autowired needed with single constructor in Spring 4.3+</span>
+    <span class="kw">public</span> <span class="ty">ReportService</span>(<span class="ty">ReportRepository</span> repo, <span class="ty">EmailService</span> emailService) {
+        <span class="kw">this</span>.repo = repo;
+        <span class="kw">this</span>.emailService = emailService;
+    }
+}</code></pre>
+        <p>✅ Dependencies are explicit, <code>final</code>, and guaranteed non-null. Easy to unit test by passing mocks to the constructor directly.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc3-2">
+      <div class="test-case-head"><span class="badge badge-red">✗ Bug</span><span class="test-case-title">Two beans, same type — NoUniqueBeanDefinitionException</span></div>
+      <div class="test-case-body">
+<pre><code><span class="kw">public interface</span> <span class="ty">NotificationSender</span> { <span class="kw">void</span> send(<span class="ty">String</span> msg); }
+
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">EmailSender</span> <span class="kw">implements</span> <span class="ty">NotificationSender</span> { ... }
+
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">SmsSender</span> <span class="kw">implements</span> <span class="ty">NotificationSender</span> { ... }
+
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">AlertService</span> {
+    <span class="an">@Autowired</span>
+    <span class="kw">private</span> <span class="ty">NotificationSender</span> sender; <span class="cm">// ❌ Which one? Spring doesn't know</span>
+    <span class="cm">// NoUniqueBeanDefinitionException: expected single bean but found 2</span>
+}
+
+<span class="cm">// Fix 1: @Primary on the default</span>
+<span class="an">@Service</span> <span class="an">@Primary</span>
+<span class="kw">public class</span> <span class="ty">EmailSender</span> <span class="kw">implements</span> <span class="ty">NotificationSender</span> { ... }
+
+<span class="cm">// Fix 2: @Qualifier to pick specific one</span>
+<span class="an">@Autowired</span>
+<span class="an">@Qualifier</span>(<span class="st">"smsSender"</span>)
+<span class="kw">private</span> <span class="ty">NotificationSender</span> sender;</code></pre>
+        <p>❌ Two beans implement the same interface. Spring can't decide. Use <code>@Primary</code> for the default choice, or <code>@Qualifier</code> to be explicit.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc3-3">
+      <div class="test-case-head"><span class="badge badge-red">✗ Bug</span><span class="test-case-title">Circular dependency</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">ServiceA</span> {
+    <span class="kw">private final</span> <span class="ty">ServiceB</span> b;
+    <span class="kw">public</span> <span class="ty">ServiceA</span>(<span class="ty">ServiceB</span> b) { <span class="kw">this</span>.b = b; }
+}
+
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">ServiceB</span> {
+    <span class="kw">private final</span> <span class="ty">ServiceA</span> a;
+    <span class="kw">public</span> <span class="ty">ServiceB</span>(<span class="ty">ServiceA</span> a) { <span class="kw">this</span>.a = a; }
+}
+<span class="cm">// ❌ BeanCurrentlyInCreationException at startup</span>
+<span class="cm">// A needs B, but B needs A, which needs B... infinite loop</span>
+
+<span class="cm">// Fix 1: Redesign (best) — introduce a third service</span>
+<span class="cm">// Fix 2: @Lazy on one injection point</span>
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">ServiceA</span> {
+    <span class="kw">public</span> <span class="ty">ServiceA</span>(<span class="an">@Lazy</span> <span class="ty">ServiceB</span> b) { <span class="kw">this</span>.b = b; }
+    <span class="cm">// ServiceB is created lazily on first use, breaking the startup cycle</span>
+}</code></pre>
+        <p>❌ Spring detects circular constructor injection at startup. <code>@Lazy</code> defers one bean's creation, breaking the cycle. But it's usually a design smell — consider refactoring.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc3-4">
+      <div class="test-case-head"><span class="badge badge-gold">⚠ Scope Mismatch</span><span class="test-case-title">Request-scoped bean injected into singleton</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Component</span>
+<span class="an">@Scope</span>(<span class="st">"request"</span>)  <span class="cm">// new instance per HTTP request</span>
+<span class="kw">public class</span> <span class="ty">RequestContext</span> {
+    <span class="kw">private</span> <span class="ty">String</span> userId;
+}
+
+<span class="an">@Service</span>  <span class="cm">// singleton — created once</span>
+<span class="kw">public class</span> <span class="ty">UserService</span> {
+    <span class="an">@Autowired</span>
+    <span class="kw">private</span> <span class="ty">RequestContext</span> ctx; <span class="cm">// ❌ This is the instance from startup time</span>
+    <span class="cm">// After first request, ctx is stale — it always has the first request's data</span>
+}
+
+<span class="cm">// ✅ Fix: use a scoped proxy</span>
+<span class="an">@Component</span>
+<span class="an">@Scope</span>(value = <span class="st">"request"</span>, proxyMode = <span class="ty">ScopedProxyMode</span>.TARGET_CLASS)
+<span class="kw">public class</span> <span class="ty">RequestContext</span> {
+    <span class="cm">// Now Spring injects a proxy that forwards each call to the current request's instance</span>
+}</code></pre>
+        <p>⚠ Without a scoped proxy, the singleton holds a reference to a stale request-scoped object. The proxy ensures each method call is forwarded to the correct per-request instance.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc3-5">
+      <div class="test-case-head"><span class="badge badge-blue">Pattern</span><span class="test-case-title">Optional dependency with @Autowired required=false</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">NotificationService</span> {
+
+    <span class="cm">// ❌ Without required=false, startup fails if no SlackClient bean exists</span>
+    <span class="an">@Autowired</span>
+    <span class="kw">private</span> <span class="ty">SlackClient</span> slackClient;
+
+    <span class="cm">// ✅ Optional dependency — null if bean not present</span>
+    <span class="an">@Autowired</span>(required = <span class="kw">false</span>)
+    <span class="kw">private</span> <span class="ty">SlackClient</span> slackClient;
+
+    <span class="cm">// Even better: use Java Optional</span>
+    <span class="an">@Autowired</span>
+    <span class="kw">private</span> <span class="ty">Optional</span>&lt;<span class="ty">SlackClient</span>&gt; slackClient;
+
+    <span class="kw">public void</span> notify(<span class="ty">String</span> msg) {
+        slackClient.ifPresent(c -> c.send(msg));
+    }
+}</code></pre>
+        <p>✅ Use <code>required=false</code> or <code>Optional&lt;T&gt;</code> for beans that may or may not be available depending on configuration (e.g., integration clients only active in prod).</p>
+      </div>
+    </div>
+
+    <div class="quiz">
+      <span class="quiz-label">🧠 Quiz — Chapter 4</span>
+      <div class="quiz-q">Q1. Two beans implement <code>MessageSender</code>. You inject <code>@Autowired MessageSender sender</code>. What exception is thrown at startup?</div>
+      <ul class="quiz-options" id="q08">
+        <li onclick="answer('q08',0)">A) NullPointerException</li>
+        <li onclick="answer('q08',1)">B) NoSuchBeanDefinitionException</li>
+        <li onclick="answer('q08',2)">C) NoUniqueBeanDefinitionException</li>
+        <li onclick="answer('q08',3)">D) IllegalArgumentException</li>
+      </ul>
+      <div class="quiz-explain" id="q08-exp">✅ <strong>Answer: C.</strong> When multiple beans of the same type exist and you inject without qualification, Spring throws <code>NoUniqueBeanDefinitionException</code> at startup. Fix with <code>@Qualifier</code> or <code>@Primary</code>.</div>
+
+      <div class="quiz-q" style="margin-top:16px">Q2. Which injection style makes the dependency <code>final</code> and guarantees non-null?</div>
+      <ul class="quiz-options" id="q09">
+        <li onclick="answer('q09',0)">A) Field injection with @Autowired</li>
+        <li onclick="answer('q09',1)">B) Constructor injection</li>
+        <li onclick="answer('q09',2)">C) Setter injection</li>
+        <li onclick="answer('q09',3)">D) @Value injection</li>
+      </ul>
+      <div class="quiz-explain" id="q09-exp">✅ <strong>Answer: B.</strong> Constructor injection allows the field to be declared <code>final</code>. Spring must provide the dependency at construction time — it can never be null after the constructor completes.</div>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body"><strong>Key Takeaway</strong> DI exceptions are almost always startup exceptions — they crash the application before any request is served. This makes them easier to catch: the error message tells you exactly which bean is missing or ambiguous.</div>
+    </div>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn nav-prev" onclick="show(2)">
+      <span class="nav-arrow">←</span>
+      <span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Spring MVC</span></span>
+    </button>
+    <button class="nav-btn nav-next" onclick="show(4)">
+      <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Spring Data JPA</span></span>
+      <span class="nav-arrow">→</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 4 -->
+<div class="section" id="s4">
+  <div class="hero">
+    <div class="hero-inner">
+      <span class="chapter-label">Chapter 05 · Data Layer</span>
+      <h2>Spring Data JPA</h2>
+      <p class="hero-sub">Entities, repositories, JPQL, lazy loading, and the dreaded LazyInitializationException.</p>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill">@Entity</span>
+    <span class="pill">@Repository</span>
+    <span class="pill">JpaRepository</span>
+    <span class="pill">@Query</span>
+    <span class="pill">LazyInitialization</span>
+    <span class="pill">N+1 Problem</span>
+    <span class="pill">FetchType</span>
+    <span class="pill">@Transactional</span>
+  </div>
+  <div class="content">
+    <p class="lead">Spring Data JPA removes boilerplate persistence code — but lazy loading and transaction boundaries create subtle bugs that only show up at runtime, not compile time.</p>
+
+    <h3>Entity Annotations</h3>
+    <div class="cards three">
+      <div class="card">
+        <div class="card-head">@Entity</div>
+        <div class="card-body">Marks a class as a JPA entity (mapped to a DB table). Requires a no-arg constructor (can be protected).</div>
+      </div>
+      <div class="card">
+        <div class="card-head">@Id + @GeneratedValue</div>
+        <div class="card-body"><code>@Id</code> marks the primary key field. <code>@GeneratedValue(strategy = GenerationType.IDENTITY)</code> delegates ID generation to the DB (auto-increment).</div>
+      </div>
+      <div class="card">
+        <div class="card-head">@Column</div>
+        <div class="card-body">Maps a field to a column. Optional — without it, Spring uses the field name. Use to specify <code>nullable=false</code>, <code>unique=true</code>, or a different column name.</div>
+      </div>
+    </div>
+
+    <h3>Repository Hierarchy</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Interface</th><th>Provides</th><th>Use When</th></tr></thead>
+        <tbody>
+          <tr><td><code>Repository&lt;T, ID&gt;</code></td><td>Marker only — no methods</td><td>You want full control</td></tr>
+          <tr><td><code>CrudRepository&lt;T, ID&gt;</code></td><td>save, findById, findAll, delete, count</td><td>Basic CRUD</td></tr>
+          <tr><td><code>JpaRepository&lt;T, ID&gt;</code></td><td>All of CrudRepository + flush, batch operations, Pageable/Sort</td><td>Most Spring Boot apps</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>LazyInitializationException — The Most Common JPA Bug</h3>
+    <div class="analogy">
+      <span class="analogy-label">📦 Analogy</span>
+      <p>JPA lazy loading is like ordering furniture with "assemble on delivery." The box arrives (the entity), but the furniture inside (related entities) is only unpacked when you open it. If the delivery person (transaction/session) has left already, and you try to open the box — you get a <code>LazyInitializationException</code>: the session is closed.</p>
+    </div>
+    <div class="callout red">
+      <div class="callout-icon">🚨</div>
+      <div class="callout-body"><strong>LazyInitializationException: could not initialize proxy — no Session</strong> This means you tried to access a lazy-loaded collection or association <em>after the transaction/session was closed</em>. Fixes: load within the transaction, use EAGER fetch, use <code>@Transactional</code> on the calling service, or use a JPQL JOIN FETCH.</div>
+    </div>
+
+    <h3>N+1 Query Problem</h3>
+    <p>Loading a list of Orders, then for each Order accessing its lazy-loaded <code>Customer</code> — this fires 1 query for Orders + N queries for Customers. Fix with <code>JOIN FETCH</code> in JPQL or <code>@EntityGraph</code>.</p>
+
+    <h3>FetchType</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>FetchType</th><th>Default for</th><th>Behaviour</th></tr></thead>
+        <tbody>
+          <tr><td><code>LAZY</code></td><td>@OneToMany, @ManyToMany</td><td>Related entities loaded only when accessed. Efficient but risky outside transaction.</td></tr>
+          <tr><td><code>EAGER</code></td><td>@ManyToOne, @OneToOne</td><td>Related entity loaded immediately with the parent. Safer but can cause performance issues.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <nav class="scenario-nav">
+    <a class="scenario-chip chip-green" href="#tc4-1"><span class="chip-num">01</span> Correct entity + repo</a>
+    <a class="scenario-chip chip-red" href="#tc4-2"><span class="chip-num">02</span> LazyInitializationException</a>
+    <a class="scenario-chip chip-gold" href="#tc4-3"><span class="chip-num">03</span> N+1 problem + fix</a>
+    <a class="scenario-chip chip-blue" href="#tc4-4"><span class="chip-num">04</span> Custom @Query</a>
+    <a class="scenario-chip chip-purple" href="#tc4-5"><span class="chip-num">05</span> Missing @Repository exception translation</a>
+  </nav>
+
+  <div class="example-section">
+    <div class="test-case" id="tc4-1">
+      <div class="test-case-head"><span class="badge badge-green">✓ Correct</span><span class="test-case-title">Entity with JpaRepository</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Entity</span>
+<span class="an">@Table</span>(name = <span class="st">"orders"</span>)
+<span class="kw">public class</span> <span class="ty">Order</span> {
+    <span class="an">@Id</span>
+    <span class="an">@GeneratedValue</span>(strategy = <span class="ty">GenerationType</span>.IDENTITY)
+    <span class="kw">private</span> <span class="ty">Long</span> id;
+
+    <span class="an">@Column</span>(nullable = <span class="kw">false</span>)
+    <span class="kw">private</span> <span class="ty">String</span> status;
+
+    <span class="an">@ManyToOne</span>(fetch = <span class="ty">FetchType</span>.LAZY)
+    <span class="an">@JoinColumn</span>(name = <span class="st">"customer_id"</span>)
+    <span class="kw">private</span> <span class="ty">Customer</span> customer;
+
+    <span class="kw">protected</span> <span class="ty">Order</span>() {} <span class="cm">// Required no-arg constructor for JPA</span>
+}
+
+<span class="an">@Repository</span>
+<span class="kw">public interface</span> <span class="ty">OrderRepository</span> <span class="kw">extends</span> <span class="ty">JpaRepository</span>&lt;<span class="ty">Order</span>, <span class="ty">Long</span>&gt; {
+    <span class="ty">List</span>&lt;<span class="ty">Order</span>&gt; findByStatus(<span class="ty">String</span> status);
+    <span class="ty">Optional</span>&lt;<span class="ty">Order</span>&gt; findByIdAndCustomerId(<span class="ty">Long</span> id, <span class="ty">Long</span> customerId);
+}</code></pre>
+        <p>✅ Entity has a no-arg constructor. Repository extends JpaRepository. Derived query methods are auto-implemented by Spring Data from the method name.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc4-2">
+      <div class="test-case-head"><span class="badge badge-red">✗ Bug</span><span class="test-case-title">LazyInitializationException — accessing lazy relation outside transaction</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">OrderService</span> {
+
+    <span class="kw">public</span> <span class="ty">String</span> getCustomerName(<span class="ty">Long</span> orderId) {
+        <span class="ty">Order</span> order = orderRepo.findById(orderId).orElseThrow();
+        <span class="cm">// Transaction closed after findById returns</span>
+        <span class="cm">// ❌ Accessing lazy-loaded Customer NOW — session is gone</span>
+        <span class="kw">return</span> order.getCustomer().getName(); <span class="cm">// LazyInitializationException!</span>
+    }
+
+    <span class="cm">// ✅ Fix 1: Add @Transactional to keep session open</span>
+    <span class="an">@Transactional</span>
+    <span class="kw">public</span> <span class="ty">String</span> getCustomerName(<span class="ty">Long</span> orderId) {
+        <span class="ty">Order</span> order = orderRepo.findById(orderId).orElseThrow();
+        <span class="kw">return</span> order.getCustomer().getName(); <span class="cm">// ✅ session still open</span>
+    }
+
+    <span class="cm">// ✅ Fix 2: JOIN FETCH to load eagerly in one query</span>
+}</code></pre>
+        <p>❌ Spring Data repositories open a transaction per method call. When <code>findById</code> returns, the session closes. Accessing lazy fields after that throws. Fix: keep a transaction open via <code>@Transactional</code>.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc4-3">
+      <div class="test-case-head"><span class="badge badge-gold">⚠ Performance</span><span class="test-case-title">N+1 problem and JOIN FETCH fix</span></div>
+      <div class="test-case-body">
+<pre><code><span class="cm">// ❌ N+1: 1 query for orders + N queries for each customer</span>
+<span class="an">@Transactional</span>
+<span class="kw">public</span> <span class="ty">List</span>&lt;<span class="ty">String</span>&gt; getAllCustomerNames() {
+    <span class="kw">return</span> orderRepo.findAll().stream()
+        .map(o -> o.getCustomer().getName()) <span class="cm">// fires 1 query per order</span>
+        .collect(toList());
+}
+
+<span class="cm">// ✅ Fix: JOIN FETCH loads customer in the same query</span>
+<span class="kw">public interface</span> <span class="ty">OrderRepository</span> <span class="kw">extends</span> <span class="ty">JpaRepository</span>&lt;<span class="ty">Order</span>, <span class="ty">Long</span>&gt; {
+
+    <span class="an">@Query</span>(<span class="st">"SELECT o FROM Order o JOIN FETCH o.customer"</span>)
+    <span class="ty">List</span>&lt;<span class="ty">Order</span>&gt; findAllWithCustomer();
+}</code></pre>
+        <p>⚠ <code>JOIN FETCH</code> tells JPQL to load the association in a single SQL JOIN query, eliminating the N+1 problem. This is one of the most commonly asked JPA performance questions.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc4-4">
+      <div class="test-case-head"><span class="badge badge-blue">Pattern</span><span class="test-case-title">Custom @Query — JPQL and native SQL</span></div>
+      <div class="test-case-body">
+<pre><code><span class="kw">public interface</span> <span class="ty">ProductRepository</span> <span class="kw">extends</span> <span class="ty">JpaRepository</span>&lt;<span class="ty">Product</span>, <span class="ty">Long</span>&gt; {
+
+    <span class="cm">// JPQL — uses entity/field names, not table/column names</span>
+    <span class="an">@Query</span>(<span class="st">"SELECT p FROM Product p WHERE p.price &lt; :maxPrice AND p.category = :cat"</span>)
+    <span class="ty">List</span>&lt;<span class="ty">Product</span>&gt; findCheapByCategory(<span class="an">@Param</span>(<span class="st">"maxPrice"</span>) <span class="ty">BigDecimal</span> max,
+                                       <span class="an">@Param</span>(<span class="st">"cat"</span>) <span class="ty">String</span> category);
+
+    <span class="cm">// Native SQL — use actual table/column names</span>
+    <span class="an">@Query</span>(value = <span class="st">"SELECT * FROM products WHERE price &lt; ?1"</span>, nativeQuery = <span class="kw">true</span>)
+    <span class="ty">List</span>&lt;<span class="ty">Product</span>&gt; findCheapNative(<span class="ty">BigDecimal</span> maxPrice);
+
+    <span class="cm">// Modifying query — must have @Modifying + @Transactional</span>
+    <span class="an">@Modifying</span>
+    <span class="an">@Transactional</span>
+    <span class="an">@Query</span>(<span class="st">"UPDATE Product p SET p.stock = 0 WHERE p.id = :id"</span>)
+    <span class="kw">int</span> clearStock(<span class="an">@Param</span>(<span class="st">"id"</span>) <span class="ty">Long</span> id);
+}</code></pre>
+        <p>✅ JPQL queries use entity class and field names. Native queries use real SQL. <code>@Modifying</code> is required for UPDATE/DELETE queries — and they also need <code>@Transactional</code>.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc4-5">
+      <div class="test-case-head"><span class="badge badge-purple">Pattern</span><span class="test-case-title">@Repository exception translation</span></div>
+      <div class="test-case-body">
+<pre><code><span class="cm">// Without @Repository — raw JDBC/JPA exceptions propagate</span>
+<span class="kw">public class</span> <span class="ty">RawUserRepo</span> {
+    <span class="kw">public void</span> save(<span class="ty">User</span> u) {
+        <span class="cm">// throws org.hibernate.exception.ConstraintViolationException</span>
+        <span class="cm">// caller must catch Hibernate-specific exceptions — tight coupling</span>
+    }
+}
+
+<span class="cm">// With @Repository — Spring translates to DataAccessException hierarchy</span>
+<span class="an">@Repository</span>
+<span class="kw">public class</span> <span class="ty">UserRepo</span> {
+    <span class="kw">public void</span> save(<span class="ty">User</span> u) {
+        <span class="cm">// throws DataIntegrityViolationException (Spring)</span>
+        <span class="cm">// Spring DataAccessException — database-independent, easier to catch</span>
+    }
+}
+
+<span class="cm">// Caller can catch Spring's exception without knowing about Hibernate:</span>
+<span class="kw">try</span> {
+    userRepo.save(user);
+} <span class="kw">catch</span> (<span class="ty">DataIntegrityViolationException</span> e) {
+    <span class="cm">// handle duplicate key, constraint violation etc.</span>
+}</code></pre>
+        <p>✅ <code>@Repository</code> enables Spring's PersistenceExceptionTranslationPostProcessor. Raw Hibernate/JPA exceptions are translated into Spring's database-agnostic <code>DataAccessException</code> hierarchy.</p>
+      </div>
+    </div>
+
+    <div class="quiz">
+      <span class="quiz-label">🧠 Quiz — Chapter 5</span>
+      <div class="quiz-q">Q1. You load an <code>Order</code> with a lazy-loaded <code>Customer</code>. You access <code>order.getCustomer().getName()</code> outside any transaction. What happens?</div>
+      <ul class="quiz-options" id="q10">
+        <li onclick="answer('q10',0)">A) Returns null silently</li>
+        <li onclick="answer('q10',1)">B) LazyInitializationException — could not initialize proxy, no Session</li>
+        <li onclick="answer('q10',2)">C) Spring opens a new session automatically</li>
+        <li onclick="answer('q10',3)">D) EntityNotFoundException</li>
+      </ul>
+      <div class="quiz-explain" id="q10-exp">✅ <strong>Answer: B.</strong> Once the transaction/session closes, lazy associations cannot be loaded. Accessing them throws <code>LazyInitializationException</code>. Fix: add <code>@Transactional</code> to the calling method or use JOIN FETCH.</div>
+
+      <div class="quiz-q" style="margin-top:16px">Q2. What is the N+1 problem?</div>
+      <ul class="quiz-options" id="q11">
+        <li onclick="answer('q11',0)">A) An entity has N+1 fields instead of N</li>
+        <li onclick="answer('q11',1)">B) Loading N entities, then firing 1 extra query per entity to load a related association, totaling N+1 queries</li>
+        <li onclick="answer('q11',2)">C) Having more than N+1 indexes on a table</li>
+        <li onclick="answer('q11',3)">D) A JPA constraint violation</li>
+      </ul>
+      <div class="quiz-explain" id="q11-exp">✅ <strong>Answer: B.</strong> N+1 means: 1 query to load the list + N queries to load the lazy association for each item. For 100 orders, that's 101 SQL queries. Fix with JOIN FETCH to load everything in 1 query.</div>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body"><strong>Key Takeaway</strong> Two things to always remember in JPA: (1) lazy-loaded associations require an open session — always access them inside a <code>@Transactional</code> method; (2) loading collections in a loop causes N+1 queries — use JOIN FETCH or EntityGraph.</div>
+    </div>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn nav-prev" onclick="show(3)">
+      <span class="nav-arrow">←</span>
+      <span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Dependency Injection Bugs</span></span>
+    </button>
+    <button class="nav-btn nav-next" onclick="show(5)">
+      <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Config &amp; Properties</span></span>
+      <span class="nav-arrow">→</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 5 -->
+<div class="section" id="s5">
+  <div class="hero">
+    <div class="hero-inner">
+      <span class="chapter-label">Chapter 06 · Configuration</span>
+      <h2>Configuration &amp; Properties</h2>
+      <p class="hero-sub">@Value, @ConfigurationProperties, profiles, and the annotations that make external config work.</p>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill">@Value</span>
+    <span class="pill">@ConfigurationProperties</span>
+    <span class="pill">@Profile</span>
+    <span class="pill">application.properties</span>
+    <span class="pill">@EnableJpaRepositories</span>
+    <span class="pill">@EnableTransactionManagement</span>
+  </div>
+  <div class="content">
+    <p class="lead">Configuration bugs are startup-time failures. A missing property, wrong profile, or absent enable-annotation will prevent the application from starting with a clear error message — if you know what to look for.</p>
+
+    <h3>@Value</h3>
+    <p><code>@Value("${property.key}")</code> injects a value from <code>application.properties</code> or environment variables. If the property is missing, Spring throws <code>IllegalArgumentException: Could not resolve placeholder</code> at startup.</p>
+    <div class="callout red">
+      <div class="callout-icon">🚨</div>
+      <div class="callout-body"><strong>@Value on a static field</strong> — silently injects nothing. <code>@Value</code> requires the class to be a Spring-managed bean AND the field to be non-static. Static field injection is not supported.</div>
+    </div>
+
+    <h3>@ConfigurationProperties</h3>
+    <p>Binds a group of properties to a Java class. Preferred over many individual <code>@Value</code> fields when you have a cluster of related configuration.</p>
+
+    <h3>Profiles</h3>
+    <p><code>@Profile("dev")</code> on a bean means it's only created when the <code>dev</code> profile is active. Profile-specific property files: <code>application-dev.properties</code> overrides values in <code>application.properties</code> when <code>dev</code> is active.</p>
+
+    <h3>Key Enable Annotations</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Annotation</th><th>What it enables</th><th>Default in Spring Boot?</th></tr></thead>
+        <tbody>
+          <tr><td><code>@EnableJpaRepositories</code></td><td>Spring Data JPA repository scanning</td><td>✅ Auto-configured</td></tr>
+          <tr><td><code>@EnableTransactionManagement</code></td><td>@Transactional annotation processing</td><td>✅ Auto-configured</td></tr>
+          <tr><td><code>@EnableCaching</code></td><td>@Cacheable, @CacheEvict annotations</td><td>❌ Must add manually</td></tr>
+          <tr><td><code>@EnableScheduling</code></td><td>@Scheduled annotation</td><td>❌ Must add manually</td></tr>
+          <tr><td><code>@EnableAsync</code></td><td>@Async annotation</td><td>❌ Must add manually</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <div class="callout-icon">⚠️</div>
+      <div class="callout-body"><strong>Common interview question:</strong> "Why isn't @Cacheable working?" — because <code>@EnableCaching</code> is missing from the configuration class. Same pattern applies to <code>@EnableScheduling</code> and <code>@EnableAsync</code>.</div>
+    </div>
+  </div>
+
+  <nav class="scenario-nav">
+    <a class="scenario-chip chip-green" href="#tc5-1"><span class="chip-num">01</span> @Value injection</a>
+    <a class="scenario-chip chip-red" href="#tc5-2"><span class="chip-num">02</span> Missing property</a>
+    <a class="scenario-chip chip-blue" href="#tc5-3"><span class="chip-num">03</span> @ConfigurationProperties</a>
+    <a class="scenario-chip chip-gold" href="#tc5-4"><span class="chip-num">04</span> Profile-specific config</a>
+    <a class="scenario-chip chip-red" href="#tc5-5"><span class="chip-num">05</span> Missing @EnableCaching</a>
+  </nav>
+
+  <div class="example-section">
+    <div class="test-case" id="tc5-1">
+      <div class="test-case-head"><span class="badge badge-green">✓ Correct</span><span class="test-case-title">@Value injection with default</span></div>
+      <div class="test-case-body">
+<pre><code><span class="cm"># application.properties</span>
+<span class="st">app.timeout=5000</span>
+<span class="st">app.name=MyApp</span>
+
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">ConfiguredService</span> {
+
+    <span class="an">@Value</span>(<span class="st">"${app.timeout}"</span>)
+    <span class="kw">private int</span> timeout;
+
+    <span class="an">@Value</span>(<span class="st">"${app.name}"</span>)
+    <span class="kw">private</span> <span class="ty">String</span> appName;
+
+    <span class="cm">// Default value if property is missing — colon syntax</span>
+    <span class="an">@Value</span>(<span class="st">"${app.retry:3}"</span>)
+    <span class="kw">private int</span> retryCount; <span class="cm">// 3 if app.retry not in properties</span>
+}</code></pre>
+        <p>✅ The <code>:</code> syntax provides a default value if the property is absent. Without a default, a missing property throws <code>IllegalArgumentException</code> at startup.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc5-2">
+      <div class="test-case-head"><span class="badge badge-red">✗ Bug</span><span class="test-case-title">Missing property — startup failure</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">PaymentGateway</span> {
+
+    <span class="cm">// ❌ app.stripe.key not in application.properties</span>
+    <span class="an">@Value</span>(<span class="st">"${app.stripe.key}"</span>)
+    <span class="kw">private</span> <span class="ty">String</span> stripeKey;
+    <span class="cm">// Error: Could not resolve placeholder 'app.stripe.key'</span>
+    <span class="cm">// Application fails to start</span>
+
+    <span class="cm">// ❌ @Value on static field — silently does nothing</span>
+    <span class="an">@Value</span>(<span class="st">"${app.name}"</span>)
+    <span class="kw">private static</span> <span class="ty">String</span> name; <span class="cm">// always null at runtime</span>
+}</code></pre>
+        <p>❌ Missing properties crash the application at startup. Static field injection silently fails with no error — the field stays null.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc5-3">
+      <div class="test-case-head"><span class="badge badge-blue">Pattern</span><span class="test-case-title">@ConfigurationProperties — binding a group of properties</span></div>
+      <div class="test-case-body">
+<pre><code><span class="cm"># application.properties</span>
+<span class="st">app.db.host=localhost</span>
+<span class="st">app.db.port=5432</span>
+<span class="st">app.db.name=mydb</span>
+<span class="st">app.db.pool-size=10</span>
+
+<span class="an">@Component</span>
+<span class="an">@ConfigurationProperties</span>(prefix = <span class="st">"app.db"</span>)
+<span class="kw">public class</span> <span class="ty">DatabaseConfig</span> {
+    <span class="kw">private</span> <span class="ty">String</span> host;
+    <span class="kw">private int</span> port;
+    <span class="kw">private</span> <span class="ty">String</span> name;
+    <span class="kw">private int</span> poolSize; <span class="cm">// kebab-case pool-size → camelCase poolSize</span>
+    <span class="cm">// getters and setters required</span>
+}
+
+<span class="cm">// Usage: inject DatabaseConfig like any other bean</span>
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">DbService</span> {
+    <span class="an">@Autowired</span> <span class="kw">private</span> <span class="ty">DatabaseConfig</span> dbConfig;
+}</code></pre>
+        <p>✅ <code>@ConfigurationProperties</code> binds all properties under a prefix to a typed Java class. Supports validation with <code>@NotNull</code>, <code>@Min</code> etc. Much cleaner than multiple <code>@Value</code> annotations.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc5-4">
+      <div class="test-case-head"><span class="badge badge-gold">Pattern</span><span class="test-case-title">Profile-specific beans and properties</span></div>
+      <div class="test-case-body">
+<pre><code><span class="cm"># application.properties (base — always loaded)</span>
+<span class="st">app.name=MyApp</span>
+
+<span class="cm"># application-dev.properties (loaded only when dev profile is active)</span>
+<span class="st">spring.datasource.url=jdbc:h2:mem:testdb</span>
+
+<span class="cm"># application-prod.properties</span>
+<span class="st">spring.datasource.url=jdbc:postgresql://prod-db:5432/mydb</span>
+
+<span class="cm">// Bean only active in dev profile</span>
+<span class="an">@Configuration</span>
+<span class="an">@Profile</span>(<span class="st">"dev"</span>)
+<span class="kw">public class</span> <span class="ty">DevConfig</span> {
+    <span class="an">@Bean</span>
+    <span class="kw">public</span> <span class="ty">DataSource</span> dataSource() {
+        <span class="kw">return new</span> <span class="ty">EmbeddedDatabaseBuilder</span>().setType(H2).build();
+    }
+}
+
+<span class="cm">// Activate profile via: spring.profiles.active=dev</span></code></pre>
+        <p>✅ Profile-specific property files override base properties. Beans annotated with <code>@Profile</code> are only created when that profile is active — clean environment separation.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc5-5">
+      <div class="test-case-head"><span class="badge badge-red">✗ Bug</span><span class="test-case-title">@Cacheable silently does nothing without @EnableCaching</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">ProductService</span> {
+
+    <span class="an">@Cacheable</span>(<span class="st">"products"</span>)
+    <span class="kw">public</span> <span class="ty">Product</span> findById(<span class="ty">Long</span> id) {
+        <span class="cm">// ❌ Without @EnableCaching, this method is called every time</span>
+        <span class="cm">// No caching occurs — but no error either! Silent failure.</span>
+        <span class="kw">return</span> repo.findById(id).orElseThrow();
+    }
+}
+
+<span class="cm">// ✅ Fix: Add to your @Configuration class</span>
+<span class="an">@Configuration</span>
+<span class="an">@EnableCaching</span>
+<span class="kw">public class</span> <span class="ty">CacheConfig</span> {
+    <span class="an">@Bean</span>
+    <span class="kw">public</span> <span class="ty">CacheManager</span> cacheManager() {
+        <span class="kw">return new</span> <span class="ty">ConcurrentMapCacheManager</span>(<span class="st">"products"</span>);
+    }
+}</code></pre>
+        <p>❌ <code>@Cacheable</code>, <code>@EnableScheduling</code>, and <code>@EnableAsync</code> are not auto-configured. Without the corresponding <code>@Enable*</code> annotation, they silently do nothing.</p>
+      </div>
+    </div>
+
+    <div class="quiz">
+      <span class="quiz-label">🧠 Quiz — Chapter 6</span>
+      <div class="quiz-q">Q1. You inject <code>@Value("${db.password}")</code> but the property doesn't exist and there's no default. What happens?</div>
+      <ul class="quiz-options" id="q12">
+        <li onclick="answer('q12',0)">A) The field is injected as null</li>
+        <li onclick="answer('q12',1)">B) Application starts with a warning in logs</li>
+        <li onclick="answer('q12',2)">C) Application fails to start with IllegalArgumentException</li>
+        <li onclick="answer('q12',3)">D) Spring uses an empty string</li>
+      </ul>
+      <div class="quiz-explain" id="q12-exp">✅ <strong>Answer: C.</strong> Missing properties without defaults cause <code>IllegalArgumentException: Could not resolve placeholder 'db.password'</code> at startup. Provide a default with <code>${db.password:defaultval}</code> to suppress this.</div>
+
+      <div class="quiz-q" style="margin-top:16px">Q2. Your <code>@Scheduled</code> method never runs. The most likely cause is?</div>
+      <ul class="quiz-options" id="q13">
+        <li onclick="answer('q13',0)">A) The cron expression is wrong</li>
+        <li onclick="answer('q13',1)">B) @EnableScheduling is missing from the configuration</li>
+        <li onclick="answer('q13',2)">C) The method must be private</li>
+        <li onclick="answer('q13',3)">D) The class needs @Repository</li>
+      </ul>
+      <div class="quiz-explain" id="q13-exp">✅ <strong>Answer: B.</strong> <code>@Scheduled</code> is silently ignored unless <code>@EnableScheduling</code> is present on a configuration class. Same pattern as <code>@Cacheable</code> / <code>@EnableCaching</code> and <code>@Async</code> / <code>@EnableAsync</code>.</div>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body"><strong>Key Takeaway</strong> Feature annotations like <code>@Cacheable</code>, <code>@Async</code>, and <code>@Scheduled</code> require a matching <code>@Enable*</code> annotation to activate. Without it, they silently do nothing. Spring Boot auto-configures transactions and JPA repositories but NOT caching, scheduling, or async.</div>
+    </div>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn nav-prev" onclick="show(4)">
+      <span class="nav-arrow">←</span>
+      <span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Spring Data JPA</span></span>
+    </button>
+    <button class="nav-btn nav-next" onclick="show(6)">
+      <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">AOP Basics</span></span>
+      <span class="nav-arrow">→</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 6 -->
+<div class="section" id="s6">
+  <div class="hero">
+    <div class="hero-inner">
+      <span class="chapter-label">Chapter 07 · AOP</span>
+      <h2>AOP Basics</h2>
+      <p class="hero-sub">The proxy model that powers @Transactional, @Cacheable, and @Async — and why final classes break them all.</p>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill">CGLIB Proxy</span>
+    <span class="pill">JDK Dynamic Proxy</span>
+    <span class="pill">@Aspect</span>
+    <span class="pill">@Around</span>
+    <span class="pill">Pointcut</span>
+    <span class="pill">JoinPoint</span>
+    <span class="pill">Advice</span>
+  </div>
+  <div class="content">
+    <p class="lead">You don't need to write AOP aspects in most jobs — but you need to understand that Spring's most important annotations are all AOP-based, and the proxy model is why they have specific limitations.</p>
+
+    <h3>Two Proxy Types</h3>
+    <div class="cards two">
+      <div class="card">
+        <div class="card-head">JDK Dynamic Proxy</div>
+        <div class="card-body">Used when your bean implements an interface. Spring creates a proxy that implements the same interface and delegates method calls to the real object. Only methods declared in the interface are intercepted.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">CGLIB Proxy</div>
+        <div class="card-body">Used when your bean has no interface (or Spring Boot default). Spring creates a <em>subclass</em> of your bean class at runtime. Consequence: the class and method must <strong>not be final</strong> — a final class cannot be subclassed.</div>
+      </div>
+    </div>
+
+    <div class="callout red">
+      <div class="callout-icon">🚨</div>
+      <div class="callout-body"><strong>final class + @Transactional = silent failure.</strong> CGLIB cannot subclass a <code>final</code> class. The proxy is not created, the annotation is ignored, and there is no error. Same for Kotlin classes, which are final by default — must add <code>open</code> or use the Kotlin Spring plugin.</div>
+    </div>
+
+    <h3>AOP Terminology (Read-Level)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Term</th><th>Meaning</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td>Aspect</td><td>The cross-cutting concern module (the class)</td><td><code>@Aspect class LoggingAspect</code></td></tr>
+          <tr><td>Advice</td><td>The code to run — what, when</td><td><code>@Before</code>, <code>@After</code>, <code>@Around</code></td></tr>
+          <tr><td>Pointcut</td><td>Expression that matches which methods the advice applies to</td><td><code>execution(* com.app.service.*.*(..))</code></td></tr>
+          <tr><td>JoinPoint</td><td>The actual method invocation being intercepted</td><td>Available as parameter in advice methods</td></tr>
+          <tr><td>Weaving</td><td>Applying aspects to target classes</td><td>Spring does this at startup (load-time)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Advice Types</h3>
+    <div class="cards three">
+      <div class="card">
+        <div class="card-head">@Before</div>
+        <div class="card-body">Runs before the method. Cannot prevent method execution (use @Around for that).</div>
+      </div>
+      <div class="card">
+        <div class="card-head">@After</div>
+        <div class="card-body">Runs after the method, regardless of outcome (like <code>finally</code>).</div>
+      </div>
+      <div class="card">
+        <div class="card-head">@AfterReturning</div>
+        <div class="card-body">Runs after successful return. Has access to the return value.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">@AfterThrowing</div>
+        <div class="card-body">Runs only if the method throws. Has access to the exception.</div>
+      </div>
+      <div class="card">
+        <div class="card-head">@Around</div>
+        <div class="card-body">Full control — wraps the method. Must call <code>proceed()</code> to execute the original. Used by @Transactional internally.</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="scenario-nav">
+    <a class="scenario-chip chip-green" href="#tc6-1"><span class="chip-num">01</span> Simple logging aspect</a>
+    <a class="scenario-chip chip-red" href="#tc6-2"><span class="chip-num">02</span> final class breaks proxy</a>
+    <a class="scenario-chip chip-blue" href="#tc6-3"><span class="chip-num">03</span> @Around — how @Transactional works</a>
+  </nav>
+
+  <div class="example-section">
+    <div class="test-case" id="tc6-1">
+      <div class="test-case-head"><span class="badge badge-green">✓ Pattern</span><span class="test-case-title">Logging aspect with @Before and @AfterReturning</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Aspect</span>
+<span class="an">@Component</span>
+<span class="kw">public class</span> <span class="ty">LoggingAspect</span> {
+
+    <span class="cm">// Pointcut: match all methods in service package</span>
+    <span class="an">@Pointcut</span>(<span class="st">"execution(* com.app.service.*.*(..))"</span>)
+    <span class="kw">public void</span> serviceMethods() {}
+
+    <span class="an">@Before</span>(<span class="st">"serviceMethods()"</span>)
+    <span class="kw">public void</span> logBefore(<span class="ty">JoinPoint</span> jp) {
+        System.out.println(<span class="st">"Calling: "</span> + jp.getSignature().getName());
+    }
+
+    <span class="an">@AfterReturning</span>(pointcut = <span class="st">"serviceMethods()"</span>, returning = <span class="st">"result"</span>)
+    <span class="kw">public void</span> logAfter(<span class="ty">JoinPoint</span> jp, <span class="ty">Object</span> result) {
+        System.out.println(<span class="st">"Returned: "</span> + result);
+    }
+}</code></pre>
+        <p>✅ The aspect class needs both <code>@Aspect</code> (tells Spring this is an AOP class) and <code>@Component</code> (makes it a Spring-managed bean so it gets picked up).</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc6-2">
+      <div class="test-case-head"><span class="badge badge-red">✗ Bug</span><span class="test-case-title">final class — CGLIB can't create proxy</span></div>
+      <div class="test-case-body">
+<pre><code><span class="cm">// ❌ final class — CGLIB cannot subclass this</span>
+<span class="an">@Service</span>
+<span class="kw">public final class</span> <span class="ty">PaymentService</span> {
+
+    <span class="an">@Transactional</span>
+    <span class="kw">public void</span> process(<span class="ty">Payment</span> p) {
+        <span class="cm">// @Transactional silently ignored — no proxy created</span>
+        <span class="cm">// No transaction wraps this method</span>
+    }
+}
+
+<span class="cm">// ✅ Fix: remove final</span>
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">PaymentService</span> { ... }
+
+<span class="cm">// Kotlin note: all Kotlin classes are final by default</span>
+<span class="cm">// Must add 'open' keyword OR use the kotlin-spring plugin which adds 'open' automatically</span>
+<span class="cm">// @Service</span>
+<span class="cm">// open class PaymentService {</span>
+<span class="cm">//     @Transactional</span>
+<span class="cm">//     open fun process(p: Payment) { ... }</span>
+<span class="cm">// }</span></code></pre>
+        <p>❌ <code>final</code> prevents CGLIB from creating a subclass proxy. No error is thrown — the annotation just doesn't work. This is especially common in Kotlin codebases.</p>
+      </div>
+    </div>
+
+    <div class="test-case" id="tc6-3">
+      <div class="test-case-head"><span class="badge badge-blue">Deep Dive</span><span class="test-case-title">How @Transactional is implemented — @Around advice</span></div>
+      <div class="test-case-body">
+<pre><code><span class="cm">// This is conceptually what Spring's transaction advisor does internally</span>
+<span class="an">@Around</span>(<span class="st">"@annotation(org.springframework.transaction.annotation.Transactional)"</span>)
+<span class="kw">public</span> <span class="ty">Object</span> manageTransaction(<span class="ty">ProceedingJoinPoint</span> pjp) <span class="kw">throws</span> <span class="ty">Throwable</span> {
+    <span class="ty">TransactionStatus</span> tx = txManager.getTransaction(txDef);
+    <span class="kw">try</span> {
+        <span class="ty">Object</span> result = pjp.proceed(); <span class="cm">// call the actual method</span>
+        txManager.commit(tx);
+        <span class="kw">return</span> result;
+    } <span class="kw">catch</span> (<span class="ty">RuntimeException</span> e) {
+        txManager.rollback(tx);  <span class="cm">// rollback on unchecked</span>
+        <span class="kw">throw</span> e;
+    } <span class="kw">catch</span> (<span class="ty">Exception</span> e) {
+        txManager.commit(tx);    <span class="cm">// commit on checked by default!</span>
+        <span class="kw">throw</span> e;
+    }
+}
+<span class="cm">// This explains EVERY @Transactional behavior you've learned</span></code></pre>
+        <p>✅ Understanding this pattern makes every <code>@Transactional</code> rule obvious: it's just an <code>@Around</code> advice that begins/commits/rolls back a transaction. Self-invocation bypasses this advice entirely.</p>
+      </div>
+    </div>
+
+    <div class="quiz">
+      <span class="quiz-label">🧠 Quiz — Chapter 7</span>
+      <div class="quiz-q">Q1. A Kotlin <code>@Service</code> class has a <code>@Transactional</code> method that never opens a transaction. What is the most likely cause?</div>
+      <ul class="quiz-options" id="q14">
+        <li onclick="answer('q14',0)">A) Kotlin doesn't support Spring</li>
+        <li onclick="answer('q14',1)">B) The class is final by default in Kotlin, blocking CGLIB from creating a proxy</li>
+        <li onclick="answer('q14',2)">C) The method should be static</li>
+        <li onclick="answer('q14',3)">D) @Transactional requires Java 11+</li>
+      </ul>
+      <div class="quiz-explain" id="q14-exp">✅ <strong>Answer: B.</strong> Kotlin classes are <code>final</code> by default. CGLIB cannot subclass a final class to create a proxy. Fix: add the <code>open</code> keyword to the class and method, or add the <code>kotlin-spring</code> compiler plugin which does this automatically.</div>
+    </div>
+
+    <div class="callout green">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body"><strong>Key Takeaway</strong> Spring AOP works by creating a proxy subclass or interface implementation. Any restriction that prevents proxying — <code>final</code>, <code>private</code>, <code>this.</code> calls — silently disables the aspect. All of <code>@Transactional</code>, <code>@Cacheable</code>, <code>@Async</code>, and custom aspects share this limitation.</div>
+    </div>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn nav-prev" onclick="show(5)">
+      <span class="nav-arrow">←</span>
+      <span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Config &amp; Properties</span></span>
+    </button>
+    <button class="nav-btn nav-next" onclick="show(7)">
+      <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Concepts &amp; Tools</span></span>
+      <span class="nav-arrow">→</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 7 -->
+<div class="section" id="s7">
+  <div class="hero">
+    <div class="hero-inner">
+      <span class="chapter-label">Chapter 08 · Reference</span>
+      <h2>Concepts &amp; Tools</h2>
+      <p class="hero-sub">A complete glossary of every annotation, exception, and concept covered in this guide.</p>
+    </div>
+  </div>
+  <div class="content">
+    <h3>Annotations — Core</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Annotation</th><th>Purpose</th><th>Key Rule</th></tr></thead>
+        <tbody>
+          <tr><td><code>@SpringBootApplication</code></td><td>Entry point — combines @Configuration, @EnableAutoConfiguration, @ComponentScan</td><td>Component scan starts from this class's package</td></tr>
+          <tr><td><code>@Component</code></td><td>Generic Spring-managed bean</td><td>Base for @Service, @Repository, @Controller</td></tr>
+          <tr><td><code>@Service</code></td><td>Business logic layer bean</td><td>No extra behaviour over @Component, communicates intent</td></tr>
+          <tr><td><code>@Repository</code></td><td>Data access layer bean</td><td>Enables exception translation</td></tr>
+          <tr><td><code>@Controller</code></td><td>Web MVC controller</td><td>Returns view names without @ResponseBody</td></tr>
+          <tr><td><code>@RestController</code></td><td>@Controller + @ResponseBody</td><td>Returns data directly as response body</td></tr>
+          <tr><td><code>@Configuration</code></td><td>Contains @Bean methods</td><td>Missing this = @Bean methods not singleton-safe</td></tr>
+          <tr><td><code>@Bean</code></td><td>Declares a bean via method</td><td>For third-party classes you can't annotate directly</td></tr>
+          <tr><td><code>@ComponentScan</code></td><td>Configures which packages to scan</td><td>Without it, beans outside default path are missed</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Annotations — Injection</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Annotation</th><th>Purpose</th><th>Key Rule</th></tr></thead>
+        <tbody>
+          <tr><td><code>@Autowired</code></td><td>Injects a dependency by type</td><td>Fails if bean not found or multiple matches exist</td></tr>
+          <tr><td><code>@Qualifier("name")</code></td><td>Picks a specific bean when multiple exist</td><td>Used with @Autowired when there's ambiguity</td></tr>
+          <tr><td><code>@Primary</code></td><td>Default bean when multiple match</td><td>Can be overridden by @Qualifier on injection point</td></tr>
+          <tr><td><code>@Lazy</code></td><td>Defer bean creation to first use</td><td>Breaks circular dependency startup deadlocks</td></tr>
+          <tr><td><code>@Value("${key}")</code></td><td>Injects a property value</td><td>Static fields don't work; missing prop = startup failure</td></tr>
+          <tr><td><code>@PostConstruct</code></td><td>Init method after injection</td><td>Run after all @Autowired fields are set</td></tr>
+          <tr><td><code>@PreDestroy</code></td><td>Cleanup before bean destroyed</td><td>Called on context shutdown</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Annotations — Transactions</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Annotation / Attribute</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>@Transactional</code></td><td>Wrap method in a transaction (via AOP proxy)</td></tr>
+          <tr><td><code>propagation = REQUIRED</code></td><td>Join existing tx or create new one (default)</td></tr>
+          <tr><td><code>propagation = REQUIRES_NEW</code></td><td>Always create new tx, suspend outer</td></tr>
+          <tr><td><code>propagation = NESTED</code></td><td>Savepoint inside existing tx</td></tr>
+          <tr><td><code>rollbackFor = Exception.class</code></td><td>Also rollback on checked exceptions</td></tr>
+          <tr><td><code>noRollbackFor = MyEx.class</code></td><td>Don't rollback for this RuntimeException</td></tr>
+          <tr><td><code>readOnly = true</code></td><td>Hint for optimisation — skips dirty check/flush</td></tr>
+          <tr><td><code>isolation = READ_COMMITTED</code></td><td>Set DB isolation level for this transaction</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Annotations — Web</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Annotation</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>@RequestMapping</code></td><td>Maps a path/method to a controller class or method</td></tr>
+          <tr><td><code>@GetMapping / @PostMapping / ...</code></td><td>Shorthand for @RequestMapping(method=...)</td></tr>
+          <tr><td><code>@PathVariable</code></td><td>Binds URL segment ({id} in path)</td></tr>
+          <tr><td><code>@RequestParam</code></td><td>Binds query string param (?key=value)</td></tr>
+          <tr><td><code>@RequestBody</code></td><td>Deserializes JSON request body to object</td></tr>
+          <tr><td><code>@ResponseBody</code></td><td>Serializes return value as response body</td></tr>
+          <tr><td><code>@ResponseStatus</code></td><td>Sets HTTP status code for method or exception class</td></tr>
+          <tr><td><code>@ExceptionHandler</code></td><td>Handles specific exception in controller or @ControllerAdvice</td></tr>
+          <tr><td><code>@ControllerAdvice</code></td><td>Global handler for exceptions across all controllers</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Common Exceptions Reference</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Exception</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td><code>NoSuchBeanDefinitionException</code></td><td>Bean not found in context</td><td>Add annotation, fix scan path</td></tr>
+          <tr><td><code>NoUniqueBeanDefinitionException</code></td><td>Multiple beans of same type</td><td>@Qualifier or @Primary</td></tr>
+          <tr><td><code>BeanCurrentlyInCreationException</code></td><td>Circular dependency</td><td>Redesign or @Lazy</td></tr>
+          <tr><td><code>LazyInitializationException</code></td><td>Lazy relation accessed outside session</td><td>@Transactional on caller or JOIN FETCH</td></tr>
+          <tr><td><code>IllegalArgumentException: Could not resolve placeholder</code></td><td>Missing @Value property</td><td>Add to properties or use default with :</td></tr>
+          <tr><td><code>TemplateInputException / view not found</code></td><td>@Controller returning data without @ResponseBody</td><td>Add @ResponseBody or use @RestController</td></tr>
+          <tr><td><code>MissingPathVariableException</code></td><td>@PathVariable name mismatch</td><td>Match {name} in path to @PathVariable name</td></tr>
+          <tr><td><code>DataIntegrityViolationException</code></td><td>DB constraint violation</td><td>Check unique/not-null constraints</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Tools &amp; Frameworks</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tool/Framework</th><th>What it is</th></tr></thead>
+        <tbody>
+          <tr><td>Spring Framework</td><td>Core IoC container, AOP, DI</td></tr>
+          <tr><td>Spring Boot</td><td>Auto-configuration on top of Spring Framework</td></tr>
+          <tr><td>Spring MVC</td><td>Web layer — DispatcherServlet, controllers, view resolution</td></tr>
+          <tr><td>Spring Data JPA</td><td>Repository abstraction over JPA/Hibernate</td></tr>
+          <tr><td>Hibernate</td><td>JPA implementation used by Spring Data JPA</td></tr>
+          <tr><td>CGLIB</td><td>Bytecode library Spring uses to create subclass proxies</td></tr>
+          <tr><td>ApplicationContext</td><td>Spring's IoC container — manages bean lifecycle</td></tr>
+          <tr><td>PlatformTransactionManager</td><td>Spring's transaction abstraction — delegates to JDBC/JPA/JTA</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn nav-prev" onclick="show(6)">
+      <span class="nav-arrow">←</span>
+      <span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">AOP Basics</span></span>
+    </button>
+    <button class="nav-btn nav-next" onclick="show(8)">
+      <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Interview Prep</span></span>
+      <span class="nav-arrow">→</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 8 -->
+<div class="section" id="s8">
+  <div class="hero">
+    <div class="hero-inner">
+      <span class="chapter-label">Chapter 09 · Interview Prep</span>
+      <h2>Interview Prep</h2>
+      <p class="hero-sub">Input/output style questions, spot-the-bug scenarios, and the questions interviewers actually ask about Spring.</p>
+    </div>
+  </div>
+  <div class="content">
+    <p class="lead">These questions are structured exactly like what you'll face: here's code, what happens? Or: here's a bug, find it. Work through all of them before the interview.</p>
+
+    <h3>Input / Output Questions</h3>
+  </div>
+
+  <div class="example-section">
+    <div class="test-case">
+      <div class="test-case-head"><span class="badge badge-blue">I/O</span><span class="test-case-title">What HTTP status and body does each endpoint return?</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@RestController</span>
+<span class="kw">public class</span> <span class="ty">TestController</span> {
+
+    <span class="an">@GetMapping</span>(<span class="st">"/a"</span>)
+    <span class="kw">public</span> <span class="ty">String</span> a() { <span class="kw">return</span> <span class="st">"hello"</span>; }
+
+    <span class="an">@PostMapping</span>(<span class="st">"/b"</span>)
+    <span class="an">@ResponseStatus</span>(<span class="ty">HttpStatus</span>.CREATED)
+    <span class="kw">public</span> <span class="ty">String</span> b() { <span class="kw">return</span> <span class="st">"created"</span>; }
+
+    <span class="an">@GetMapping</span>(<span class="st">"/c"</span>)
+    <span class="kw">public</span> <span class="ty">ResponseEntity</span>&lt;<span class="ty">String</span>&gt; c() {
+        <span class="kw">return</span> <span class="ty">ResponseEntity</span>.noContent().build();
+    }
+
+    <span class="an">@GetMapping</span>(<span class="st">"/d"</span>)
+    <span class="kw">public</span> <span class="ty">String</span> d() { <span class="kw">throw new</span> <span class="ty">RuntimeException</span>(<span class="st">"error"</span>); }
+
+    <span class="an">@GetMapping</span>(<span class="st">"/e"</span>)
+    <span class="kw">public</span> <span class="ty">String</span> e() { <span class="kw">return null</span>; }
+}</code></pre>
+        <p><strong>Answers:</strong> <code>/a</code> → 200 OK, body: "hello" | <code>/b</code> → 201 Created, body: "created" | <code>/c</code> → 204 No Content, empty body | <code>/d</code> → 500 Internal Server Error (no exception handler) | <code>/e</code> → 200 OK, empty body (null serializes to empty)</p>
+      </div>
+    </div>
+
+    <div class="test-case">
+      <div class="test-case-head"><span class="badge badge-red">Spot the Bug</span><span class="test-case-title">Find all bugs in this code snippet</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Controller</span>                              <span class="cm">// Bug 1</span>
+<span class="kw">public class</span> <span class="ty">UserController</span> {
+
+    <span class="kw">private</span> <span class="ty">UserService</span> userService = <span class="kw">new</span> <span class="ty">UserService</span>(); <span class="cm">// Bug 2</span>
+
+    <span class="an">@GetMapping</span>(<span class="st">"/user/{id}"</span>)
+    <span class="kw">public</span> <span class="ty">UserDto</span> getUser(<span class="an">@RequestParam</span> <span class="ty">Long</span> id) { <span class="cm">// Bug 3</span>
+        <span class="kw">return</span> userService.findById(id);
+    }
+}
+
+<span class="kw">public class</span> <span class="ty">UserService</span> {              <span class="cm">// Bug 4</span>
+    <span class="an">@Autowired</span>
+    <span class="kw">private</span> <span class="ty">UserRepository</span> repo;
+
+    <span class="an">@Transactional</span>
+    <span class="kw">private void</span> deleteUser(<span class="ty">Long</span> id) {    <span class="cm">// Bug 5</span>
+        repo.deleteById(id);
+    }
+}</code></pre>
+        <p>
+          <strong>Bug 1:</strong> <code>@Controller</code> without <code>@ResponseBody</code> — <code>getUser()</code> will try to resolve <code>UserDto</code> as a view name.<br>
+          <strong>Bug 2:</strong> <code>new UserService()</code> — Spring doesn't manage this object. <code>UserRepository</code> inside will be null.<br>
+          <strong>Bug 3:</strong> <code>@RequestParam</code> but the URL has <code>{id}</code> as a path variable — should be <code>@PathVariable</code>.<br>
+          <strong>Bug 4:</strong> Missing <code>@Service</code> — Spring won't create a bean for this class.<br>
+          <strong>Bug 5:</strong> <code>@Transactional</code> on a <code>private</code> method — silently ignored.
+        </p>
+      </div>
+    </div>
+
+    <div class="test-case">
+      <div class="test-case-head"><span class="badge badge-gold">Transactional</span><span class="test-case-title">Does the transaction rollback? Trace the scenarios</span></div>
+      <div class="test-case-body">
+<pre><code><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">PaymentService</span> {
+
+    <span class="an">@Transactional</span>
+    <span class="kw">public void</span> scenario1() {
+        repo.save(entity);
+        <span class="kw">throw new</span> <span class="ty">RuntimeException</span>(<span class="st">"runtime"</span>);
+    } <span class="cm">// → ROLLBACK (RuntimeException triggers rollback)</span>
+
+    <span class="an">@Transactional</span>
+    <span class="kw">public void</span> scenario2() <span class="kw">throws</span> <span class="ty">IOException</span> {
+        repo.save(entity);
+        <span class="kw">throw new</span> <span class="ty">IOException</span>(<span class="st">"checked"</span>);
+    } <span class="cm">// → COMMIT (IOException is checked — no rollback by default!)</span>
+
+    <span class="an">@Transactional</span>(rollbackFor = <span class="ty">Exception</span>.class)
+    <span class="kw">public void</span> scenario3() <span class="kw">throws</span> <span class="ty">IOException</span> {
+        repo.save(entity);
+        <span class="kw">throw new</span> <span class="ty">IOException</span>(<span class="st">"checked"</span>);
+    } <span class="cm">// → ROLLBACK (rollbackFor overrides default)</span>
+
+    <span class="an">@Transactional</span>
+    <span class="kw">public void</span> scenario4() {
+        innerMethod(); <span class="cm">// self-invocation</span>
+    }
+
+    <span class="an">@Transactional</span>(propagation = <span class="ty">Propagation</span>.REQUIRES_NEW)
+    <span class="kw">public void</span> innerMethod() {
+        repo.save(entity);
+        <span class="kw">throw new</span> <span class="ty">RuntimeException</span>();
+    } <span class="cm">// → What happens? innerMethod runs in scenario4's tx (self-invocation bypass)</span>
+    <span class="cm">// → scenario4's tx is ROLLED BACK (RuntimeException from inner call)</span>
+    <span class="cm">// → REQUIRES_NEW never applied — no second tx created</span>
+}</code></pre>
+        <p>Trace each scenario until you can answer immediately without thinking. Scenario 4 is the hardest — self-invocation means <code>REQUIRES_NEW</code> is ignored and the exception propagates into the outer transaction.</p>
+      </div>
+    </div>
+
+    <div class="test-case">
+      <div class="test-case-head"><span class="badge badge-purple">Missing Annotation</span><span class="test-case-title">What's missing from each snippet?</span></div>
+      <div class="test-case-body">
+<pre><code><span class="cm">// Snippet A</span>
+<span class="kw">public class</span> <span class="ty">OrderService</span> {
+    <span class="kw">public void</span> place(<span class="ty">Order</span> o) { repo.save(o); }
+}
+<span class="cm">// Missing: @Service (and @Autowired on repo)</span>
+
+<span class="cm">// Snippet B</span>
+<span class="an">@Configuration</span>
+<span class="kw">public class</span> <span class="ty">CacheConfig</span> {
+    <span class="an">@Bean</span> <span class="kw">public</span> <span class="ty">CacheManager</span> cm() { <span class="kw">return new</span> <span class="ty">ConcurrentMapCacheManager</span>(); }
+}
+<span class="cm">// Missing: @EnableCaching — without it, @Cacheable annotations do nothing</span>
+
+<span class="cm">// Snippet C</span>
+<span class="an">@Aspect</span>
+<span class="kw">public class</span> <span class="ty">AuditAspect</span> { <span class="an">@Before</span>(...) <span class="kw">public void</span> audit() {} }
+<span class="cm">// Missing: @Component — @Aspect alone doesn't make it a Spring bean</span>
+
+<span class="cm">// Snippet D</span>
+<span class="kw">public interface</span> <span class="ty">UserRepo</span> <span class="kw">extends</span> <span class="ty">JpaRepository</span>&lt;<span class="ty">User</span>, <span class="ty">Long</span>&gt; {}
+<span class="cm">// Missing: @Repository (optional but enables exception translation)</span>
+
+<span class="cm">// Snippet E</span>
+<span class="an">@Transactional</span>
+<span class="an">@Query</span>(<span class="st">"UPDATE User u SET u.name = :n WHERE u.id = :id"</span>)
+<span class="kw">void</span> updateName(<span class="an">@Param</span>(<span class="st">"id"</span>) <span class="ty">Long</span> id, <span class="an">@Param</span>(<span class="st">"n"</span>) <span class="ty">String</span> name);
+<span class="cm">// Missing: @Modifying — UPDATE/DELETE @Query requires @Modifying annotation</span></code></pre>
+        <p>✅ Spot-the-missing-annotation is the most common interview question format. Pattern: always check @Service/@Component for beans, @Modifying for UPDATE queries, @EnableCaching for cache, @ResponseBody for controller responses.</p>
+      </div>
+    </div>
+
+    <h3 style="padding: 0 32px; max-width: 850px; margin: 1.5rem auto 0.5rem;">Top Interview Questions with Answers</h3>
+  </div>
+
+  <div class="content">
+    <div class="quiz">
+      <span class="quiz-label">🎯 Final Assessment — Mix of All Topics</span>
+
+      <div class="quiz-q">Q1. Service A (no @Transactional) calls Service B (REQUIRES_NEW) externally (different beans). What happens?</div>
+      <ul class="quiz-options" id="qa1">
+        <li onclick="answer('qa1',0)">A) B runs without any transaction</li>
+        <li onclick="answer('qa1',1)">B) B creates its own new transaction, independent of A</li>
+        <li onclick="answer('qa1',2)">C) B joins A's transaction</li>
+        <li onclick="answer('qa1',3)">D) Exception is thrown</li>
+      </ul>
+      <div class="quiz-explain" id="qa1-exp">✅ <strong>Answer: B.</strong> Different beans = call goes through proxy = REQUIRES_NEW is applied. B creates its own transaction. This is the correct behaviour because the call goes through the Spring proxy on Service B.</div>
+
+      <div class="quiz-q" style="margin-top:16px">Q2. What annotation would you add to allow a Singleton bean to receive a fresh request-scoped bean on every HTTP request?</div>
+      <ul class="quiz-options" id="qa2">
+        <li onclick="answer('qa2',0)">A) @Primary on the request-scoped bean</li>
+        <li onclick="answer('qa2',1)">B) @Scope(value="request", proxyMode=ScopedProxyMode.TARGET_CLASS)</li>
+        <li onclick="answer('qa2',2)">C) @Lazy on the injection point</li>
+        <li onclick="answer('qa2',3)">D) @Qualifier("request")</li>
+      </ul>
+      <div class="quiz-explain" id="qa2-exp">✅ <strong>Answer: B.</strong> A scoped proxy wraps the request-scoped bean. The singleton holds the proxy, which forwards each method call to the current request's instance of the bean.</div>
+
+      <div class="quiz-q" style="margin-top:16px">Q3. A @Transactional method successfully inserts row A, then throws a NullPointerException. What is the final state of the database?</div>
+      <ul class="quiz-options" id="qa3">
+        <li onclick="answer('qa3',0)">A) Row A is committed</li>
+        <li onclick="answer('qa3',1)">B) Row A is rolled back — NullPointerException is a RuntimeException</li>
+        <li onclick="answer('qa3',2)">C) The behaviour is undefined</li>
+        <li onclick="answer('qa3',3)">D) Row A is committed because the insert succeeded before the exception</li>
+      </ul>
+      <div class="quiz-explain" id="qa3-exp">✅ <strong>Answer: B.</strong> NullPointerException extends RuntimeException. @Transactional rolls back on RuntimeException by default. The entire transaction is rolled back — row A is NOT in the database.</div>
+
+      <div class="quiz-q" style="margin-top:16px">Q4. What is the difference between @Component and @Bean?</div>
+      <ul class="quiz-options" id="qa4">
+        <li onclick="answer('qa4',0)">A) @Bean is for services, @Component is for utilities</li>
+        <li onclick="answer('qa4',1)">B) @Component is on a class Spring can instantiate; @Bean is a factory method for objects you instantiate yourself (e.g. third-party classes)</li>
+        <li onclick="answer('qa4',2)">C) They are identical</li>
+        <li onclick="answer('qa4',3)">D) @Component supports injection; @Bean does not</li>
+      </ul>
+      <div class="quiz-explain" id="qa4-exp">✅ <strong>Answer: B.</strong> @Component annotates your own class — Spring calls its constructor. @Bean is a method in a @Configuration class where you write the construction code yourself. Use @Bean for third-party classes you can't annotate (like ObjectMapper, RestTemplate).</div>
+
+      <div class="quiz-q" style="margin-top:16px">Q5. Why does @Transactional silently fail on a private method?</div>
+      <ul class="quiz-options" id="qa5">
+        <li onclick="answer('qa5',0)">A) Spring doesn't scan private methods</li>
+        <li onclick="answer('qa5',1)">B) The AOP proxy cannot override private methods, so the advice never runs</li>
+        <li onclick="answer('qa5',2)">C) @Transactional requires public visibility by contract</li>
+        <li onclick="answer('qa5',3)">D) It's a JVM limitation</li>
+      </ul>
+      <div class="quiz-explain" id="qa5-exp">✅ <strong>Answer: B.</strong> @Transactional works via AOP proxy (CGLIB subclass). A subclass cannot override private methods. The proxy exists but can't intercept the call — the advice (transaction management) is never applied. No error is thrown.</div>
+    </div>
+
+    <h3>Key Rules Cheat Sheet</h3>
+    <div class="highlight-box">
+      <strong>@Transactional works only when:</strong> (1) called from outside the class through the proxy, (2) on a public method, (3) class is not final. Any violation = silent no-op.
+    </div>
+    <div class="highlight-box">
+      <strong>Rollback rules:</strong> RuntimeException/Error → rollback. Checked Exception → commit (unless rollbackFor specified).
+    </div>
+    <div class="highlight-box">
+      <strong>DI exceptions:</strong> NoSuchBean = missing annotation or wrong package. NoUniqueBean = two beans same type, use @Qualifier or @Primary. BeanCurrentlyInCreation = circular dep, use @Lazy or redesign.
+    </div>
+    <div class="highlight-box">
+      <strong>Web layer:</strong> @PathVariable = URL segment. @RequestParam = query string. @RequestBody = JSON body. @Controller without @ResponseBody returns view name — add @ResponseBody or use @RestController.
+    </div>
+    <div class="highlight-box">
+      <strong>JPA:</strong> Access lazy relations inside @Transactional. Loop + lazy = N+1 queries → use JOIN FETCH. @Modifying required for UPDATE/DELETE @Query.
+    </div>
+    <div class="highlight-box">
+      <strong>Silent failures:</strong> @Transactional on private method. @Cacheable without @EnableCaching. @Async without @EnableAsync. @Scheduled without @EnableScheduling. @Bean in non-@Configuration class — no singleton guarantee.
+    </div>
+
+    <div class="callout green">
+      <div class="callout-icon">🎯</div>
+      <div class="callout-body"><strong>You're ready.</strong> You know the proxy model, all @Transactional rules, DI exceptions, web layer annotations, JPA lazy loading, and every silent failure mode. Come back here to ask me to test you — I'll throw debug scenarios, spot-the-bug questions, and I/O challenges at you.</div>
+    </div>
+  </div>
+
+  <div class="chapter-nav">
+    <button class="nav-btn nav-prev" onclick="show(7)">
+      <span class="nav-arrow">←</span>
+      <span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Concepts &amp; Tools</span></span>
+    </button>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+(function() {
+  var TOTAL = 9;
+  var current = 0;
+  var navLinks = document.querySelectorAll('.nav-link');
+  var sectionEls = document.querySelectorAll('.section');
+
+  window.show = function(n) {
+    sectionEls[current].classList.remove('active');
+    navLinks[current].classList.remove('active');
+    current = n;
+    sectionEls[current].classList.add('active');
+    navLinks[current].classList.add('active');
+    var prog = document.getElementById('prog');
+    if (prog) prog.style.width = (((current + 1) / TOTAL) * 100) + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.closeSidebar();
+  };
+
+  window.toggleSidebar = function() {
+    var sb = document.getElementById('sidebar');
+    var ov = document.getElementById('overlay');
+    if (sb) sb.classList.toggle('mobile-open');
+    if (ov) ov.classList.toggle('open');
+  };
+
+  window.closeSidebar = function() {
+    var sb = document.getElementById('sidebar');
+    var ov = document.getElementById('overlay');
+    if (sb) sb.classList.remove('mobile-open');
+    if (ov) ov.classList.remove('open');
+  };
+
+  window.answer = function(qid, idx) {
+    var correctMap = {
+      'q01': 1, 'q02': 1, 'q03': 1, 'q04': 1, 'q05': 2,
+      'q06': 1, 'q07': 2, 'q08': 2, 'q09': 1, 'q10': 1,
+      'q11': 1, 'q12': 2, 'q13': 1, 'q14': 1,
+      'qa1': 1, 'qa2': 1, 'qa3': 1, 'qa4': 1, 'qa5': 1
+    };
+    var correct = correctMap[qid];
+    var list = document.getElementById(qid);
+    if (!list) return;
+    var items = list.querySelectorAll('li');
+    items.forEach(function(li, i) {
+      li.style.pointerEvents = 'none';
+      if (i === correct) li.classList.add('correct');
+      else if (i === idx && idx !== correct) li.classList.add('wrong');
+    });
+    var exp = document.getElementById(qid + '-exp');
+    if (exp) exp.classList.add('show');
+  };
+
+  // Init progress bar
+  var prog = document.getElementById('prog');
+  if (prog) prog.style.width = ((1 / TOTAL) * 100) + '%';
+})();
+</script>
+</body>
+</html>

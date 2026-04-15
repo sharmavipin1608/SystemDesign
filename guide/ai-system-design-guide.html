@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Assisted System Design — Interview Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sidebar-w: 272px;
+  --accent:       #3d4fa5;
+  --accent-light: #dde0f7;
+  --accent-deep:  #2d3c8c;
+  --ink:          #1a1714;
+  --ink-mid:      #3d3830;
+  --ink-light:    #7a7068;
+  --paper:        #faf8f5;
+  --paper-warm:   #f3efe8;
+  --paper-mid:    #ece7de;
+  --rule:         #ddd8cf;
+  --code-bg:      #1a1c1a;
+  --code-fg:      #d4d4d4;
+  --green:        #2d7a4f;
+  --green-light:  #d8f0e4;
+  --blue:         #2a5fa5;
+  --blue-light:   #dce8f7;
+  --gold:         #b07d20;
+  --gold-light:   #f5edda;
+  --purple:       #5e3d8f;
+  --purple-light: #ebe0fa;
+  --red:          #b53535;
+  --red-light:    #fde8e8;
+  --max-w:        850px;
+  --r:            10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; }
+body { background: var(--paper); color: var(--ink-mid); font-family: 'DM Sans', sans-serif;
+       font-weight: 400; line-height: 1.72; letter-spacing: -0.008em; }
+
+/* === LAYOUT === */
+.layout { /* plain div — no flex, no grid */ }
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-w);
+  background: var(--ink); overflow-y: auto; z-index: 100;
+  display: flex; flex-direction: column; padding-bottom: 32px;
+}
+.main { margin-left: var(--sidebar-w); width: calc(100% - var(--sidebar-w)); }
+
+/* === PROGRESS === */
+.progress-bar { position: sticky; top: 0; z-index: 50; height: 3px; background: var(--rule); }
+#prog { height: 100%; width: 0%; background: var(--accent); transition: width .25s; }
+
+/* === SECTIONS === */
+.section { display: none; }
+.section.active { display: block; }
+
+/* === SIDEBAR === */
+.sb-logo { padding: 24px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px; }
+.sb-logo-title { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 600;
+                 color: var(--accent-light); letter-spacing: 0.1em; text-transform: uppercase; }
+.sb-logo-sub   { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: #7a7068; margin-top: 3px; }
+.nav-group { margin-bottom: 4px; }
+.nav-group-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-transform: uppercase;
+                   letter-spacing: 0.12em; color: #7a7068; padding: 12px 20px 4px; }
+.nav-link { display: block; padding: 8px 20px; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem; color: #c8c0b8; text-decoration: none; cursor: pointer;
+            white-space: normal; line-height: 1.45; letter-spacing: 0.01em;
+            border-left: 2px solid transparent; transition: color .15s, background .15s; }
+.nav-link:hover { color: #fff; background: rgba(255,255,255,0.06); }
+.nav-link.active { color: var(--accent-light); border-left-color: var(--accent-light);
+                   background: rgba(61,79,165,0.2); }
+.nav-num { opacity: 0.4; margin-right: 6px; }
+
+/* === HERO === */
+.hero { padding: 56px 32px 44px; border-bottom: 1px solid var(--rule); }
+.hero-inner { max-width: var(--max-w); margin: 0 auto; }
+.hero-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; text-transform: uppercase;
+                letter-spacing: 0.12em; margin-bottom: 14px; font-weight: 500; }
+.hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.2rem,4vw,3.2rem);
+           font-weight: 900; line-height: 1.08; letter-spacing: -0.02em; margin-bottom: 16px;
+           color: var(--ink); }
+.hero h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem,3vw,2.6rem);
+           font-weight: 900; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 16px;
+           color: var(--ink); }
+.hero-sub { font-size: 1.05rem; color: var(--ink-mid); max-width: 600px; line-height: 1.65; }
+
+.h-indigo { background: linear-gradient(135deg,#eef0fb 0%,#dde0f7 100%); }
+.h-indigo .hero-eyebrow { color: var(--accent); }
+.h-green  { background: linear-gradient(135deg,#edfbf3 0%,#d8f0e4 100%); }
+.h-green  .hero-eyebrow { color: var(--green); }
+.h-blue   { background: linear-gradient(135deg,#eef4fb 0%,#dce8f7 100%); }
+.h-blue   .hero-eyebrow { color: var(--blue); }
+.h-purple { background: linear-gradient(135deg,#f5f0fd 0%,#ebe0fa 100%); }
+.h-purple .hero-eyebrow { color: var(--purple); }
+.h-gold   { background: linear-gradient(135deg,#fdf9ee 0%,#f5edda 100%); }
+.h-gold   .hero-eyebrow { color: var(--gold); }
+.h-red    { background: linear-gradient(135deg,#fdf2f2 0%,#fde8e8 100%); }
+.h-red    .hero-eyebrow { color: var(--red); }
+.h-ink    { background: var(--ink); }
+.h-ink .hero-eyebrow { color: var(--accent-light); }
+.h-ink h2, .h-ink .hero-sub { color: #e8e4de; }
+
+/* === CONTENT === */
+.content { max-width: var(--max-w); margin: 0 auto; padding: 36px 32px 8px; }
+.content h3 { font-family: 'Playfair Display', serif; font-size: clamp(1.3rem,2.5vw,1.65rem);
+              font-weight: 700; color: var(--ink); margin: 36px 0 12px; line-height: 1.2; }
+.content h4 { font-size: 0.95rem; font-weight: 700; color: var(--ink); margin: 22px 0 8px; line-height: 1.4; }
+.content p  { margin-bottom: 14px; }
+.content ul, .content ol { padding-left: 20px; margin-bottom: 14px; }
+.content li { margin-bottom: 6px; }
+.content strong { color: var(--ink); font-weight: 600; }
+.content code { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+                background: var(--paper-warm); border: 1px solid var(--rule);
+                padding: 1px 6px; border-radius: 4px; color: var(--accent-deep); }
+.lead { font-size: 1.05rem; color: var(--ink-mid); border-left: 3px solid var(--accent);
+        padding-left: 16px; margin: 20px 0 28px; }
+
+/* === CARDS === */
+.cards { display: grid; gap: 16px; margin: 20px 0; }
+.cards.two   { grid-template-columns: repeat(2,1fr); }
+.cards.three { grid-template-columns: repeat(3,1fr); }
+@media(max-width:900px) { .cards.three { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:640px) { .cards.two, .cards.three { grid-template-columns:1fr; } }
+.card { background: var(--paper-warm); border: 1px solid var(--rule); border-radius: var(--r);
+        padding: 20px; display: flex; flex-direction: column; height: 100%; }
+.card-body { flex-grow: 1; }
+.card h4 { margin: 0 0 8px; font-size: 0.88rem; font-weight: 700; color: var(--ink); line-height: 1.3; }
+.card p  { font-size: 0.85rem; color: var(--ink-light); margin: 0; }
+
+/* === STEPS === */
+.steps { display: flex; flex-direction: column; gap: 14px; margin: 20px 0; }
+.step  { display: flex; gap: 16px; align-items: flex-start; background: var(--paper-warm);
+          border: 1px solid var(--rule); border-radius: var(--r); padding: 18px 20px; }
+.step-num { flex-shrink: 0; width: 34px; height: 34px; background: var(--ink); color: white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 600; }
+.step-content { flex: 1; }
+.step-content h4 { margin: 0 0 5px; font-size: 0.95rem; font-weight: 700; color: var(--ink); line-height: 1.4; }
+.step-content p  { font-size: 0.85rem; color: var(--ink-light); margin: 0 0 8px; }
+
+/* === SPLIT YOU/AI === */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+@media(max-width:680px) { .split { grid-template-columns:1fr; } }
+.split-you, .split-ai { border-radius: var(--r); padding: 16px 18px; }
+.split-you { background: var(--green-light); border: 1px solid #86efac; }
+.split-ai  { background: var(--blue-light);  border: 1px solid #93c5fd; }
+.split-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-transform: uppercase;
+             letter-spacing: 0.1em; font-weight: 600; margin-bottom: 10px; }
+.split-you .split-lbl { color: #065f46; }
+.split-ai  .split-lbl { color: #1e3a8a; }
+.split-you ul, .split-ai ul { padding-left: 16px; margin: 0; }
+.split-you li, .split-ai li { font-size: 0.85rem; margin-bottom: 5px; color: var(--ink-mid); }
+
+/* === BADGE === */
+.badge { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+         font-weight: 600; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;
+         letter-spacing: 0.08em; margin-right: 6px; vertical-align: middle; }
+.badge-you { background: var(--green-light); color: #065f46; border: 1px solid #6ee7b7; }
+.badge-ai  { background: var(--blue-light);  color: #1e3a8a; border: 1px solid #93c5fd; }
+
+/* === PROMPT BLOCKS === */
+.prompt-block { border-radius: var(--r); overflow: hidden; border: 1px solid #2a2c2a; margin: 24px 0; }
+.ph { background: #111613; padding: 10px 16px; display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.06); }
+.ptag { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 600;
+        text-transform: uppercase; letter-spacing: 0.1em; padding: 2px 9px; border-radius: 4px; }
+.ptag-p { background: rgba(61,79,165,0.35); color: #a5b4fc; }
+.ptag-o { background: rgba(45,122,79,0.35); color: #6ee7b7; }
+.ptitle { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #7a8a9a; }
+.pbody  { background: var(--code-bg); padding: 18px; font-family: 'JetBrains Mono', monospace;
+          font-size: 0.82rem; color: #c9d1d9; white-space: pre-wrap; line-height: 1.65; }
+.obody  { background: #0d1117; padding: 18px; font-family: 'JetBrains Mono', monospace;
+          font-size: 0.78rem; color: #79c0ff; white-space: pre-wrap; line-height: 1.65;
+          border-top: 1px solid rgba(255,255,255,0.05); }
+
+/* === CALLOUT === */
+.callout { display: flex; gap: 14px; border-radius: var(--r); padding: 18px 20px; margin: 22px 0; }
+.callout-body { flex: 1; }
+.ci { font-size: 1.2rem; flex-shrink: 0; margin-top: 3px; }
+.callout-body strong { display: block; font-size: 0.92rem; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+.callout-body p { font-size: 0.88rem; margin: 0; }
+.c-info    { background: var(--blue-light);   border-left: 3px solid var(--blue);   }
+.c-tip     { background: var(--gold-light);   border-left: 3px solid var(--gold);   }
+.c-warn    { background: #fff7ed;             border-left: 3px solid #ea580c;       }
+.c-success { background: var(--green-light);  border-left: 3px solid var(--green);  }
+
+/* === ANALOGY === */
+.analogy { background: #fef9ee; border: 1px solid #fcd34d; border-radius: var(--r);
+           padding: 18px 20px; margin: 22px 0; }
+.analogy-lbl { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-transform: uppercase;
+               letter-spacing: 0.1em; color: #92400e; margin-bottom: 6px; font-weight: 600; }
+.analogy p { color: #451a03; margin: 0; font-size: 0.92rem; }
+
+/* === TABLE === */
+.tbl-wrap { overflow-x: auto; margin: 18px 0; border-radius: var(--r); border: 1px solid var(--rule); }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th { background: var(--ink); color: #e8e4de; padding: 10px 14px; text-align: left;
+     font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 500; }
+td { padding: 10px 14px; border-bottom: 1px solid var(--rule); color: var(--ink-mid); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: var(--paper-warm); }
+
+/* === Q-CHIPS (bucket question labels) === */
+.q-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 26px; }
+.q-chip { background: var(--paper-mid); border: 1px solid var(--rule); border-radius: 20px;
+          padding: 4px 14px; font-size: 0.82rem; font-weight: 500; color: var(--ink-mid); }
+
+/* === SCENARIO CHIPS === */
+.sc-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 28px; }
+.sc { display: inline-flex; align-items: center; gap: 6px; border-radius: 20px;
+      padding: 5px 14px; text-decoration: none; font-size: 0.75rem; font-weight: 600;
+      font-family: 'JetBrains Mono', monospace; border: 1px solid transparent;
+      transition: opacity .15s; cursor: pointer; }
+.sc:hover { opacity: 0.75; }
+.sc-num { font-size: 0.62rem; opacity: 0.65; }
+.sc-blue   { background: var(--blue-light);   color: var(--accent-deep); border-color: #93c5fd; }
+.sc-green  { background: var(--green-light);  color: #065f46;            border-color: #6ee7b7; }
+.sc-gold   { background: var(--gold-light);   color: #78350f;            border-color: #fcd34d; }
+.sc-purple { background: var(--purple-light); color: #4c1d95;            border-color: #c4b5fd; }
+.sc-red    { background: var(--red-light);    color: #7f1d1d;            border-color: #fca5a5; }
+
+/* === STEER BLOCK === */
+.steer { background: #0f1114; border-radius: var(--r); padding: 20px; margin: 22px 0;
+         border: 1px solid #2a2c2a; }
+.steer-title { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: #fbbf24;
+               text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; }
+.steer-row { display: flex; gap: 0; margin-bottom: 12px; align-items: flex-start; }
+.steer-row:last-child { margin-bottom: 0; }
+.steer-when { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #f87171;
+              min-width: 120px; flex-shrink: 0; padding-top: 1px; }
+.steer-arrow { color: #4b5563; margin: 0 10px; flex-shrink: 0; padding-top: 1px; }
+.steer-say  { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #86efac;
+              line-height: 1.55; }
+
+/* === CODE BLOCK === */
+.code-block { background: var(--code-bg); color: var(--code-fg); border-radius: var(--r);
+              padding: 18px; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+              white-space: pre-wrap; line-height: 1.65; margin: 18px 0; overflow-x: auto; }
+
+/* === GLOSSARY === */
+.gloss { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin: 20px 0; }
+@media(max-width:680px) { .gloss { grid-template-columns:1fr; } }
+.gloss-item { background: var(--paper-warm); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; }
+.gloss-item h4 { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; font-weight: 600;
+                 color: var(--ink); margin: 0 0 4px; }
+.gloss-item p  { font-size: 0.82rem; color: var(--ink-light); margin: 0; }
+
+/* === QA === */
+.qa { border: 1px solid var(--rule); border-radius: var(--r); overflow: hidden; margin-bottom: 16px; }
+.qa-q { background: var(--ink); color: #e8e4de; padding: 14px 20px; font-weight: 600; font-size: 0.92rem; }
+.qa-a { background: var(--paper-warm); padding: 16px 20px; font-size: 0.88rem; }
+
+/* === CHAPTER NAV === */
+.chapter-nav { display: flex; justify-content: space-between; align-items: stretch; gap: 12px;
+               padding: 24px 32px 44px; max-width: var(--max-w); margin: 0 auto; }
+.nav-btn { display: flex; align-items: center; gap: 12px; flex: 1; background: var(--paper-warm);
+           border: 1px solid var(--rule); border-radius: 8px; padding: 14px 18px; cursor: pointer;
+           font-family: inherit; text-align: left; transition: background .15s, border-color .15s; }
+.nav-btn:hover { background: var(--accent-light); border-color: var(--accent); }
+.nav-next { justify-content: flex-end; text-align: right; }
+.nav-arrow { font-size: 1.2rem; color: var(--accent); flex-shrink: 0; }
+.nav-hint  { display: block; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace;
+             color: var(--ink-light); text-transform: uppercase; letter-spacing: .08em; }
+.nav-title { display: block; font-size: 0.88rem; font-weight: 600; color: var(--ink-mid); }
+
+/* === DIVIDER === */
+hr.div { border: none; border-top: 1px solid var(--rule); margin: 32px 0; }
+
+/* === MOBILE === */
+.mob-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 52px;
+              background: var(--ink); border-bottom: 1px solid rgba(255,255,255,0.1);
+              align-items: center; padding: 0 16px; z-index: 110; gap: 12px; }
+.mob-header .hbg { background: none; border: none; cursor: pointer; color: #c8c0b8;
+                   font-size: 1.3rem; padding: 4px; }
+.mob-header .mtitle { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+                      color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.1em; }
+.sb-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 90; }
+@media(max-width:900px) {
+  .mob-header { display: flex; }
+  .sidebar { transform: translateX(-100%); transition: transform .3s; top: 52px; }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .sb-overlay.open { display: block; }
+  .main { margin-left: 0; width: 100%; padding-top: 52px; }
+}
+</style>
+</head>
+<body>
+
+<header class="mob-header">
+  <button class="hbg" onclick="toggleSidebar()">☰</button>
+  <span class="mtitle">AI System Design</span>
+</header>
+<div class="sb-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-title">AI System Design</div>
+    <div class="sb-logo-sub">Interview Mastery Guide</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Start Here</div>
+    <a class="nav-link active" onclick="show(0)"><span class="nav-num">00</span>Introduction</a>
+    <a class="nav-link" onclick="show(1)"><span class="nav-num">01</span>Master Template</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Buckets</div>
+    <a class="nav-link" onclick="show(2)"><span class="nav-num">02</span>Social Media &amp; Feed</a>
+    <a class="nav-link" onclick="show(3)"><span class="nav-num">03</span>Messaging &amp; Real-time</a>
+    <a class="nav-link" onclick="show(4)"><span class="nav-num">04</span>Infrastructure Primitives</a>
+    <a class="nav-link" onclick="show(5)"><span class="nav-num">05</span>Collaborative &amp; Dev Tools</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Reference</div>
+    <a class="nav-link" onclick="show(6)"><span class="nav-num">06</span>Concepts &amp; Tools</a>
+    <a class="nav-link" onclick="show(7)"><span class="nav-num">07</span>Interview Prep</a>
+  </div>
+</aside>
+
+<main class="main">
+<div class="progress-bar"><div id="prog"></div></div>
+
+<!-- ====================================================== SECTION 0: INTRO -->
+<div class="section active" id="s0">
+<div class="hero h-indigo">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Interview Format Guide</div>
+    <h1>AI-Assisted<br>System Design</h1>
+    <p class="hero-sub">A new interview format where <strong>your depth drives the AI</strong> — and the quality of your prompts signals your engineering seniority.</p>
+  </div>
+</div>
+
+<div class="content">
+<h3>What is this format?</h3>
+<p class="lead">Traditional system design expects you to narrate and whiteboard in real time. The AI-assisted variant changes the medium: you design alongside an AI tool — using it to generate artifacts like API specs, DDL schemas, sequence diagrams, and failure tables — while <em>you</em> supply the architectural judgment that drives those artifacts.</p>
+<p>The interviewer evaluates two axes simultaneously:</p>
+<div class="cards two">
+  <div class="card"><div class="card-body">
+    <h4>📐 System Design Depth</h4>
+    <p>Do you understand trade-offs? Can you make the right choices about architecture, data stores, consistency models, and scale — without relying on AI to decide for you?</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>🤖 AI Collaboration Skill</h4>
+    <p>Do your prompts reflect domain expertise? Do you course-correct when AI goes wrong? Do you use AI to accelerate rather than substitute for your thinking?</p>
+  </div></div>
+</div>
+
+<div class="analogy">
+  <div class="analogy-lbl">Mental Model</div>
+  <p>Think of AI as a fast, capable junior engineer who is great at generating artifacts but lacks architectural judgment. You are the Staff Engineer who scopes the problem, makes the architectural calls, names the components, and reviews what the junior produces. A great Staff Engineer doesn't say "design me a Twitter" — they say "given our 500M DAU and 10:1 read/write ratio, compare fan-out-on-write vs fan-out-on-read for the home timeline service, specifically for accounts with 50M+ followers."</p>
+</div>
+
+<h3>The Two-Axis Evaluation</h3>
+<div class="tbl-wrap"><table>
+  <thead><tr><th>Axis</th><th>Weak Candidate</th><th>Strong Candidate</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Design Depth</strong></td><td>Vague scope, no numbers, generic tech choices ("I'd use a database")</td><td>Quantified NFRs, justified tech stack, explicit trade-offs with reasons</td></tr>
+    <tr><td><strong>Prompt Quality</strong></td><td>"Design a URL shortener for me"</td><td>"Given 10B redirects/day with 100:1 read/write, compare Base62 vs UUID short IDs — include collision rate analysis and Cassandra index performance"</td></tr>
+    <tr><td><strong>AI Steering</strong></td><td>Accepts first AI response uncritically; doesn't notice wrong assumptions</td><td>Redirects when AI picks wrong DB, asks for alternatives, stress-tests the output</td></tr>
+    <tr><td><strong>Artifact Quality</strong></td><td>Generic endpoints, no pagination, no error handling</td><td>Idempotency keys, cursor pagination, rate-limit headers, partial failure modes</td></tr>
+  </tbody>
+</table></div>
+
+<h3>Three AI Interaction Modes</h3>
+<div class="cards three">
+  <div class="card"><div class="card-body">
+    <h4>🏗️ Generate</h4>
+    <p>You define the decision; AI produces the artifact. "I'm using Base62 + Cassandra. Generate the DDL and the redirect API spec with rate-limiting headers."</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>⚖️ Compare</h4>
+    <p>Ask AI to compare approaches within constraints you set. "Compare OT vs CRDT for a doc editor with 10M concurrent documents and offline support — include server coordination requirements."</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>🔥 Stress-Test</h4>
+    <p>Use AI to attack your own design. "Given the architecture we just designed, enumerate the top 5 bottlenecks and single points of failure, then suggest mitigations for each."</p>
+  </div></div>
+</div>
+
+<div class="callout c-tip">
+  <div class="ci">💡</div>
+  <div class="callout-body">
+    <strong>Universal rule: steer before you generate</strong>
+    <p>Before asking AI to generate any artifact, prime it with context: scale numbers, constraints, and the decision you've already made. "Generate the API for my URL shortener" → mediocre output. "I'm using Base62 encoding, Cassandra for the mapping store, Redis with 24h TTL for redirect cache. Generate the REST API spec with idempotency handling and rate-limiting headers" → something worth showing an interviewer.</p>
+  </div>
+</div>
+</div>
+
+<div class="chapter-nav">
+  <div></div>
+  <button class="nav-btn nav-next" onclick="show(1)">
+    <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Master Template</span></span>
+    <span class="nav-arrow">→</span>
+  </button>
+</div>
+</div>
+
+<!-- ====================================================== SECTION 1: MASTER TEMPLATE -->
+<div class="section" id="s1">
+<div class="hero h-indigo">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Chapter 01</div>
+    <h2>The Master Template</h2>
+    <p class="hero-sub">An 8-step framework applicable to any system design question — with a clear YOU vs AI split at every stage.</p>
+  </div>
+</div>
+
+<div class="content">
+<p class="lead">The master template is your repeatable playbook. Every bucket chapter in this guide specializes it for a domain. Internalize the 8 steps and the YOU/AI split — then in the interview, your job is to execute each step while directing AI for the artifact-heavy parts.</p>
+
+<h3>The 8 Steps</h3>
+<div class="steps">
+  <div class="step">
+    <div class="step-num">01</div>
+    <div class="step-content">
+      <h4>Clarify Scope &amp; NFRs <span class="badge badge-you">YOU</span></h4>
+      <p>Before touching any technology, nail the functional and non-functional requirements. Ask: core features (in scope / out of scope), DAU, read/write ratio, latency SLA, consistency requirements, geo-distribution needs, any regulatory constraints. Interviewers reward candidates who don't jump to solutions.</p>
+      <p><em>What AI helps with:</em> Once you've stated assumptions, ask AI to "confirm my scope assumptions and flag anything I may have missed for a system of this type."</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">02</div>
+    <div class="step-content">
+      <h4>Back-of-Envelope Math <span class="badge badge-you">YOU</span><span class="badge badge-ai">AI calculates</span></h4>
+      <p>You provide: DAU assumption, reads/writes per user per day. AI generates: QPS (average and peak), storage estimates (per record × retention), cache sizing (80/20 rule on hot reads), bandwidth. Then YOU state the design implication — "write-heavy, so optimize write throughput over read latency."</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">03</div>
+    <div class="step-content">
+      <h4>Architecture Decision <span class="badge badge-you">YOU</span></h4>
+      <p>Monolith vs microservices vs serverless — YOU decide and justify. State your reasoning explicitly: "I'm going microservices because the feed service, user service, and media service have different scaling profiles and independent deployment needs. A monolith would create a deployment bottleneck." Do not ask AI to make this decision — it reveals your judgment (or lack of it).</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">04</div>
+    <div class="step-content">
+      <h4>High-Level Component Diagram <span class="badge badge-you">YOU name</span><span class="badge badge-ai">AI generates diagram</span></h4>
+      <p>YOU name every box: "I need a CDN, an API Gateway, a Feed Service, a User Service, a Timeline Cache (Redis), a Fanout Worker (Kafka consumer), and a Post Store (Cassandra)." Then ask AI to generate the component diagram with data flow arrows, and to describe what protocol connects each box and why.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">05</div>
+    <div class="step-content">
+      <h4>API Design <span class="badge badge-you">YOU name endpoints</span><span class="badge badge-ai">AI generates spec</span></h4>
+      <p>YOU list the endpoint names and the key fields that matter. "I need: POST /posts (create post with media), GET /feed/{userId} (paginated home timeline), POST /follow/{userId} (follow relationship). Cursor-based pagination on the feed." Then ask AI to generate full request/response schemas including auth headers, rate-limit headers, error responses, and idempotency keys for write operations.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">06</div>
+    <div class="step-content">
+      <h4>Data Models <span class="badge badge-you">YOU define tables &amp; key columns</span><span class="badge badge-ai">AI writes DDL</span></h4>
+      <p>YOU name the entities, their primary keys, partition keys, and any important columns with types. "I need a posts table partitioned by user_id, clustered by created_at DESC, with columns: post_id UUID, user_id UUID, content TEXT, media_urls LIST, like_count COUNTER." Then ask AI to generate the full Cassandra CQL or SQL CREATE statements with indexes, TTLs, and read/write access patterns documented in comments.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">07</div>
+    <div class="step-content">
+      <h4>Sequence Diagram for Critical Flows <span class="badge badge-you">YOU describe the flow</span><span class="badge badge-ai">AI generates diagram</span></h4>
+      <p>Pick the 1–2 hardest flows (e.g., "user creates a post" and "user loads their home timeline"). YOU describe the sequence in plain English — which services are involved, in what order, and where async happens. Ask AI to generate the sequence diagram in Mermaid or text notation, then review it for correctness.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">08</div>
+    <div class="step-content">
+      <h4>Failure Modes &amp; Observability <span class="badge badge-ai">AI enumerates</span><span class="badge badge-you">YOU prioritize</span></h4>
+      <p>Ask AI: "Enumerate the top failure modes for each tier of the system we designed, in a table: Component | Failure Mode | Detection | Remedy." Then YOU add: which are P0 vs P1, your SLA targets (RPO/RTO), and the key observability metrics (p99 latency, cache hit rate, queue depth, error rate) — because knowing what to monitor signals you've run production systems.</p>
+    </div>
+  </div>
+</div>
+
+<h3>The Prompt Quality Ladder</h3>
+<p>The quality of your prompts is a direct proxy for your domain depth. Here's the same request at three quality levels:</p>
+<div class="tbl-wrap"><table>
+  <thead><tr><th>Level</th><th>Prompt</th><th>Signal to Interviewer</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Novice</strong></td><td>"Design a feed for Twitter"</td><td>No depth — could be anyone</td></tr>
+    <tr><td><strong>Mid</strong></td><td>"Design a Twitter home timeline service that handles 500M DAU"</td><td>Knows scale matters, but not the hard problems</td></tr>
+    <tr><td><strong>Senior+</strong></td><td>"Given 500M DAU, 1M celebrity accounts with 50M+ followers, and a target feed generation latency of &lt;200ms: compare fan-out-on-write vs fan-out-on-read vs hybrid, including hot-key handling for celebrity accounts and storage overhead per strategy."</td><td>Knows the specific hard problem (celebrity fan-out), quantifies the constraint, asks for a structured comparison</td></tr>
+  </tbody>
+</table></div>
+
+<h3>Steering &amp; Correcting AI</h3>
+<div class="steer">
+  <div class="steer-title">🔧 When AI Goes Wrong — What to Say</div>
+  <div class="steer-row">
+    <span class="steer-when">Wrong DB choice</span>
+    <span class="steer-arrow">→</span>
+    <span class="steer-say">"That assumes PostgreSQL, but given our write QPS of 50K and need for linear horizontal scale, revise the schema for Cassandra. Use user_id as partition key and created_at as clustering key."</span>
+  </div>
+  <div class="steer-row">
+    <span class="steer-when">Over-engineered</span>
+    <span class="steer-arrow">→</span>
+    <span class="steer-say">"That's too complex for our MVP. Assume we start with 1M DAU. Simplify to a single-region deployment and flag which components to add when we reach 100M DAU."</span>
+  </div>
+  <div class="steer-row">
+    <span class="steer-when">Generic API</span>
+    <span class="steer-arrow">→</span>
+    <span class="steer-say">"The API spec is too generic. Add: cursor-based pagination using last_post_id, X-RateLimit-Remaining and Retry-After headers, idempotency keys on the POST, and 429/503 error response bodies."</span>
+  </div>
+  <div class="steer-row">
+    <span class="steer-when">Missing failure modes</span>
+    <span class="steer-arrow">→</span>
+    <span class="steer-say">"The failure table is missing cache stampede on cold start and Kafka consumer lag. Add both with detection method (Prometheus metric name) and specific remediation steps."</span>
+  </div>
+  <div class="steer-row">
+    <span class="steer-when">Stress-test prompt</span>
+    <span class="steer-arrow">→</span>
+    <span class="steer-say">"Now act as a skeptical interviewer. Given the architecture we just designed, what are the top 3 bottlenecks that would appear first under 10× load spike? Propose a mitigation for each."</span>
+  </div>
+</div>
+
+<h3>Quick Reference: YOU vs AI Split</h3>
+<div class="tbl-wrap"><table>
+  <thead><tr><th>Step</th><th>YOU Provide</th><th>AI Generates</th></tr></thead>
+  <tbody>
+    <tr><td>Scope &amp; NFRs</td><td>All decisions — features in/out, DAU, SLAs</td><td>Prompt: confirm assumptions, flag gaps</td></tr>
+    <tr><td>Back-of-envelope</td><td>DAU, read/write ratios, retention</td><td>QPS, storage size, cache size, bandwidth table</td></tr>
+    <tr><td>Architecture choice</td><td>All — monolith/microservices/serverless + reason</td><td>N/A — do not delegate this</td></tr>
+    <tr><td>Component diagram</td><td>Name every box and protocol</td><td>Formatted diagram with data-flow arrows</td></tr>
+    <tr><td>API design</td><td>Endpoint names, key fields, pagination strategy</td><td>Full request/response schemas, headers, errors</td></tr>
+    <tr><td>Data models</td><td>Entity names, PKs, partition/sort keys, key columns</td><td>Full DDL with indexes, TTLs, access pattern comments</td></tr>
+    <tr><td>Sequence diagrams</td><td>Plain-English description of flow and actors</td><td>Mermaid/text sequence diagram</td></tr>
+    <tr><td>Failure modes</td><td>Priority tiers, SLA targets, observability metrics</td><td>Component-level failure table with detection/remedy</td></tr>
+  </tbody>
+</table></div>
+
+<div class="callout c-success">
+  <div class="ci">✅</div>
+  <div class="callout-body">
+    <strong>The most impressive move in this format</strong>
+    <p>After generating artifacts, voluntarily stress-test your own design by prompting: "Given everything we designed, what would break first at 10× traffic? What are the top 3 single points of failure?" Then respond to the output by either accepting the critiques or defending your choices. This demonstrates production mindset and self-awareness — traits that distinguish Staff engineers from Senior engineers.</p>
+  </div>
+</div>
+</div>
+
+<div class="chapter-nav">
+  <button class="nav-btn nav-prev" onclick="show(0)">
+    <span class="nav-arrow">←</span>
+    <span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Introduction</span></span>
+  </button>
+  <button class="nav-btn nav-next" onclick="show(2)">
+    <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Social Media &amp; Feed</span></span>
+    <span class="nav-arrow">→</span>
+  </button>
+</div>
+</div>
+
+<!-- ====================================================== SECTION 2: SOCIAL MEDIA -->
+<div class="section" id="s2">
+<div class="hero h-blue">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Bucket 01 — Chapter 02</div>
+    <h2>Social Media &amp; Feed Systems</h2>
+    <p class="hero-sub">The fan-out problem, social graphs at scale, and ranking — the hardest read-path problems in distributed systems.</p>
+  </div>
+</div>
+
+<div class="content">
+<h3>Questions in This Bucket</h3>
+<div class="q-chips">
+  <span class="q-chip">Design Twitter / X Home Timeline</span>
+  <span class="q-chip">Design Instagram Feed</span>
+  <span class="q-chip">Design Facebook News Feed</span>
+  <span class="q-chip">Design TikTok For You Page</span>
+  <span class="q-chip">Design a Social Graph Service</span>
+  <span class="q-chip">Design YouTube Subscriptions Feed</span>
+</div>
+
+<p class="lead">The core challenge in every feed system is the <strong>fan-out problem</strong>: when a user posts, how do you efficiently deliver that post to potentially millions of followers? Get this decision right and the rest of the design follows naturally.</p>
+
+<h3>What Makes This Bucket Unique</h3>
+<div class="cards two">
+  <div class="card"><div class="card-body">
+    <h4>🌟 Celebrity Accounts (Hot Keys)</h4>
+    <p>Accounts with 50M+ followers create extreme write amplification on fan-out-on-write. A single post from @BarackObama would trigger 100M+ cache writes. This breaks naive approaches and forces a hybrid strategy.</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>🎯 Feed Ranking</h4>
+    <p>Chronological feeds are easy. Relevance-ranked feeds (Instagram, TikTok) require real-time scoring using engagement signals, user affinity, and content preferences — adding an ML inference layer to the hot path.</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>📹 Media Pipeline</h4>
+    <p>Video posts require async transcoding into multiple resolutions (360p/720p/1080p/4K) before they can be served. The media pipeline is a separate async system with its own failure modes.</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>📊 Social Graph Storage</h4>
+    <p>Storing who-follows-who at scale: adjacency list in Cassandra (scalable writes) vs graph DB like Neo4j (rich traversal) vs hybrid. The choice affects follow recommendations and feed generation.</p>
+  </div></div>
+</div>
+
+<h3>What YOU Must Define</h3>
+<div class="split">
+  <div class="split-you">
+    <div class="split-lbl">✅ You Provide</div>
+    <ul>
+      <li>DAU and read/write ratio assumption</li>
+      <li>Fan-out strategy: write / read / hybrid</li>
+      <li>Celebrity threshold (e.g., >1M followers = hybrid)</li>
+      <li>Ranking approach: chronological vs ML-ranked</li>
+      <li>Graph storage choice and justification</li>
+      <li>Media support scope (images / short video / long video)</li>
+      <li>Feed staleness tolerance (real-time vs eventual)</li>
+    </ul>
+  </div>
+  <div class="split-ai">
+    <div class="split-lbl">🤖 AI Generates</div>
+    <ul>
+      <li>QPS + storage math given your DAU inputs</li>
+      <li>Fan-out comparison table with trade-offs</li>
+      <li>Component diagram with Kafka topology</li>
+      <li>Full API spec (POST /posts, GET /feed, POST /follow)</li>
+      <li>Cassandra DDL for posts + timeline tables</li>
+      <li>Sequence diagram for post creation flow</li>
+      <li>Failure modes table per service tier</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Signature Prompts</h3>
+<div class="sc-nav">
+  <a class="sc sc-blue"  href="#sp2-1"><span class="sc-num">01</span> Fan-out Comparison</a>
+  <a class="sc sc-green" href="#sp2-2"><span class="sc-num">02</span> Feed Ranking Service</a>
+  <a class="sc sc-gold"  href="#sp2-3"><span class="sc-num">03</span> Celebrity Hot-Key Strategy</a>
+  <a class="sc sc-purple" href="#sp2-4"><span class="sc-num">04</span> Media Transcoding Pipeline</a>
+</div>
+
+<div id="sp2-1" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">01 — Fan-out Strategy Comparison</span></div>
+  <div class="pbody">You are a senior distributed systems engineer. Given:
+- 500M DAU, each user follows an average of 200 accounts
+- 1M "celebrity" accounts with 1M+ followers; top accounts have 100M+ followers
+- Write QPS (new posts): ~5,800/sec average, 17,400/sec peak (3× multiplier)
+- Read QPS (feed loads): ~580,000/sec average
+- Target feed generation latency: &lt;200ms p99
+
+Compare fan-out-on-write, fan-out-on-read, and hybrid for the home timeline service.
+For each strategy include:
+1. How a post is stored and delivered to followers
+2. Storage overhead estimate (using numbers above)
+3. Read latency profile
+4. Write amplification factor for celebrity accounts
+5. The specific failure mode unique to this strategy
+
+End with a recommendation and the celebrity threshold you would use for the hybrid split.</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">Comparison table + hybrid recommendation</span></div>
+  <div class="obody">| Strategy         | Storage Overhead       | Read Latency | Write Amplification | Key Failure Mode         |
+|-----------------|------------------------|--------------|---------------------|--------------------------|
+| Fan-out-on-write | High — pre-computed    | ~5ms (cache) | 100M writes/post    | Celebrity writes destroy cache cluster |
+| Fan-out-on-read  | Low — single post store | ~200–800ms   | 1 write/post        | Read path too slow at scale |
+| Hybrid           | Medium                 | ~10–30ms     | Only for non-celeb  | Inconsistent feed for mutual follows |
+
+RECOMMENDATION: Hybrid strategy
+- Accounts with ≤500K followers: fan-out-on-write → pre-populate follower timelines in Redis
+- Accounts with >500K followers: fan-out-on-read → merge at read time from Post Store
+
+Hybrid read-merge algorithm at GET /feed:
+1. Fetch pre-computed timeline from Redis (covers non-celebrity posts)
+2. Query celebrity accounts the user follows → get their latest N posts from Post Store
+3. Merge + rank, return top K results
+
+Write flow for non-celebrity post:
+POST → Kafka topic "new-posts" → Fanout Worker (reads social graph, writes to each follower's timeline key in Redis)
+Timeline key: timeline:{userId}, sorted set scored by post timestamp, capped at 800 entries
+
+Celebrity detection: background job updates a Redis SET "celebrity-accounts" for accounts crossing 500K followers threshold.</div>
+</div>
+
+<div id="sp2-2" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">02 — Feed Ranking Service</span></div>
+  <div class="pbody">I've chosen the hybrid fan-out approach: fan-out-on-write for accounts ≤500K followers, fan-out-on-read for celebrities. Now design the Feed Ranking Service.
+
+My ranking signals and weights:
+- Recency score: 40% (decay function: score = 1/(1 + hours_since_post * 0.1))
+- Engagement score: 30% (likes + 2×comments + 3×shares, normalized 0-1)
+- User affinity score: 20% (interaction frequency with this author in last 30 days)
+- Content type preference: 10% (user's historical engagement with video vs image vs text)
+
+Design the FeedRankingService including:
+1. Input data sources and how each signal is fetched
+2. The scoring pipeline (can be a sequence of steps)
+3. Output format with fields
+4. Caching strategy for ranked feeds (including invalidation trigger)
+5. Fallback if the ranking service is slow/unavailable</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">Ranking service component design</span></div>
+  <div class="obody">FEED RANKING SERVICE — COMPONENT DESIGN
+
+Input Data Sources:
+- merged_posts: List[PostCandidate] — from hybrid fan-out (Redis timeline + celebrity posts)
+- engagement_scores: Map[post_id → score] — from Engagement Score Cache (Redis, 5-min TTL)
+- affinity_scores: Map[user_id → float] — from User Affinity Service (pre-computed, 1hr TTL)
+- content_prefs: Map[ContentType → weight] — from User Preference Store (updated nightly)
+
+Scoring Pipeline (per post candidate):
+  recency   = 1 / (1 + hours_since_post * 0.1)
+  engage    = normalize(likes + 2*comments + 3*shares, max_observed=10000)
+  affinity  = affinity_scores.get(post.author_id, default=0.1)
+  content_w = content_prefs.get(post.type, default=0.25)
+  final_score = 0.4*recency + 0.3*engage + 0.2*affinity + 0.1*content_w
+
+Output: RankedFeed { user_id, generated_at, posts: [{ post_id, score, rank, content }], cursor }
+
+Caching Strategy:
+  Key: ranked_feed:{userId}:{page_cursor}
+  TTL: 60 seconds (balance freshness vs compute cost)
+  Invalidation trigger: Kafka event "new-post-from-followed-account" → delete ranked_feed:{userId}:*
+  Pre-warming: Background job pre-ranks feeds for top 10M DAU users every 30s
+
+Fallback (ranking service unavailable):
+  → Serve pre-computed timeline from Redis without ranking (chronological order)
+  → Circuit breaker threshold: 3 failures in 10s → open circuit → serve fallback for 30s</div>
+</div>
+
+<div id="sp2-3" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">03 — Celebrity Hot-Key Mitigation</span></div>
+  <div class="pbody">In my feed system, accounts with 100M+ followers posting simultaneously create hot keys in Redis — a single post could trigger 100M+ cache read requests to the same key within seconds.
+
+Design a hot-key mitigation strategy for celebrity post distribution. Include:
+1. Detection: how to identify a hot key in real time (metric + threshold)
+2. Local cache tier: L1 cache on each app server to absorb hot-key reads
+3. Key sharding: how to replicate a single hot key across multiple Redis shards
+4. Request coalescing: preventing thundering herd when cache misses occur
+5. Monitoring: specific Prometheus metrics to track hot-key health
+
+Context: I have 200 app server instances, Redis Cluster with 6 shards.</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">Hot-key mitigation architecture</span></div>
+  <div class="obody">HOT-KEY MITIGATION STRATEGY
+
+1. DETECTION
+   Metric: redis_key_hit_rate per key, sampled every 10s via Redis OBJECT FREQ
+   Threshold: >10,000 reads/sec on a single key → classify as hot key
+   Action: Publish "hot-key-detected:{key}" event to Kafka topic
+
+2. LOCAL CACHE TIER (L1 on app servers)
+   Each app server maintains a local LRU cache (Caffeine, 500MB heap)
+   TTL: 5 seconds (short — celebrity posts still update in near-real-time)
+   On hot-key event: pre-warm L1 cache with the identified key across all 200 instances
+   via broadcast to internal cache-invalidation topic
+   
+   Benefit: absorbs ~90% of reads locally, never hitting Redis for those 5s windows
+
+3. KEY SHARDING (Redis-side replication)
+   Instead of celebrity_post:{postId}, create N replica keys:
+   celebrity_post:{postId}:shard_{hash(requestId) % 10}  (10 shards)
+   Write: fan-out post to all 10 shard keys
+   Read: select shard = hash(userId) % 10 → deterministic distribution
+   
+4. REQUEST COALESCING (thundering herd prevention)
+   On cache miss: acquire distributed mutex lock (Redis SET NX, 500ms TTL)
+   First request to acquire lock: fetch from Post Store → populate cache → release lock
+   Subsequent requests on same key during lock: wait up to 300ms then retry
+   If timeout: read directly from Post Store (fallback, prevents deadlock)
+
+5. PROMETHEUS METRICS
+   - redis_hot_key_read_rate{key=...} — reads/sec per detected hot key
+   - l1_cache_hit_ratio{server=...} — local cache effectiveness per app server
+   - thundering_herd_coalesce_count — number of requests coalesced per 10s window
+   Alert: l1_cache_hit_ratio &lt; 0.7 for 60s → PagerDuty P2</div>
+</div>
+
+<div id="sp2-4" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">04 — Media Transcoding Pipeline</span></div>
+  <div class="pbody">My social feed supports video posts up to 60 seconds at up to 4K resolution. Design the media ingestion and transcoding pipeline on GCP.
+
+Requirements:
+- Support upload sizes up to 500MB (pre-transcoding)
+- Output: 360p, 720p, 1080p renditions + thumbnail at 0s, 10s, 30s
+- Max time from upload complete to available-to-serve: 2 minutes
+- 10,000 video uploads/hour at peak
+
+Design:
+1. Upload flow (how client uploads the raw file)
+2. Trigger mechanism (how transcoding starts)
+3. Transcoding pipeline stages
+4. CDN integration for serving renditions
+5. Failure handling for a failed transcode job</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">GCP transcoding pipeline architecture</span></div>
+  <div class="obody">MEDIA TRANSCODING PIPELINE — GCP
+
+1. UPLOAD FLOW
+   Client → POST /media/upload → Media API (returns signed GCS URL + upload_id)
+   Client → PUT [signed GCS URL] (direct upload to GCS — bypasses app servers)
+   GCS bucket: raw-uploads-{region} (lifecycle: delete after 48h post-processing)
+   On upload complete: GCS triggers Pub/Sub message → TranscodeQueue topic
+
+2. TRIGGER MECHANISM
+   GCS object finalize event → Cloud Pub/Sub → Cloud Run workers (pull subscription)
+   Message payload: { upload_id, gcs_path, user_id, post_id, requested_renditions: [...] }
+   Worker pool: auto-scaled Cloud Run jobs, max 500 concurrent instances
+
+3. TRANSCODING STAGES (per video, parallelized)
+   Stage 1 — Validate: check codec (accept H.264/H.265/VP9), duration ≤60s, file not corrupt
+   Stage 2 — Segment: split into 10s segments for parallel transcoding
+   Stage 3 — Transcode (parallel fan-out):
+     → Rendition 360p:  Cloud Transcoder API job (FFmpeg preset: libx264, 800kbps)
+     → Rendition 720p:  Cloud Transcoder API job (FFmpeg preset: libx264, 2500kbps)
+     → Rendition 1080p: Cloud Transcoder API job (FFmpeg preset: libx264, 5000kbps)
+   Stage 4 — Thumbnail: extract frames at 0s, 10s, 30s → JPEG → GCS
+   Stage 5 — Manifest: generate HLS/DASH manifest → output-videos/{post_id}/manifest.m3u8
+   Stage 6 — Notify: publish "transcode-complete" event → update post status to PUBLISHED
+
+4. CDN INTEGRATION
+   Outputs stored: gs://cdn-videos/{post_id}/{rendition}/{segment}
+   CDN: Cloud CDN with origin = GCS bucket (signed URLs for private content)
+   Cache-Control: max-age=31536000, immutable (renditions never change)
+   Manifest: max-age=300 (allows rendition additions later)
+
+5. FAILURE HANDLING
+   Dead Letter Queue: failed Pub/Sub messages after 3 retries → transcode-dlq topic
+   Retry policy: exponential backoff, 30s / 2min / 10min
+   Partial failure: if 1080p fails, mark 360p+720p as available → serve lower renditions
+   Alert: transcode_failure_rate > 1% over 5min → PagerDuty P1
+   Idempotency: transcode job keyed by upload_id — safe to retry without duplicate processing</div>
+</div>
+
+<h3>Steer the AI</h3>
+<div class="steer">
+  <div class="steer-title">🔧 Social Media — Specific AI Corrections</div>
+  <div class="steer-row">
+    <span class="steer-when">AI uses SQL for posts</span>
+    <span class="steer-arrow">→</span>
+    <span class="steer-say">"Posts are write-heavy at 50K/sec peak. Revise to Cassandra with posts partitioned by author_id, clustered by created_at DESC. Add a separate timeline table (partition: follower_id) for pre-computed feeds."</span>
+  </div>
+  <div class="steer-row">
+    <span class="steer-when">Missing celebrity handling</span>
+    <span class="steer-arrow">→</span>
+    <span class="steer-say">"Your design doesn't address accounts with 100M+ followers. Add the hybrid fan-out split: accounts above 500K followers use fan-out-on-read with a celebrity-accounts Redis SET for O(1) classification."</span>
+  </div>
+  <div class="steer-row">
+    <span class="steer-when">Offset pagination on feed</span>
+    <span class="steer-arrow">→</span>
+    <span class="steer-say">"Replace offset pagination with cursor-based pagination using last_post_id + last_score as the composite cursor. Offset pagination causes O(N) scans and produces duplicate/missing items as new posts arrive."</span>
+  </div>
+</div>
+</div>
+
+<div class="chapter-nav">
+  <button class="nav-btn nav-prev" onclick="show(1)">
+    <span class="nav-arrow">←</span>
+    <span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Master Template</span></span>
+  </button>
+  <button class="nav-btn nav-next" onclick="show(3)">
+    <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Messaging &amp; Real-time</span></span>
+    <span class="nav-arrow">→</span>
+  </button>
+</div>
+</div>
+
+<!-- ====================================================== SECTION 3: MESSAGING -->
+<div class="section" id="s3">
+<div class="hero h-green">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Bucket 02 — Chapter 03</div>
+    <h2>Messaging &amp; Real-time Communication</h2>
+    <p class="hero-sub">WebSocket management at scale, delivery guarantees for offline users, and group fanout — the hardest real-time problems in distributed systems.</p>
+  </div>
+</div>
+
+<div class="content">
+<h3>Questions in This Bucket</h3>
+<div class="q-chips">
+  <span class="q-chip">Design WhatsApp / iMessage</span>
+  <span class="q-chip">Design Slack</span>
+  <span class="q-chip">Design Discord</span>
+  <span class="q-chip">Design Telegram</span>
+  <span class="q-chip">Design a Live Chat (customer support)</span>
+  <span class="q-chip">Design a Notification Service</span>
+</div>
+
+<p class="lead">Messaging systems live or die on delivery guarantees. The hardest problems here are: keeping 100M WebSocket connections alive, delivering messages to offline users with exactly-once semantics, and scaling group fanout when a single channel has 100K+ members.</p>
+
+<h3>What Makes This Bucket Unique</h3>
+<div class="cards two">
+  <div class="card"><div class="card-body">
+    <h4>🔌 Persistent Connection Management</h4>
+    <p>WebSockets require stateful connections — each server holds a connection pool. This makes horizontal scaling complex (you can't just add servers behind a round-robin LB) and requires session affinity or connection routing.</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>📬 Offline Delivery</h4>
+    <p>Messages sent while a user is offline must be durably stored and delivered when they reconnect — up to 30 days later. Exactly-once delivery semantics are critical (no duplicate messages on reconnect).</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>👥 Group Chat at Scale</h4>
+    <p>Group chats with 1000+ members require careful fanout strategy. For large groups, individual message delivery is O(N) — you need pub/sub or topic-based broadcast to handle it efficiently.</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>🟢 Presence System</h4>
+    <p>Online/away/offline status must propagate to contacts within 2 seconds. This is a high-frequency write problem (heartbeats) that must be batched and aggregated to avoid overloading storage.</p>
+  </div></div>
+</div>
+
+<h3>What YOU Must Define</h3>
+<div class="split">
+  <div class="split-you">
+    <div class="split-lbl">✅ You Provide</div>
+    <ul>
+      <li>Transport protocol: WebSocket vs long-poll vs SSE</li>
+      <li>Message delivery guarantee: at-most-once, at-least-once, exactly-once</li>
+      <li>Max group size and fanout strategy for large groups</li>
+      <li>Message retention window (e.g., 30 days offline, 1 year history)</li>
+      <li>Message ID strategy (Snowflake ID, UUID, or sequence number)</li>
+      <li>End-to-end encryption scope (yes/no, affects key management)</li>
+      <li>Read receipt semantics (delivered vs read vs seen-by-count)</li>
+    </ul>
+  </div>
+  <div class="split-ai">
+    <div class="split-lbl">🤖 AI Generates</div>
+    <ul>
+      <li>QPS and connection math given your DAU inputs</li>
+      <li>WebSocket connection management architecture</li>
+      <li>Message delivery state machine diagram</li>
+      <li>Cassandra DDL for messages table (partitioned by conversation_id)</li>
+      <li>Kafka topic design for message fanout</li>
+      <li>API spec for send, receive, and ack endpoints</li>
+      <li>Failure table per component tier</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Signature Prompts</h3>
+<div class="sc-nav">
+  <a class="sc sc-blue"   href="#sp3-1"><span class="sc-num">01</span> WebSocket at Scale</a>
+  <a class="sc sc-green"  href="#sp3-2"><span class="sc-num">02</span> Offline Message Delivery</a>
+  <a class="sc sc-gold"   href="#sp3-3"><span class="sc-num">03</span> Group Chat Fanout</a>
+  <a class="sc sc-purple" href="#sp3-4"><span class="sc-num">04</span> Presence System</a>
+</div>
+
+<div id="sp3-1" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">01 — WebSocket Connection Management at Scale</span></div>
+  <div class="pbody">Design a WebSocket connection management architecture for a chat app with:
+- 100M concurrent WebSocket connections
+- Each connection managed by a stateful Chat Server (app tier)
+- L4 load balancer (TCP passthrough) with IP hash session affinity
+- Chat servers: auto-scaled fleet, each handling ~50K connections
+
+Design the following:
+1. Session routing: how does a message to user B reach user B's Chat Server when sent from user A's Chat Server?
+2. Heartbeat protocol: ping/pong interval, server-side connection cleanup on missed beats
+3. Graceful reconnection: when a Chat Server restarts, how do clients reconnect without message loss?
+4. Connection registry: where is the mapping {userId → chatServerId} stored and how is it kept consistent?
+
+Constraint: session affinity must be maintained per user, not per request.</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">WebSocket connection architecture</span></div>
+  <div class="obody">WEBSOCKET CONNECTION MANAGEMENT
+
+1. SESSION ROUTING (inter-server message delivery)
+   Connection Registry: Redis Hash — ws_conn:{userId} → chatServerId (TTL: 30s, refreshed by heartbeat)
+   
+   Delivery flow (User A → User B):
+   a. Chat Server A receives message from User A (via WebSocket)
+   b. Lookup ws_conn:{userBId} in Redis → returns "chat-server-42"
+   c. If same server: deliver directly to User B's socket
+   d. If different server: publish to internal Kafka topic "direct-{chatServerId}"
+   e. Chat Server 42 consumes from its dedicated topic → delivers to User B
+   f. If ws_conn lookup misses (user offline): route to Message Queue for offline storage
+
+2. HEARTBEAT PROTOCOL
+   Client → Server: ping frame every 25 seconds
+   Server → Client: pong frame response within 5 seconds
+   Server-side cleanup: if no ping received in 60 seconds → close socket + delete ws_conn:{userId} from Redis
+   Client-side: if no pong in 10 seconds → assume disconnect → initiate reconnection
+
+3. GRACEFUL RECONNECTION
+   Before restart: Chat Server publishes "server-draining:{serverId}" event
+   Client receives: drain message → starts reconnect sequence (connect to new server via LB)
+   Client carries: last_received_message_id in reconnect handshake
+   New server: fetches messages since last_received_message_id from Cassandra → delivers missed messages
+   Drain window: 30 seconds (active connections migrate naturally as clients ping/pong)
+
+4. CONNECTION REGISTRY CONSISTENCY
+   Redis with 30s TTL — heartbeat refresh keeps alive; idle connections expire automatically
+   Race condition: double-connection (user logs in from two devices) handled by per-device registry:
+   ws_conn:{userId}:{deviceId} → chatServerId
+   All active devices fetched at message delivery time → fan out to all</div>
+</div>
+
+<div id="sp3-2" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">02 — Offline Message Delivery</span></div>
+  <div class="pbody">Design a message delivery guarantee system for WhatsApp-style messaging with:
+- At-least-once delivery (client deduplicates by message_id)
+- Messages stored for up to 30 days if recipient is offline
+- Read receipts: sent ✓, delivered ✓✓, read ✓✓ (blue ticks)
+- Push notification triggered when message received and user is offline
+
+Storage: Cassandra table "messages" partitioned by conversation_id, clustered by created_at DESC.
+I've assigned a Snowflake ID as message_id (64-bit, time-ordered, unique).
+
+Design the delivery state machine:
+1. States and valid transitions for a message
+2. How "delivered" is confirmed when user reconnects after being offline
+3. How "read" is confirmed and propagated back to sender
+4. Push notification trigger logic (avoid sending push if user is actively connected)
+5. The Cassandra schema for the inbox queue (undelivered messages per user)</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">Delivery state machine + schema</span></div>
+  <div class="obody">MESSAGE DELIVERY STATE MACHINE
+
+States: SENT → DELIVERED → READ (terminal states per recipient)
+Also: FAILED (permanent failure after 30 days undelivered)
+
+State transitions:
+  SENT:      Message persisted to Cassandra + push notification triggered (if offline)
+  DELIVERED: Client ack received over WebSocket OR on reconnect sync
+  READ:      Client sends explicit READ event when message enters viewport
+  FAILED:    TTL expires (30 days) → background job moves to dead-letter archive
+
+Cassandra — inbox queue (undelivered messages):
+CREATE TABLE undelivered_inbox (
+  recipient_id   UUID,
+  message_id     BIGINT,          -- Snowflake ID (time-ordered)
+  conversation_id UUID,
+  sender_id      UUID,
+  payload        TEXT,
+  created_at     TIMESTAMP,
+  PRIMARY KEY ((recipient_id), message_id)
+) WITH CLUSTERING ORDER BY (message_id ASC)
+  AND default_time_to_live = 2592000;  -- 30 days TTL
+
+On reconnect sync:
+  Client sends: { last_ack_message_id: 9876543 }
+  Server: SELECT * FROM undelivered_inbox WHERE recipient_id=? AND message_id > ? LIMIT 200
+  Deliver all rows → client acks each → DELETE FROM undelivered_inbox (or mark delivered)
+
+DELIVERED confirmation:
+  Client sends WebSocket ack: { message_id, status: "DELIVERED" }
+  Server: publishes "delivery-receipt" to Kafka → consumed by Sender's Chat Server
+  Sender's server: pushes ✓✓ update to sender's WebSocket
+
+READ confirmation:
+  Client sends: { message_id, status: "READ", conversation_id }
+  Server: updates messages table status=READ → fan out to all sender devices
+
+PUSH NOTIFICATION LOGIC:
+  Before sending push: check ws_conn:{userId} in Redis
+  If key exists (online): skip push notification
+  If key missing (offline): send push via FCM/APNs with message preview
+  Push payload: { title, body (truncated 80 chars), conversation_id, message_id }
+  Rate limit: max 1 push per conversation per 30 seconds (bundle multiple messages)</div>
+</div>
+
+<div id="sp3-3" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">03 — Group Chat Fanout for Large Groups</span></div>
+  <div class="pbody">For group chats, I need to deliver a message to all members efficiently. My group size distribution:
+- 80% of groups: &lt;10 members
+- 18% of groups: 10–100 members
+- 2% of groups: 100–1000 members (Discord servers, Slack workspaces)
+
+Requirements: &lt;500ms delivery for all members at p95.
+Total: 50M group chats, 2M messages/minute peak.
+
+Design a tiered fanout strategy:
+1. Small groups (&lt;50 members): direct fanout approach
+2. Large groups (50–1000 members): pub/sub approach
+3. The Kafka topic design supporting both tiers
+4. How to handle a member who is in 500 large groups simultaneously (fan-in problem)
+5. Consistency: what happens if a member joins a group mid-conversation (history sync)</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">Tiered fanout architecture</span></div>
+  <div class="obody">TIERED GROUP FANOUT STRATEGY
+
+TIER 1 — Small Groups (&lt;50 members): Direct Fanout
+  On message received by Chat Server:
+  1. Persist message to Cassandra (messages table, partitioned by group_id)
+  2. Fetch group member list from Group Service (cached in Redis, TTL 5min)
+  3. For each member: lookup ws_conn:{memberId} in Redis
+     → Online: route via Kafka topic "direct-{chatServerId}"
+     → Offline: add to undelivered_inbox + trigger push notification
+  Latency: ~50–100ms (dominated by Cassandra write + Redis lookups)
+
+TIER 2 — Large Groups (50–1000 members): Pub/Sub Broadcast
+  Group topic: Kafka topic "group-{groupId}" with 3 partitions
+  Chat Servers subscribe to topics for groups with active online members
+  Subscription management: when a user connects, Chat Server subscribes to all their large-group topics
+  Message flow:
+  1. Sender's Chat Server produces to "group-{groupId}" Kafka topic
+  2. All Chat Servers with active members consume → deliver to connected sockets
+  3. Offline delivery: separate consumer group "offline-fanout" reads same topic → writes to undelivered_inbox
+  Latency: ~100–200ms (Kafka add ~50ms, distributed consumption adds ~50ms)
+
+KAFKA TOPIC DESIGN:
+  direct-{chatServerId}: 1 partition, per-server topic for direct routing (100s of topics)
+  group-{groupId}: 3 partitions, keyed by message_id for ordering per group (2M topics max, use compact key)
+  offline-fanout: 50 partitions, shared consumer group for offline inbox writes
+
+FAN-IN PROBLEM (member in 500 large groups):
+  Cap subscriptions per connection: server subscribes to max 100 most recently active groups
+  LRU eviction: when user is in 500 groups, drop oldest inactive subscriptions
+  On message to an evicted-subscription group: fallback to polling on reconnect
+
+HISTORY SYNC (late join):
+  New member joins → client sends { group_id, since: "beginning" | timestamp }
+  Server: paginated scan of messages Cassandra table with GROUP BY group_id, created_at
+  Return last 50 messages → client marks as "history" (different UI treatment)</div>
+</div>
+
+<div id="sp3-4" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">04 — Presence System</span></div>
+  <div class="pbody">Design a presence system (online/away/offline/last-seen) for a messaging app with:
+- 100M users, 30M concurrently online at peak
+- Status must update within 2 seconds for contacts
+- "Last seen" timestamp shown to contacts (with privacy option to hide)
+- Privacy settings: EVERYONE / CONTACTS_ONLY / NOBODY can see my status
+- Status types: ONLINE (active in last 30s), AWAY (active in last 5min), OFFLINE
+
+Architecture: I'm using Redis pub/sub for real-time updates and Cassandra for last-seen persistence.
+
+Design:
+1. Heartbeat collection: how clients signal presence
+2. Status aggregation: how ONLINE/AWAY/OFFLINE is computed
+3. Status propagation: how status changes reach contacts within 2s
+4. Privacy enforcement: where and how privacy rules are applied
+5. Last-seen persistence: schema and update frequency</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">Presence service architecture</span></div>
+  <div class="obody">PRESENCE SYSTEM DESIGN
+
+1. HEARTBEAT COLLECTION
+   Client → WebSocket heartbeat payload: { user_id, status: "active"|"background" } every 20s
+   Chat Server: receives heartbeat → publishes to Redis Stream "heartbeats" (rather than direct write)
+   Presence Aggregator service: consumes from Redis Stream in batches every 5s
+   Batch update: SET presence:{userId} ACTIVE_TS with EXPIRY 35s (auto-expires if heartbeats stop)
+   Scale: 30M concurrent users × 1 heartbeat/20s = 1.5M heartbeats/sec → batching reduces to ~300K Redis ops/sec
+
+2. STATUS COMPUTATION (lazy, at read time)
+   ONLINE:  presence:{userId} key exists AND timestamp &lt; 30s ago
+   AWAY:    presence:{userId} key exists AND timestamp 30s–5min ago
+   OFFLINE: key expired OR last_seen &gt; 5 minutes ago
+   Compute on-the-fly: avoid storing "ONLINE/AWAY/OFFLINE" as states (too many writes on transitions)
+
+3. STATUS PROPAGATION (to contacts, &lt;2s requirement)
+   On status change detected (Presence Aggregator):
+   → Fetch contact list from Social Graph Service (cached in Redis, user:{userId}:contacts)
+   → Publish to Redis pub/sub channel "presence-updates:{contactId}" for each contact
+   → Each Chat Server subscribed to channels for its connected users
+   → Chat Server pushes WebSocket event: { type: "presence_update", userId, status, last_seen }
+   
+   Fan-out cost: avg user has 200 contacts → 1 status change → 200 pub/sub publishes
+   30M users × 1 change/5min = 100K changes/sec × 200 = 20M pub/sub msgs/sec → distribute across Redis Cluster
+
+4. PRIVACY ENFORCEMENT
+   Privacy rules stored in: user_privacy table (Cassandra) — cached per user in Redis 1hr TTL
+   Applied at: Presence Query Service (read path), NOT at publish time
+   Logic: when contact B requests A's status:
+     if A.privacy == NOBODY: return { status: "OFFLINE", last_seen: null }
+     if A.privacy == CONTACTS_ONLY: check if B in A's contacts → if not: return offline
+     if A.privacy == EVERYONE: return real status
+   WebSocket push respects privacy: Presence Aggregator checks privacy before publishing to contact's channel
+
+5. LAST-SEEN PERSISTENCE (Cassandra)
+   CREATE TABLE last_seen (
+     user_id    UUID PRIMARY KEY,
+     last_seen  TIMESTAMP,
+     status     TEXT         -- stored as informational, computed status is authoritative
+   );
+   Update frequency: write to Cassandra every 5 minutes per user (not on every heartbeat)
+   Buffered in Redis: last_seen_buffer:{userId} → batch Cassandra writes via scheduled job
+   Reduces Cassandra writes from 1.5M/sec to ~100K/sec</div>
+</div>
+
+<h3>Steer the AI</h3>
+<div class="steer">
+  <div class="steer-title">🔧 Messaging — Specific AI Corrections</div>
+  <div class="steer-row">
+    <span class="steer-when">AI uses HTTP polling</span>
+    <span class="steer-arrow">→</span>
+    <span class="steer-say">"Replace long-polling with WebSocket. At 100M concurrent users, long-polling creates 100M HTTP connections with high overhead per request. WebSocket persistent connections are O(1) after handshake."</span>
+  </div>
+  <div class="steer-row">
+    <span class="steer-when">AI uses SQL for messages</span>
+    <span class="steer-arrow">→</span>
+    <span class="steer-say">"Messages are write-heavy time-series data. Revise to Cassandra partitioned by conversation_id, clustered by message_id (Snowflake) DESC. This gives O(1) writes and O(1) latest-message reads."</span>
+  </div>
+  <div class="steer-row">
+    <span class="steer-when">No deduplication on delivery</span>
+    <span class="steer-arrow">→</span>
+    <span class="steer-say">"Add client-side deduplication. Since we use at-least-once delivery, clients must track received message_ids in a local set and silently drop duplicates on reconnect replay."</span>
+  </div>
+</div>
+</div>
+
+<div class="chapter-nav">
+  <button class="nav-btn nav-prev" onclick="show(2)">
+    <span class="nav-arrow">←</span>
+    <span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Social Media &amp; Feed</span></span>
+  </button>
+  <button class="nav-btn nav-next" onclick="show(4)">
+    <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Infrastructure Primitives</span></span>
+    <span class="nav-arrow">→</span>
+  </button>
+</div>
+</div>
+
+<!-- ====================================================== SECTION 4: INFRA PRIMITIVES -->
+<div class="section" id="s4">
+<div class="hero h-gold">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Bucket 03 — Chapter 04</div>
+    <h2>Infrastructure Primitives</h2>
+    <p class="hero-sub">Building blocks every large system uses — URL shorteners, rate limiters, notification services, distributed caches, and job schedulers.</p>
+  </div>
+</div>
+
+<div class="content">
+<h3>Questions in This Bucket</h3>
+<div class="q-chips">
+  <span class="q-chip">Design a URL Shortener (bit.ly)</span>
+  <span class="q-chip">Design a Rate Limiter</span>
+  <span class="q-chip">Design a Notification Service</span>
+  <span class="q-chip">Design a Distributed Cache</span>
+  <span class="q-chip">Design a Distributed Job Scheduler</span>
+  <span class="q-chip">Design a Key-Value Store</span>
+  <span class="q-chip">Design a Unique ID Generator</span>
+</div>
+
+<p class="lead">Primitive questions have a deceptive simplicity. The real test is depth: can you go beyond the obvious answer and discuss the subtle trade-offs — collision handling, atomic operations, exactly-once execution — that only engineers who've run these in production know about?</p>
+
+<h3>Why Primitives Are Tricky</h3>
+<div class="cards two">
+  <div class="card"><div class="card-body">
+    <h4>😈 They Look Simple, Aren't</h4>
+    <p>A URL shortener seems trivial — until you need to handle 10B redirects/day, collision-free hash generation, analytics, custom aliases, and link expiry. Each adds real complexity.</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>⚛️ Atomicity Is Everything</h4>
+    <p>Rate limiters and distributed locks require atomic read-modify-write operations. Getting this wrong (non-atomic check-then-act) introduces race conditions at scale that are invisible in testing.</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>🔗 They Appear Inside Other Designs</h4>
+    <p>Interviewers often ask you to add a rate limiter or notification service to a larger system mid-interview. Having these primitives pre-designed lets you drop them in confidently.</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>📏 Numbers Change Everything</h4>
+    <p>A rate limiter serving 10K req/sec needs Redis. At 10M req/sec, you may need local token buckets on each server. Scale changes the solution fundamentally.</p>
+  </div></div>
+</div>
+
+<h3>Signature Prompts — One Per Primitive</h3>
+<div class="sc-nav">
+  <a class="sc sc-blue"   href="#sp4-1"><span class="sc-num">01</span> URL Shortener</a>
+  <a class="sc sc-green"  href="#sp4-2"><span class="sc-num">02</span> Rate Limiter</a>
+  <a class="sc sc-gold"   href="#sp4-3"><span class="sc-num">03</span> Notification Service</a>
+  <a class="sc sc-purple" href="#sp4-4"><span class="sc-num">04</span> Distributed Cache</a>
+</div>
+
+<div id="sp4-1" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">01 — URL Shortener</span></div>
+  <div class="pbody">Design a URL shortener (bit.ly scale) with:
+- 100M new URLs created/day (write QPS: ~1,160/sec)
+- 10B redirects/day (redirect QPS: ~115,700/sec; peak ~350K/sec)
+- Short URL format: 7 Base62 characters (62^7 = 3.5T unique IDs)
+- Support: custom aliases, link expiry (optional TTL), click analytics
+- Storage: 1 year retention for active links, then archived
+
+I've decided:
+- Hash generation: auto-increment ID → Base62 encode (avoids collision, predictable)
+- Mapping store: Cassandra (high redirect QPS, linear scale)
+- Redirect cache: Redis with 24h LRU TTL (hot 20% of links serve 80% of traffic)
+
+Generate:
+1. Cassandra DDL for the URL mapping table (including custom alias support + TTL)
+2. The full redirect API spec (GET /{shortCode}) with rate-limiting and analytics headers
+3. A collision-free ID generation strategy for the distributed case (multiple write servers)
+4. The click analytics pipeline (must not add latency to the redirect path)</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">URL shortener design artifacts</span></div>
+  <div class="obody">1. CASSANDRA DDL
+
+CREATE TABLE url_mappings (
+  short_code     TEXT,
+  long_url       TEXT,
+  user_id        UUID,
+  created_at     TIMESTAMP,
+  expires_at     TIMESTAMP,   -- null means no expiry
+  is_custom      BOOLEAN,
+  click_count    COUNTER,
+  PRIMARY KEY (short_code)
+) WITH default_time_to_live = 31536000   -- 1 year default
+  AND bloom_filter_fp_chance = 0.001;    -- low FP for O(1) existence checks
+
+-- Reverse lookup (for custom alias uniqueness check)
+CREATE TABLE custom_aliases (
+  alias      TEXT PRIMARY KEY,
+  short_code TEXT
+);
+
+2. REDIRECT API SPEC
+
+GET /{shortCode}
+  Response (301 Moved Permanently):
+    Location: {long_url}
+    Cache-Control: public, max-age=86400
+    X-RateLimit-Limit: 1000
+    X-RateLimit-Remaining: 999
+    X-RateLimit-Reset: {epoch_seconds}
+  
+  Error responses:
+    404: { error: "short_url_not_found", short_code: "..." }
+    410: { error: "short_url_expired", expired_at: "..." }
+    429: { error: "rate_limit_exceeded", retry_after: 60 }
+
+3. COLLISION-FREE ID GENERATION (distributed)
+   Central counter: single Redis INCR (atomic, sequential, up to 100K ops/sec — sufficient)
+   If Redis unavailable: each write server has a pre-allocated ID range (e.g., server A: 1M-2M)
+   Range re-request triggers when 90% consumed → zero-gap in IDs
+   Base62 encode: 115-bit space, 7 chars → no collision possible with sequential IDs
+   
+   Custom alias: check custom_aliases table first → if taken: return 409 Conflict
+
+4. CLICK ANALYTICS (zero-latency impact)
+   On redirect: async publish ClickEvent to Kafka "click-events" topic
+   ClickEvent: { short_code, timestamp, ip_hash, user_agent, referrer, geo_country }
+   Kafka consumers: 
+   → Flink job: aggregate click counts per short_code per hour → write to TimescaleDB
+   → Real-time counter: INCR click_count in Redis (approximate, synced to Cassandra every 5min)
+   Dashboard: reads from TimescaleDB (historical) + Redis (real-time today)
+   SLA: analytics data available within 10 seconds of click (Kafka lag target)</div>
+</div>
+
+<div id="sp4-2" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">02 — Distributed Rate Limiter</span></div>
+  <div class="pbody">Design a distributed rate limiter using the Token Bucket algorithm. Requirements:
+- Per-user limit: 100 requests/minute
+- Per-IP limit: 1,000 requests/minute
+- Per-endpoint override: /search = 20 req/min per user; /upload = 5 req/min per user
+- System handles: 5M requests/second total across all users
+- Must be accurate (no significant over-allowance) and fast (&lt;2ms overhead per request)
+
+I've chosen: Redis with Lua scripting for atomic token consumption.
+
+Design:
+1. Redis data structure for each limiter type (user, IP, endpoint-specific)
+2. The Lua script for atomic token consumption with token refill logic
+3. API middleware integration (where it sits in the request lifecycle)
+4. Proper HTTP response headers for rate limit info
+5. What happens when Redis is unavailable (fail-open vs fail-closed decision + justification)</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">Rate limiter implementation design</span></div>
+  <div class="obody">1. REDIS DATA STRUCTURES
+   Key per rate limiter: rl:{type}:{identifier}:{window}
+   Examples:
+     rl:user:user-uuid-123:search    → for /search endpoint limit
+     rl:ip:192.168.1.1:global        → IP-level global limit
+     rl:user:user-uuid-123:global    → user-level global limit
+   
+   Value: Hash { tokens: float, last_refill: epoch_ms }
+   TTL: window_seconds * 2 (auto-cleanup of idle keys)
+
+2. LUA SCRIPT (atomic token consumption)
+local key = KEYS[1]
+local capacity = tonumber(ARGV[1])       -- max tokens (e.g., 100)
+local refill_rate = tonumber(ARGV[2])    -- tokens/sec (e.g., 100/60 = 1.667)
+local now = tonumber(ARGV[3])            -- current epoch_ms
+local requested = tonumber(ARGV[4])      -- tokens to consume (usually 1)
+
+local bucket = redis.call('HMGET', key, 'tokens', 'last_refill')
+local tokens = tonumber(bucket[1]) or capacity
+local last_refill = tonumber(bucket[2]) or now
+
+-- Refill tokens based on elapsed time
+local elapsed = (now - last_refill) / 1000.0
+tokens = math.min(capacity, tokens + elapsed * refill_rate)
+
+if tokens >= requested then
+  tokens = tokens - requested
+  redis.call('HMSET', key, 'tokens', tokens, 'last_refill', now)
+  redis.call('EXPIRE', key, 120)
+  return {1, math.floor(tokens), math.floor(capacity)}  -- allowed, remaining, limit
+else
+  redis.call('HMSET', key, 'tokens', tokens, 'last_refill', now)
+  return {0, 0, math.floor(capacity)}                   -- denied
+end
+
+3. MIDDLEWARE INTEGRATION
+   Position: after Auth middleware, before business logic
+   Order of checks: user-level → endpoint-specific → IP-level
+   Short-circuit: fail on first exceeded limit (don't consume all)
+
+4. HTTP RESPONSE HEADERS
+   X-RateLimit-Limit: 100
+   X-RateLimit-Remaining: 47
+   X-RateLimit-Reset: 1714000060        -- epoch when bucket fully refills
+   Retry-After: 30                      -- only on 429 responses
+
+5. REDIS UNAVAILABLE — FAIL-OPEN
+   Decision: FAIL-OPEN (allow traffic through when Redis is down)
+   Justification: rate limiting is a soft protection, not a security gate.
+   Blocking all traffic on Redis outage is worse than allowing brief over-usage.
+   Mitigation: local in-process token bucket (Caffeine) as L1 limiter
+   → L1 enforces ~2× the limit locally (loose but functional during outage)
+   Alert: redis_unavailable_rate > 0.1% → PagerDuty P2</div>
+</div>
+
+<div id="sp4-3" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">03 — Multi-Channel Notification Service</span></div>
+  <div class="pbody">Design a multi-channel notification service supporting: push (FCM/APNs), email (SES), and SMS (Twilio).
+
+Requirements:
+- 500M users; 2B notifications/day
+- Priority levels: CRITICAL (call via SMS), HIGH (push + email), NORMAL (push only), LOW (email digest)
+- Per-user channel preferences (opt-out of SMS, digest mode for email)
+- Delivery tracking: sent, delivered, failed, opened (for email)
+- Retry logic: 3 attempts with exponential backoff before DLQ
+
+I've chosen: Kafka for the notification queue, separate consumer groups per channel.
+
+Design:
+1. Kafka topic structure (considering priority and channel routing)
+2. The notification routing logic with channel preference enforcement
+3. Delivery tracking schema
+4. Retry + DLQ design
+5. Email digest batching (aggregate LOW priority notifications into 1 email/hour)</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">Notification service architecture</span></div>
+  <div class="obody">1. KAFKA TOPIC STRUCTURE
+   notifications-critical   (3 partitions, retention: 24h, max lag alert: 100ms)
+   notifications-high       (10 partitions, retention: 6h, max lag alert: 5s)
+   notifications-normal     (30 partitions, retention: 1h, max lag alert: 30s)
+   notifications-low        (10 partitions, retention: 24h — held for digest batching)
+   notifications-dlq        (5 partitions, retention: 7 days — manual review queue)
+
+2. NOTIFICATION ROUTING LOGIC
+   Notification Router service (Kafka consumer, notifications-* topics):
+   
+   Step 1: Load user preferences from User Prefs Service (Redis cache, 1hr TTL)
+     prefs = { push: true, email: true, sms: false, email_digest: true }
+   
+   Step 2: Apply priority × channel matrix:
+     CRITICAL:  SMS (if opted-in) → push → email (all regardless of prefs, except hard opt-outs)
+     HIGH:      push (if opted-in) + email (if opted-in)
+     NORMAL:    push only (if opted-in)
+     LOW:       buffer to digest queue (if digest=true) else email (if opted-in)
+   
+   Step 3: For each selected channel, produce to channel-specific worker queue:
+     push-queue (Kafka): → Push Worker → FCM/APNs API
+     email-queue:        → Email Worker → AWS SES
+     sms-queue:          → SMS Worker → Twilio
+
+3. DELIVERY TRACKING SCHEMA (Cassandra)
+   CREATE TABLE notification_events (
+     notification_id  UUID,
+     user_id          UUID,
+     channel          TEXT,   -- PUSH, EMAIL, SMS
+     status           TEXT,   -- SENT, DELIVERED, FAILED, OPENED
+     sent_at          TIMESTAMP,
+     updated_at       TIMESTAMP,
+     provider_msg_id  TEXT,   -- FCM message ID, SES message ID etc.
+     PRIMARY KEY ((notification_id), channel)
+   );
+
+4. RETRY + DLQ
+   Each channel worker: on provider API failure → republish with attempt_count++
+   Backoff: 30s → 2min → 10min (3 attempts)
+   After 3 failures: route to notifications-dlq with failure_reason
+   DLQ processor: human review dashboard + optional manual retry
+   Alert: dlq_message_count > 1000 in 5min → PagerDuty P1
+
+5. EMAIL DIGEST BATCHING
+   LOW priority messages: routed to "digest-buffer:{userId}" Redis List (append)
+   Digest scheduler: cron every 60min → for each user with non-empty digest-buffer:
+     → Fetch all buffered notifications → render single digest email → send via SES
+     → Clear buffer: DEL digest-buffer:{userId}
+   Max digest size: 20 notifications (discard oldest if overflow)</div>
+</div>
+
+<div id="sp4-4" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">04 — Distributed Cache Design</span></div>
+  <div class="pbody">Design a distributed caching layer for a high-traffic e-commerce platform:
+- Write QPS: 50K/sec (inventory updates, price changes)
+- Read QPS: 500K/sec (product page loads, search results, user sessions)
+- Data types: product catalog (rarely updates), inventory (updates every second), user sessions (per-request reads)
+- Cache size budget: 500GB total across cluster
+
+I've decided:
+- Redis Cluster: 6 primary + 6 replica nodes (consistent hashing, 150 virtual nodes per node)
+- Cache policies: write-through for inventory, write-around for catalog, TTL-based for sessions
+- Eviction: LRU per node
+
+Design:
+1. Key naming convention and namespace isolation between data types
+2. Write-through implementation for inventory (including atomic update)
+3. Thundering herd protection on cache miss
+4. Cache warming strategy on cold start (new node joins cluster)
+5. Observability: the 4 most critical Redis metrics to monitor with alert thresholds</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">Distributed cache design</span></div>
+  <div class="obody">1. KEY NAMING CONVENTION
+   Format: {namespace}:{entity_type}:{id}[:{field}]
+   Examples:
+     catalog:product:prod-123              → full product JSON (TTL: 3600s, write-around)
+     inventory:stock:prod-123:warehouse-5  → stock count INTEGER (TTL: 60s, write-through)
+     session:user:usr-456                  → session JSON (TTL: 1800s, write-on-access)
+     search:results:{query_hash}           → paginated results JSON (TTL: 300s)
+   
+   Namespace isolation: use Redis key-prefix scanning for bulk invalidation
+   e.g., SCAN 0 MATCH catalog:product:* for catalog cache purge
+
+2. WRITE-THROUGH FOR INVENTORY (atomic update)
+   On inventory update event (from order service):
+   MULTI
+     SET inventory:stock:{productId}:{warehouseId} {newCount} EX 60
+     PUBLISH inventory-updates {productId}  -- notify other services
+   EXEC
+   
+   Then write to primary DB (synchronous for write-through):
+   If DB write fails: rollback cache key (DEL inventory:stock:{productId}:...)
+   
+   Read path: check Redis first → cache miss → read from DB → SET in Redis with TTL
+   Inventory miss is acceptable (TTL 60s bounds staleness)
+
+3. THUNDERING HERD PROTECTION
+   Probabilistic early expiration (PER algorithm):
+   On cache read: if key exists but TTL < threshold (e.g., 10% of original TTL):
+     p = random() < (threshold_ttl / remaining_ttl)
+     if p: treat as miss → fetch + refresh in background
+   
+   Mutex lock fallback (for expensive DB queries):
+   On hard miss: SET lock:refresh:{key} 1 NX EX 5 (5-second lock)
+   → If lock acquired: fetch + cache → release lock
+   → If lock not acquired: wait 100ms → retry (cache likely populated by lock holder)
+
+4. CACHE WARMING ON COLD START
+   New node joins cluster: consistent hashing migrates ~1/N of keyspace to new node
+   Warming strategy:
+   Step 1: Background pre-warming job reads top-1000 product IDs from DB → loads into new node
+   Step 2: Replica promotion: new node starts as replica, replicates from primary (Redis REPLICAOF)
+   Step 3: Promote to primary after replication lag &lt; 100ms
+   Cold start reads that miss: fall through to DB (acceptable — DB handles burst for &lt;5min)
+
+5. CRITICAL REDIS METRICS + ALERTS
+   1. cache_hit_rate = keyspace_hits / (keyspace_hits + keyspace_misses)
+      Alert: &lt;0.85 for 5min → Slack P2 (means DB is absorbing unexpected load)
+   
+   2. memory_usage_percent = used_memory / maxmemory
+      Alert: &gt;85% → Slack P1 (LRU eviction accelerates → hit rate drops)
+   
+   3. replication_lag_ms (replica vs primary)
+      Alert: &gt;500ms for any replica → PagerDuty P2 (stale reads risk)
+   
+   4. command_latency_p99 (all commands)
+      Alert: &gt;5ms p99 → PagerDuty P1 (Redis should be sub-millisecond)</div>
+</div>
+
+<h3>What YOU Must Define (Summary Table)</h3>
+<div class="tbl-wrap"><table>
+  <thead><tr><th>Primitive</th><th>Key YOU Decision</th><th>Why It Matters</th></tr></thead>
+  <tbody>
+    <tr><td>URL Shortener</td><td>Hash strategy (auto-increment + Base62 vs hash collision)</td><td>Hash collision requires retry logic; auto-increment is deterministic but sequential</td></tr>
+    <tr><td>Rate Limiter</td><td>Algorithm (token bucket vs leaky bucket vs fixed window)</td><td>Token bucket allows bursts; fixed window has edge-of-window vulnerability</td></tr>
+    <tr><td>Rate Limiter</td><td>Fail-open vs fail-closed on Redis outage</td><td>This is a business decision — no right answer but you must justify it</td></tr>
+    <tr><td>Notification</td><td>Priority × channel matrix</td><td>Defines entire routing architecture — must come from you, not AI</td></tr>
+    <tr><td>Distributed Cache</td><td>Write-through vs write-around vs write-back per data type</td><td>Wrong choice causes stale reads or write amplification — shows production depth</td></tr>
+    <tr><td>Job Scheduler</td><td>At-least-once vs exactly-once execution semantics</td><td>Exactly-once requires idempotency keys on every job handler</td></tr>
+  </tbody>
+</table></div>
+</div>
+
+<div class="chapter-nav">
+  <button class="nav-btn nav-prev" onclick="show(3)">
+    <span class="nav-arrow">←</span>
+    <span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Messaging &amp; Real-time</span></span>
+  </button>
+  <button class="nav-btn nav-next" onclick="show(5)">
+    <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Collaborative &amp; Dev Tools</span></span>
+    <span class="nav-arrow">→</span>
+  </button>
+</div>
+</div>
+
+<!-- ====================================================== SECTION 5: COLLAB / DEV TOOLS -->
+<div class="section" id="s5">
+<div class="hero h-purple">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Bucket 04 — Chapter 05</div>
+    <h2>Collaborative &amp; Dev Tools</h2>
+    <p class="hero-sub">Real-time concurrent editing, sandboxed code execution, and operational transforms — the most algorithmically deep system design bucket.</p>
+  </div>
+</div>
+
+<div class="content">
+<h3>Questions in This Bucket</h3>
+<div class="q-chips">
+  <span class="q-chip">Design Google Docs</span>
+  <span class="q-chip">Design Figma / Collaborative Canvas</span>
+  <span class="q-chip">Design CoderLabs / Online IDE (LeetCode)</span>
+  <span class="q-chip">Design GitHub / Code Hosting</span>
+  <span class="q-chip">Design Notion / Wiki</span>
+  <span class="q-chip">Design a Code Review Tool</span>
+</div>
+
+<p class="lead">The defining challenge in collaborative tools is <strong>concurrent edit conflict resolution</strong>. Two users editing simultaneously must produce a consistent, meaningful result — and the algorithm that achieves this (OT or CRDT) determines the entire architecture. Get this decision right before you design anything else.</p>
+
+<h3>What Makes This Bucket Unique</h3>
+<div class="cards two">
+  <div class="card"><div class="card-body">
+    <h4>🔄 OT vs CRDT</h4>
+    <p>Operational Transformation (OT) requires a central server to order operations. CRDT is peer-to-peer but adds complexity and storage overhead. The choice has profound architectural implications — not just algorithm selection.</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>⚡ Sub-100ms Collaboration Feel</h4>
+    <p>Users perceive latency above 100ms as "lag" in collaborative tools. This forces local optimistic application of operations before server confirmation — and a rollback mechanism if the server rejects an operation.</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>🐳 Sandboxed Execution</h4>
+    <p>Online IDEs must execute arbitrary untrusted code in complete isolation. Container escape vulnerabilities, resource exhaustion, and network isolation are not theoretical — they're production incidents.</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>📝 Version History</h4>
+    <p>Storing every operation for undo/redo and version history at scale (millions of documents) requires careful compaction strategy — you can't store every keystroke forever.</p>
+  </div></div>
+</div>
+
+<h3>What YOU Must Define</h3>
+<div class="split">
+  <div class="split-you">
+    <div class="split-lbl">✅ You Provide</div>
+    <ul>
+      <li>Conflict resolution algorithm: OT vs CRDT (and justify why)</li>
+      <li>Collaboration model: centralized authority vs peer-to-peer</li>
+      <li>Offline support requirement (yes → forces CRDT or complex OT)</li>
+      <li>Max concurrent editors per document</li>
+      <li>Execution isolation mechanism: containers vs VMs vs WASM</li>
+      <li>Version history retention policy (how many versions, how long)</li>
+      <li>Auto-save interval and conflict resolution UX on version fork</li>
+    </ul>
+  </div>
+  <div class="split-ai">
+    <div class="split-lbl">🤖 AI Generates</div>
+    <ul>
+      <li>OT vs CRDT comparison table given your constraints</li>
+      <li>Operation format schema (insert/delete/retain)</li>
+      <li>WebSocket sync protocol sequence diagram</li>
+      <li>Container lifecycle management spec</li>
+      <li>DDL for operation log table (version history)</li>
+      <li>Failure modes for collaboration server tier</li>
+      <li>Load estimate for concurrent session count</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Signature Prompts</h3>
+<div class="sc-nav">
+  <a class="sc sc-blue"   href="#sp5-1"><span class="sc-num">01</span> OT vs CRDT</a>
+  <a class="sc sc-green"  href="#sp5-2"><span class="sc-num">02</span> Online IDE Sandbox</a>
+  <a class="sc sc-gold"   href="#sp5-3"><span class="sc-num">03</span> Real-time Sync Protocol</a>
+  <a class="sc sc-purple" href="#sp5-4"><span class="sc-num">04</span> Figma-style Canvas CRDT</a>
+</div>
+
+<div id="sp5-1" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">01 — OT vs CRDT for Collaborative Editing</span></div>
+  <div class="pbody">I'm designing a collaborative document editor (Google Docs-style). Compare Operational Transformation (OT) vs CRDT for conflict resolution.
+
+Context constraints:
+- 10M active documents, average 3 simultaneous collaborators per document
+- Documents up to 500KB (rich text, not just plain text)
+- Offline editing required: users must be able to edit while disconnected and sync on reconnect
+- Architecture: I prefer a centralized server model (not full P2P) for simplicity
+
+For each approach compare:
+1. How two simultaneous edits at the same position are resolved
+2. Server coordination requirements (what the server must do per approach)
+3. Offline editing support — does this approach handle it natively?
+4. Storage overhead for the operation log
+5. Client implementation complexity
+6. Known production deployments (which companies use which)
+
+End with a specific recommendation for my constraints with justification.</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">OT vs CRDT structured comparison + recommendation</span></div>
+  <div class="obody">CONFLICT RESOLUTION COMPARISON
+
+Scenario: User A inserts "X" at position 5. Simultaneously, User B deletes character at position 3.
+After B's delete, position 5 is now logically position 4.
+
+OT Resolution:
+  Server receives both ops. Transforms A's insert(5, "X") against B's delete(3):
+  → Adjusted: insert(4, "X") → applied in correct position
+  Server is the authority: broadcasts transformed op to both clients
+  Both clients converge to same state ✅
+
+CRDT Resolution:
+  Each character has a globally unique ID (Logoot/LSEQ approach)
+  Insertions reference character IDs, not positions → positions never shift
+  Merge is automatic: no server coordination for conflict resolution needed
+  Both clients can merge independently and converge ✅
+
+| Dimension                  | OT                              | CRDT                              |
+|---------------------------|----------------------------------|-----------------------------------|
+| Server role                | Transform authority (required)   | Optional relay (coordination-free)|
+| Offline support            | Complex (needs client-side OT)   | Native (auto-merge on reconnect)  |
+| Storage overhead           | O(ops) — compact                 | O(chars × metadata) — 2–4× larger|
+| Client complexity          | Medium (must implement transform)| High (CRDT merge logic)           |
+| Production deployments     | Google Docs, Notion (hybrid)     | Figma, Linear, Liveblocks         |
+| Rich text support          | Mature (Quill, ProseMirror)      | Growing (Yjs, Automerge)          |
+
+RECOMMENDATION: OT with centralized server authority
+Reason: Offline support can be implemented with client-side op buffering + replay on reconnect (acceptable complexity given 3 avg collaborators). CRDT's storage overhead at 10M documents × 500KB × 3× = 15TB extra — significant. OT has mature rich-text library support (ProseMirror, Quill). The centralized architecture you prefer aligns naturally with OT's server-authority model.
+
+Exception: If offline sync becomes critical and documents grow to 2MB+, migrate to Yjs (CRDT) which has excellent rich-text support and Node.js server integration.</div>
+</div>
+
+<div id="sp5-2" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">02 — Online IDE Code Execution Sandbox</span></div>
+  <div class="pbody">Design the code execution sandbox for an online coding environment (LeetCode / CoderLabs style).
+
+Requirements:
+- Languages: Python 3.11, Java 17, JavaScript (Node 20), C++17
+- Execution limits: 5 seconds CPU time, 256MB RAM, no network access, no disk writes
+- Scale: 10,000 concurrent submissions at peak
+- Security: must prevent container escape, fork bombs, and resource exhaustion
+- Result: stdout, stderr, exit code, memory used, CPU time (milliseconds)
+
+I've chosen: Docker containers with Linux cgroups v2 for resource enforcement.
+
+Design:
+1. Container lifecycle: from submission received to result returned
+2. Resource quota enforcement (CPU, memory, PID limit, network isolation)
+3. How to prevent fork bombs and resource exhaustion
+4. Execution result schema
+5. The queue design for managing 10,000 concurrent execution slots
+6. Security hardening: 3 most important container security controls</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">Sandbox execution architecture</span></div>
+  <div class="obody">1. CONTAINER LIFECYCLE
+   Client submits → API Server → Kafka topic "submission-queue" → Executor Worker Pool
+
+   Executor Worker picks submission:
+   Step 1: Pull pre-warmed container image from local registry (python:3.11-slim, ~50MB)
+            Pre-warm pool: 200 idle containers per language, ready to execute
+   Step 2: Copy user code to ephemeral tmpfs volume (RAM disk, not disk-backed)
+   Step 3: docker exec into container → run with timeout wrapper
+   Step 4: Capture stdout/stderr streams → collect resource metrics from cgroups
+   Step 5: Kill container → return result to API via callback
+   Step 6: Recycle container (warm pool refill) — faster than creating new
+
+   Latency budget: pre-warm pick=5ms, code copy=10ms, exec=0-5000ms, result=20ms
+
+2. RESOURCE QUOTA ENFORCEMENT (cgroups v2)
+   CPU:     cpu.max = "500000 1000000"  → 50% of one core (0.5 vCPU)
+   Memory:  memory.max = 268435456     → 256MB hard limit (OOM kill if exceeded)
+   PIDs:    pids.max = 50              → prevents fork bombs (max 50 processes)
+   Network: --network=none             → complete network isolation
+   Disk:    --read-only + tmpfs /tmp   → no persistent writes
+
+3. FORK BOMB PREVENTION
+   pids.max = 50 (cgroup hard limit) → process 51 is blocked by kernel, not killed slowly
+   Execution timeout: SIGKILL sent by wrapper script after 5s wall-clock time
+   Wrapper: timeout --kill-after=1s 5s python solution.py
+   Memory OOM: kernel OOM killer triggered → container gets SIGKILL
+
+4. EXECUTION RESULT SCHEMA
+   {
+     submission_id:  "uuid",
+     status:         "ACCEPTED" | "WRONG_ANSWER" | "TIME_LIMIT" | "MEMORY_LIMIT" | "RUNTIME_ERROR",
+     stdout:         "string (max 10KB, truncated if larger)",
+     stderr:         "string (max 2KB)",
+     exit_code:      0,
+     cpu_time_ms:    342,
+     wall_time_ms:   350,
+     memory_used_mb: 48.2,
+     language:       "python3"
+   }
+
+5. QUEUE DESIGN FOR 10K CONCURRENT SLOTS
+   Kafka topic "submission-queue": 50 partitions
+   Worker fleet: 500 Executor Worker pods, each handling 20 concurrent executions
+   500 × 20 = 10,000 concurrent slots ✅
+   Backpressure: if queue depth > 5,000 → reject new submissions with 503 + Retry-After: 30
+
+6. TOP 3 SECURITY CONTROLS
+   a. seccomp profile: block dangerous syscalls (ptrace, mount, reboot, kexec)
+      → Prevents container escape via kernel exploit
+   b. --cap-drop=ALL: remove all Linux capabilities (no CAP_NET_ADMIN, CAP_SYS_ADMIN)
+      → Even if process escapes cgroup, no privileged operations allowed
+   c. Read-only root filesystem + --no-new-privileges
+      → Prevents writing malicious binaries or privilege escalation via SUID</div>
+</div>
+
+<div id="sp5-3" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">03 — Real-time Collaboration Sync Protocol</span></div>
+  <div class="pbody">I've chosen OT with a centralized server as the conflict resolution authority for my collaborative document editor. Design the real-time synchronization layer.
+
+System: 10M documents, avg 3 simultaneous editors, WebSocket transport.
+
+Design the sync protocol including:
+1. The operation format (what an operation looks like on the wire)
+2. The client-server sync protocol — specifically what messages are exchanged when two users edit simultaneously
+3. How to handle the case where a client goes offline mid-edit and reconnects
+4. The server-side operation log schema (for version history and undo)
+5. Operation log compaction strategy (you can't keep every keystroke forever)
+6. Cursor position sharing (showing other users' cursors in real-time)</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">Sync protocol design</span></div>
+  <div class="obody">1. OPERATION FORMAT (JSON over WebSocket)
+   {
+     op_id:      "client-uuid-seq",  // client-generated, for dedup
+     doc_id:     "doc-123",
+     revision:   42,                 // document revision client is based on
+     op_type:    "COMPOSE",          // batch of atomic ops
+     ops: [
+       { type: "retain",  count: 10 },
+       { type: "insert",  text: "Hello" },
+       { type: "delete",  count: 3 },
+       { type: "retain",  count: 200 }
+     ],
+     user_id:    "usr-456",
+     timestamp:  1714000000000
+   }
+   
+   Total document length = sum of retain + insert counts (validation check)
+
+2. SIMULTANEOUS EDIT PROTOCOL
+   User A (revision 42): inserts "X" at position 5 → sends op_A to server
+   User B (revision 42): deletes char at position 3 → sends op_B to server
+
+   Server receives op_A first:
+   → Validate: revision 42 is current ✅
+   → Apply to doc → doc now at revision 43
+   → Broadcast op_A to all clients (including B)
+
+   Server receives op_B (still at revision 42, now stale):
+   → Transform op_B against op_A: delete(3) → delete(3) unchanged (before insertion point)
+   → Apply transformed op_B → revision 44
+   → Broadcast transformed op_B to all clients
+
+   Client A receives transformed op_B: applies without conflict (already at rev 43)
+   Client B receives op_A: must transform locally against pending op_B → applies cleanly
+
+3. OFFLINE RECONNECT
+   Client stores pending ops in local IndexedDB with their base revision
+   On reconnect: sends { reconnect: true, doc_id, last_revision: 42, pending_ops: [...] }
+   Server: fetches ops from revision 42 to current (44) → transforms each pending op
+   Returns: { server_ops: [op_A, op_B], transformed_pending: [...] }
+   Client: applies server_ops to local doc → verifies convergence
+
+4. OPERATION LOG SCHEMA (PostgreSQL — strong consistency needed for revision ordering)
+   CREATE TABLE op_log (
+     doc_id      UUID,
+     revision    BIGINT,
+     op_id       TEXT,       -- client-generated, for idempotency
+     user_id     UUID,
+     ops_json    JSONB,
+     applied_at  TIMESTAMPTZ DEFAULT NOW(),
+     PRIMARY KEY (doc_id, revision)
+   );
+   Index: (doc_id, applied_at) for time-range queries
+
+5. OPERATION LOG COMPACTION
+   Strategy: Snapshot + Delta
+   Every 1,000 revisions: snapshot full document state → store as doc_snapshots table
+   Op log: retain only last 1,000 ops (delete older) — anything before is covered by snapshot
+   Version history UI: created from snapshots (hourly/daily granularity) + ops for fine-grain
+   Storage estimate: 10M docs × 500KB snapshot × 10 snapshots = 50TB (use S3 + Glacier for old)
+
+6. CURSOR SHARING
+   Cursor positions are ephemeral — do NOT store in op log (too high frequency)
+   Transport: separate WebSocket channel per document session
+   Message: { type: "cursor", user_id, position: { index: 45, length: 0 }, user_color: "#FF6B35" }
+   Frequency: on every cursor move, throttled to 50ms minimum interval
+   Server: broadcast to all other clients in same doc session (no storage needed)
+   On user disconnect: broadcast { type: "cursor_remove", user_id }</div>
+</div>
+
+<div id="sp5-4" class="prompt-block">
+  <div class="ph"><span class="ptag ptag-p">PROMPT</span><span class="ptitle">04 — Figma-style Canvas CRDT</span></div>
+  <div class="pbody">Design the real-time sync layer for a collaborative design canvas (Figma-style) with vector objects.
+
+Constraints: 100 concurrent editors per canvas, sub-100ms update propagation required.
+I've chosen CRDT over OT because:
+- Objects are discrete (not text characters) — conflicts are simpler to reason about
+- Offline editing is critical for our users
+- We want eventual consistency without a server authority bottleneck
+
+Objects on canvas: { id, type, x, y, width, height, z_index, style{fill, stroke, opacity} }
+
+Design:
+1. CRDT data structure for canvas objects (Last-Write-Wins vs MVCC approach)
+2. The delta sync model: what data is transmitted on each change
+3. Conflict resolution for two users simultaneously moving the same object to different positions
+4. How z_index (layer ordering) is managed with CRDT (tricky — needs sequence CRDT)
+5. Network efficiency: delta compression for 100 simultaneous editors</div>
+  <div class="ph"><span class="ptag ptag-o">EXPECTED OUTPUT</span><span class="ptitle">Canvas CRDT design</span></div>
+  <div class="obody">1. CRDT DATA STRUCTURE: Last-Write-Wins Register (LWW) per object property
+   Each property stores: { value, timestamp, client_id }
+   Merge rule: higher timestamp wins; tie-break by client_id (deterministic)
+   
+   Canvas state = Map&lt;object_id, LWW_Map&lt;property, {value, ts, client_id}&gt;&gt;
+   
+   Object creation: unique ID = client_id + timestamp (globally unique, no coordination)
+   Object deletion: Tombstone flag — deleted:{true, ts, client_id} — never hard-delete (CRDT requirement)
+
+2. DELTA SYNC MODEL
+   Client maintains: vector clock per canvas { client_id → last_op_sequence }
+   On connection: send vector clock → server returns all ops not yet seen by client
+   On change: emit delta { changed_objects: [{ id, changed_props: {x: {value, ts, client_id}} }] }
+   Server: broadcasts delta to all clients in canvas session
+   Clients merge delta into local CRDT state → re-render affected objects
+
+3. CONFLICT RESOLUTION — Simultaneous Position Move
+   User A: moves object-123 to {x: 100, y: 200} at ts=1000
+   User B: moves object-123 to {x: 300, y: 400} at ts=1001
+   
+   LWW merge: ts=1001 (B's move) wins for both x and y
+   Result: object-123 appears at {300, 400} on all clients ✅
+   
+   Edge case — same timestamp (clock skew):
+   Deterministic tie-break: higher client_id string wins lexicographically
+   This guarantees all clients converge to the same value
+
+4. Z-INDEX / LAYER ORDERING (sequence CRDT)
+   Z-index can't use LWW (reordering is relative, not absolute)
+   Use: RGA (Replicated Growable Array) or Logoot for layer sequence
+   Each layer position: { id: "layer-X", after: "layer-Y-id", ts, client_id }
+   Merge: insert operations are commutative — both insertions applied, order determined by ts+client_id
+   "Bring to front" op: insert at head of sequence → resolves naturally with LWW-timestamp tie-break
+
+5. NETWORK EFFICIENCY (100 simultaneous editors)
+   Problem: 100 clients × 30 ops/sec (fast drawing) = 3,000 ops/sec broadcast to 100 clients = 300K messages/sec
+   
+   Solutions:
+   a. Delta batching: buffer ops for 16ms (1 animation frame) → batch send → 60 batches/sec vs 3000 ops
+   b. Spatial filtering: only broadcast deltas for objects in client's viewport (relevant for large canvases)
+   c. Binary encoding: encode deltas as MessagePack (50% smaller than JSON)
+   d. Server-side merge: server merges deltas from multiple clients before broadcasting
+      → reduces 100 client → server streams to 1 server → 100 client broadcast
+   
+   Result: 100 clients × 60 batches/sec × 200B avg batch = 1.2MB/sec per canvas session (manageable)</div>
+</div>
+
+<h3>Steer the AI</h3>
+<div class="steer">
+  <div class="steer-title">🔧 Collaborative Tools — Specific AI Corrections</div>
+  <div class="steer-row">
+    <span class="steer-when">AI skips OT/CRDT</span>
+    <span class="steer-arrow">→</span>
+    <span class="steer-say">"You haven't addressed concurrent edit conflict resolution. This is the core hard problem. Stop and design the conflict resolution algorithm first — OT or CRDT — before anything else in the system."</span>
+  </div>
+  <div class="steer-row">
+    <span class="steer-when">AI uses last-write-wins for text</span>
+    <span class="steer-arrow">→</span>
+    <span class="steer-say">"LWW doesn't work for collaborative text editing — it causes data loss when two users insert at the same position. Revise to OT with position transformation, or CRDT with character-level unique IDs."</span>
+  </div>
+  <div class="steer-row">
+    <span class="steer-when">No sandbox isolation</span>
+    <span class="steer-arrow">→</span>
+    <span class="steer-say">"The execution design doesn't address isolation. Add: --network=none, cgroups memory.max=256MB, pids.max=50, seccomp profile to block ptrace and mount syscalls, and read-only root filesystem."</span>
+  </div>
+</div>
+</div>
+
+<div class="chapter-nav">
+  <button class="nav-btn nav-prev" onclick="show(4)">
+    <span class="nav-arrow">←</span>
+    <span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Infrastructure Primitives</span></span>
+  </button>
+  <button class="nav-btn nav-next" onclick="show(6)">
+    <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Concepts &amp; Tools</span></span>
+    <span class="nav-arrow">→</span>
+  </button>
+</div>
+</div>
+
+<!-- ====================================================== SECTION 6: CONCEPTS -->
+<div class="section" id="s6">
+<div class="hero h-ink">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Chapter 06 — Reference</div>
+    <h2>Concepts &amp; Tools</h2>
+    <p class="hero-sub">Every technology, algorithm, and pattern referenced in this guide — defined precisely.</p>
+  </div>
+</div>
+
+<div class="content">
+<h3>Core Algorithms</h3>
+<div class="gloss">
+  <div class="gloss-item"><h4>Fan-out on Write</h4><p>When a user posts, pre-populate all followers' feed caches immediately. Fast reads, expensive writes. Breaks for celebrity accounts (millions of cache writes per post).</p></div>
+  <div class="gloss-item"><h4>Fan-out on Read</h4><p>Store post once; compute each user's feed at read time by querying who they follow. Cheap writes, expensive reads. Latency grows with follow count.</p></div>
+  <div class="gloss-item"><h4>Operational Transformation (OT)</h4><p>Conflict resolution for collaborative editing. Transforms concurrent operations so they produce the same result regardless of arrival order. Requires a central server authority to serialize operations.</p></div>
+  <div class="gloss-item"><h4>CRDT (Conflict-free Replicated Data Type)</h4><p>Data structures that can be merged from any replica without coordination. Merge is commutative, associative, and idempotent. Enables offline editing and eventual consistency without a central authority.</p></div>
+  <div class="gloss-item"><h4>Token Bucket Algorithm</h4><p>Rate limiting algorithm. Tokens fill at a fixed rate; each request consumes one token. Allows bursting up to bucket capacity. Implemented atomically in Redis via Lua script.</p></div>
+  <div class="gloss-item"><h4>Consistent Hashing</h4><p>Distributes data across N nodes such that adding/removing a node only remaps K/N keys (not all keys). Virtual nodes increase even distribution. Used in Redis Cluster, Cassandra, DynamoDB.</p></div>
+  <div class="gloss-item"><h4>Thundering Herd</h4><p>When a cached item expires, many simultaneous requests all miss cache and hammer the database together. Mitigated by mutex locks, probabilistic early expiration, or request coalescing.</p></div>
+  <div class="gloss-item"><h4>Snowflake ID</h4><p>Twitter's 64-bit unique ID: 41-bit timestamp + 10-bit machine ID + 12-bit sequence. Time-ordered, generated without coordination. Sortable and compact. Used where UUID is too large or random.</p></div>
+</div>
+
+<h3>Data Stores</h3>
+<div class="gloss">
+  <div class="gloss-item"><h4>Apache Cassandra</h4><p>Wide-column NoSQL DB optimized for high write throughput and linear horizontal scale. Data modeled by partition key (determines node) and clustering key (determines sort order within partition). No multi-row transactions.</p></div>
+  <div class="gloss-item"><h4>Redis</h4><p>In-memory key-value store supporting Strings, Hashes, Lists, Sets, Sorted Sets, Streams. Sub-millisecond latency. Used for caching, session storage, pub/sub, rate limiting (Lua scripts), and leaderboards.</p></div>
+  <div class="gloss-item"><h4>Apache Kafka</h4><p>Distributed log for high-throughput event streaming. Topics split into partitions for parallelism. Consumer groups allow independent consumption of the same topic. Retention-based (not ack-based) — consumers control their offset.</p></div>
+  <div class="gloss-item"><h4>Elasticsearch</h4><p>Distributed search engine built on Lucene. Inverted index enables full-text search. Used for search, log analysis, and aggregations. Eventual consistency — not appropriate for transactional data.</p></div>
+</div>
+
+<h3>Cache Policies</h3>
+<div class="gloss">
+  <div class="gloss-item"><h4>Write-through</h4><p>Write to cache and DB synchronously. Cache always consistent with DB. Higher write latency. Best for frequently read, frequently updated data (e.g., inventory).</p></div>
+  <div class="gloss-item"><h4>Write-around</h4><p>Write directly to DB; cache only on first read miss. Cache never stale on writes. Best for write-once, read-rarely data (e.g., product catalog).</p></div>
+  <div class="gloss-item"><h4>Write-back (Write-behind)</h4><p>Write to cache immediately; async write to DB later. Lowest write latency but risk of data loss on cache failure. Rare in practice for critical data.</p></div>
+  <div class="gloss-item"><h4>LRU Eviction</h4><p>Least Recently Used — evict the item that was accessed least recently when cache is full. Works well for temporal locality (recently accessed = likely to be accessed again).</p></div>
+</div>
+
+<h3>Distributed Systems Patterns</h3>
+<div class="gloss">
+  <div class="gloss-item"><h4>Circuit Breaker</h4><p>Monitors failure rate to a downstream service. After threshold failures, "opens" the circuit — calls fail immediately without attempting the downstream call. Prevents cascading failures. Auto-resets after a probe period.</p></div>
+  <div class="gloss-item"><h4>Idempotency Key</h4><p>Client-generated unique token attached to a write request. Server uses it to detect and discard duplicate requests. Critical for at-least-once delivery systems where retries are possible.</p></div>
+  <div class="gloss-item"><h4>Dead Letter Queue (DLQ)</h4><p>A queue that receives messages which failed processing after N retries. Allows manual inspection, debugging, and replay without blocking the main queue.</p></div>
+  <div class="gloss-item"><h4>Cursor-based Pagination</h4><p>Pagination using a pointer to the last seen item (e.g., last_id, last_score+last_id). Stable as items are inserted/deleted. O(1) vs offset pagination's O(N) scan. Required for real-time feeds.</p></div>
+</div>
+
+<h3>API &amp; Protocol</h3>
+<div class="gloss">
+  <div class="gloss-item"><h4>WebSocket</h4><p>Full-duplex TCP connection after HTTP upgrade handshake. Persistent — both sides can send at any time. Used for real-time features (chat, collaborative editing, live feed updates).</p></div>
+  <div class="gloss-item"><h4>Server-Sent Events (SSE)</h4><p>One-way HTTP streaming from server to client. Simpler than WebSocket (no upgrade). Good for live updates where client doesn't need to send data (dashboards, notifications). Not for bidirectional communication.</p></div>
+  <div class="gloss-item"><h4>Base62 Encoding</h4><p>Encodes numbers using 62 characters [0-9A-Za-z]. Compact URL-safe representation. 7 Base62 characters represent 62^7 = 3.5 trillion unique values. Used in URL shorteners.</p></div>
+  <div class="gloss-item"><h4>cgroups v2</h4><p>Linux kernel feature for resource isolation: limit CPU, memory, PIDs, I/O per process group. Foundation of Docker container resource enforcement. pids.max prevents fork bombs.</p></div>
+</div>
+
+<h3>NFRs &amp; SLA Terminology</h3>
+<div class="gloss">
+  <div class="gloss-item"><h4>RPO (Recovery Point Objective)</h4><p>Maximum acceptable data loss measured in time. RPO=1hr means you can lose up to 1 hour of data. Drives backup frequency and replication lag tolerance.</p></div>
+  <div class="gloss-item"><h4>RTO (Recovery Time Objective)</h4><p>Maximum acceptable downtime after a failure. RTO=30s means the system must be back online within 30 seconds. Drives auto-failover speed and replica promotion time.</p></div>
+  <div class="gloss-item"><h4>QPS (Queries Per Second)</h4><p>Request throughput metric. Average QPS = DAU × requests_per_user / 86,400. Peak QPS = 2–3× average. Always design for peak, not average.</p></div>
+  <div class="gloss-item"><h4>DAU (Daily Active Users)</h4><p>The primary scale anchor. All back-of-envelope estimates derive from DAU. State your DAU assumption explicitly before any math — it sets the scale of every subsequent number.</p></div>
+</div>
+</div>
+
+<div class="chapter-nav">
+  <button class="nav-btn nav-prev" onclick="show(5)">
+    <span class="nav-arrow">←</span>
+    <span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Collaborative &amp; Dev Tools</span></span>
+  </button>
+  <button class="nav-btn nav-next" onclick="show(7)">
+    <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Interview Prep</span></span>
+    <span class="nav-arrow">→</span>
+  </button>
+</div>
+</div>
+
+<!-- ====================================================== SECTION 7: INTERVIEW PREP -->
+<div class="section" id="s7">
+<div class="hero h-red">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Chapter 07 — Interview Prep</div>
+    <h2>Interview Prep</h2>
+    <p class="hero-sub">The follow-up questions interviewers love to ask — and model answers that demonstrate Staff-level thinking.</p>
+  </div>
+</div>
+
+<div class="content">
+<h3>Meta Questions About the AI-Assisted Format</h3>
+
+<div class="qa">
+  <div class="qa-q">Why are you asking AI to generate the API spec instead of writing it yourself?</div>
+  <div class="qa-a"><strong>Model Answer:</strong> "I'm using AI to accelerate the artifact generation, not to make design decisions. I've already decided the endpoint names, the authentication mechanism, cursor-based pagination, and idempotency handling — those are engineering judgment calls that require domain knowledge. Generating the JSON schema and HTTP headers from those specifications is a mechanical task where AI is faster and more consistent than manual writing. It frees my time to focus on the architectural trade-offs, which is where the actual engineering thinking lives."</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">The AI suggested a different database than what you chose. Why did you override it?</div>
+  <div class="qa-a"><strong>Model Answer:</strong> "AI tools tend to default to SQL databases because they appear in more training examples. But for this access pattern — 50K writes/second, partitioned by user, with no multi-row transaction requirements — Cassandra is the right choice. It gives us linear horizontal write scalability, which PostgreSQL can't match without significant sharding complexity. I steered the AI back to Cassandra and asked it to revise the schema to use user_id as the partition key with created_at as the clustering key, which gives O(1) writes and O(1) reads for the latest feed."</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">How do you know if the output the AI generated is correct?</div>
+  <div class="qa-a"><strong>Model Answer:</strong> "Two ways: first, I review every artifact against my mental model — I know what a correct Cassandra schema looks like for this access pattern, so I can spot when partition keys or clustering columns are wrong. Second, I use AI to stress-test its own output: I ask 'what are the top 3 issues with this design?' and review those critiques. If AI can't find issues I know exist, that tells me something about the quality of the output. The reviewer mindset is the same one I'd apply to a code review from a junior engineer."</div>
+</div>
+
+<h3>System Design Follow-up Questions</h3>
+
+<div class="qa">
+  <div class="qa-q">Your feed system uses hybrid fan-out. What happens when a non-celebrity user suddenly goes viral?</div>
+  <div class="qa-a"><strong>Model Answer:</strong> "A user in the write-fanout tier gaining 5M followers overnight creates a window where they're still treated as a regular user but generating celebrity-scale writes. The mitigation is a background job that monitors follower growth rate — if a user gains 100K followers in 24 hours, they're promoted to the celebrity tier immediately. The Fanout Worker checks the celebrity-accounts Redis SET on every post; once promoted, new posts use read-fanout. Existing pre-computed timelines remain valid until they expire (TTL-based). This is a real incident type — Twitter had exactly this problem with breaking news accounts."</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Your WebSocket design has Chat Servers with stateful connections. How do you deploy a new version without dropping connections?</div>
+  <div class="qa-a"><strong>Model Answer:</strong> "Zero-downtime WebSocket deploys require a drain strategy. The deployment process: (1) Mark the old pod as draining — stop accepting new connections via health check endpoint returning 503; (2) New pods come up, accepting new connections; (3) Old pod broadcasts a reconnect signal to its connected clients — clients receive it and reconnect to the load balancer, which routes them to a new pod; (4) After a drain window (say 60 seconds), the old pod forcibly closes remaining connections and terminates. Client-side reconnect logic is critical — clients must handle disconnection gracefully, buffer pending messages, and reconnect with their last_received_message_id for seamless replay."</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Your rate limiter uses Redis. At 5M requests/second, is Redis the bottleneck?</div>
+  <div class="qa-a"><strong>Model Answer:</strong> "Yes, centralized Redis starts becoming a bottleneck around 1-2M operations/second per node. At 5M req/sec, we need either a Redis Cluster (shard rate limit keys by user_id hash) or a two-tier approach: L1 local token bucket on each app server (enforces ~2× the limit, loose but fast at ~nanosecond latency) + L2 Redis for global accuracy. The L1 tier handles the vast majority of requests locally and only syncs with Redis periodically (every 100ms) to compensate for overages. This is how Stripe and Cloudflare implement their rate limiters at scale — the local tier absorbs >99% of checks."</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">How would you add end-to-end encryption to your messaging system?</div>
+  <div class="qa-a"><strong>Model Answer:</strong> "E2E encryption fundamentally changes the architecture. With E2E encryption, the server never sees plaintext — messages are encrypted client-side with the recipient's public key and decrypted only on the recipient's device. This means: (1) The server can't read or search message content; (2) Message notifications need to include only metadata (sender, timestamp) not content; (3) Key management becomes critical — each user has a key pair, public keys are stored server-side, private keys never leave the device. The tricky part is multi-device support: a user's second device needs to decrypt historical messages. WhatsApp's Signal Protocol uses a key ratchet mechanism — each message uses a new encryption key derived from the previous one, so compromise of one key doesn't expose past messages."</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Walk me through how you'd monitor this system in production. What are your first 5 alerts?</div>
+  <div class="qa-a"><strong>Model Answer:</strong> "The five alerts I'd set up first, in priority order: (1) API p99 latency &gt; 500ms for 2 consecutive minutes — catches the broadest class of user-facing degradation; (2) Error rate &gt; 1% on any endpoint — catches failures that might look like success from infrastructure metrics; (3) Kafka consumer lag &gt; 100K messages on the fanout topic — catches processing backlog before it becomes user-visible feed delay; (4) Redis cache hit rate &lt; 85% for 5 minutes — usually signals a cold-start event or thundering herd; (5) Database replication lag &gt; 500ms — means read replicas are serving stale data. I'd set these up before we go live — not in response to incidents. The goal is to know about degradation before users do."</div>
+</div>
+
+<h3>The "Wow Factor" Additions</h3>
+<div class="cards two">
+  <div class="card"><div class="card-body">
+    <h4>🌍 Geo-sharding</h4>
+    <p>Partition data by geographic region. US users' data in us-east-1, EU users in eu-west-1. Reduces latency, satisfies GDPR data residency. Mention this as a next-step scaling move — not Day 1.</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>🤖 ML-based Feed Ranking</h4>
+    <p>Replace rule-based scoring with a two-tower neural model (user embedding × content embedding → relevance score). Mention TFX or SageMaker for serving, with a feature store for real-time signals. Shows product thinking.</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>📊 Operational Excellence</h4>
+    <p>Mention chaos engineering (inject failures in staging to verify circuit breakers), runbooks for each alert, and SLO dashboards (error budget burn rate). This signals you've actually run production systems.</p>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h4>🔒 Security Posture</h4>
+    <p>Mention: JWT with short TTL + refresh token rotation, API gateway WAF rules, secrets management (Vault or AWS Secrets Manager, never env vars), and audit logging for all writes. Shows security mindset.</p>
+  </div></div>
+</div>
+
+<div class="callout c-success">
+  <div class="ci">🏆</div>
+  <div class="callout-body">
+    <strong>The single most important mindset shift</strong>
+    <p>In AI-assisted system design, the temptation is to let AI do more so you do less. Resist it. The more specific and constrained your prompts are, the better the output — and every specific constraint you add demonstrates that you know the problem domain. The best candidates use AI to move faster, not to think less. The interviewer can tell the difference.</p>
+  </div>
+</div>
+</div>
+
+<div class="chapter-nav">
+  <button class="nav-btn nav-prev" onclick="show(6)">
+    <span class="nav-arrow">←</span>
+    <span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Concepts &amp; Tools</span></span>
+  </button>
+  <div></div>
+</div>
+</div>
+
+</main>
+</div>
+
+<script>
+(function() {
+  var TOTAL = 8;
+  var current = 0;
+  var navLinks = document.querySelectorAll('.nav-link');
+  var sectionEls = document.querySelectorAll('.section');
+
+  window.show = function(n) {
+    sectionEls[current].classList.remove('active');
+    navLinks[current].classList.remove('active');
+    current = n;
+    sectionEls[current].classList.add('active');
+    navLinks[current].classList.add('active');
+    var prog = document.getElementById('prog');
+    if (prog) prog.style.width = (((current + 1) / TOTAL) * 100) + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.closeSidebar();
+  };
+
+  window.toggleSidebar = function() {
+    var sb = document.getElementById('sidebar');
+    var ov = document.getElementById('overlay');
+    if (sb) sb.classList.toggle('mobile-open');
+    if (ov) ov.classList.toggle('open');
+  };
+
+  window.closeSidebar = function() {
+    var sb = document.getElementById('sidebar');
+    var ov = document.getElementById('overlay');
+    if (sb) sb.classList.remove('mobile-open');
+    if (ov) ov.classList.remove('open');
+  };
+
+  // Initialize progress bar
+  var prog = document.getElementById('prog');
+  if (prog) prog.style.width = ((1 / TOTAL) * 100) + '%';
+})();
+</script>
+</body>
+</html>

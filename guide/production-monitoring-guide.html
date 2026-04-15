@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Production Monitoring — Personal Reference Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --ink: #1a1714;
+  --ink-mid: #3d3830;
+  --ink-light: #7a7068;
+  --paper: #faf8f5;
+  --paper-warm: #f3efe8;
+  --paper-mid: #ece7de;
+  --rule: #ddd8cf;
+  --accent: #2a5fa5;
+  --accent-light: #dce8f7;
+  --accent-deep: #1d4480;
+  --blue: #2a5fa5;
+  --blue-light: #dce8f7;
+  --green: #2d7a4f;
+  --green-light: #d8f0e4;
+  --gold: #b07d20;
+  --gold-light: #f5edda;
+  --purple: #5e3d8f;
+  --purple-light: #ebe0fa;
+  --red: #b53535;
+  --red-light: #fde8e8;
+  --code-bg: #1a1c1a;
+  --sidebar-w: 260px;
+  --max-content-w: 850px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; font-weight: 400; line-height: 1.72; letter-spacing: -0.008em; color: var(--ink-mid); background: var(--paper); }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh;
+  background: var(--ink); overflow-y: auto; z-index: 100;
+  display: flex; flex-direction: column; padding: 0 0 40px;
+}
+.sidebar-brand { padding: 24px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.sidebar-brand-title { font-family: 'Playfair Display', serif; color: #fff; font-size: 1rem; font-weight: 700; line-height: 1.3; }
+.sidebar-brand-sub { font-family: 'JetBrains Mono', monospace; color: #7a7068; font-size: 0.65rem; font-weight: 400; letter-spacing: 0.06em; margin-top: 4px; }
+.nav-group { padding: 20px 0 8px; }
+.nav-group-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.08em; color: #7a7068; text-transform: uppercase; padding: 0 20px 6px; }
+.nav-link {
+  display: block; padding: 7px 20px; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem; font-weight: 400; letter-spacing: 0.01em; color: #c8c0b8;
+  text-decoration: none; cursor: pointer; border: none; background: none;
+  width: 100%; text-align: left; white-space: normal; line-height: 1.4;
+  transition: color 0.15s, background 0.15s;
+}
+.nav-link:hover { color: #fff; background: rgba(255,255,255,0.06); }
+.nav-link.active { color: #fff; background: rgba(42,95,165,0.35); border-left: 3px solid var(--accent); padding-left: 17px; }
+
+/* ── MAIN ── */
+.layout { }
+.main { margin-left: var(--sidebar-w); width: calc(100% - var(--sidebar-w)); min-height: 100px; }
+.progress-bar { position: sticky; top: 0; z-index: 50; height: 3px; background: var(--rule); }
+.progress-bar #prog { height: 100%; width: 0%; background: var(--accent); transition: width 0.25s ease; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── HERO ── */
+.hero { padding: 56px 32px 48px; color: #fff; }
+.hero-inner { max-width: var(--max-content-w); margin: 0 auto; }
+.chapter-label { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.55); display: block; margin-bottom: 12px; }
+.hero h2 { font-family: 'Playfair Display', serif; font-weight: 900; font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.08; letter-spacing: -0.02em; color: #fff; margin-bottom: 16px; }
+.hero .subtitle { font-size: 1.08rem; font-weight: 300; color: rgba(255,255,255,0.72); max-width: 600px; line-height: 1.6; }
+
+/* ── PILLS ── */
+.pills { display: flex; flex-wrap: wrap; gap: 8px; padding: 20px 32px; max-width: var(--max-content-w); margin: 0 auto; }
+.pill { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.04em; padding: 4px 10px; border-radius: 20px; background: var(--paper-mid); color: var(--ink-light); border: 1px solid var(--rule); }
+
+/* ── CONTENT ── */
+.content { max-width: var(--max-content-w); margin: 0 auto; padding: 0 32px 32px; }
+.lead { font-size: 1.08rem; font-style: italic; color: var(--ink-mid); border-left: 3px solid var(--accent); padding-left: 18px; margin: 32px 0; line-height: 1.7; }
+p { margin-bottom: 1.1rem; }
+h3 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: clamp(1.3rem, 2.5vw, 1.7rem); line-height: 1.2; color: var(--ink); margin: 36px 0 14px; }
+h4 { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.95rem; line-height: 1.4; color: var(--ink); margin: 24px 0 10px; }
+
+/* ── CALLOUT ── */
+.callout { display: flex; align-items: flex-start; gap: 12px; border-radius: 8px; padding: 16px 18px; margin: 24px 0; }
+.callout-body { flex: 1; }
+.callout-icon { font-size: 1.1rem; margin-top: 1px; flex-shrink: 0; }
+.callout-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
+.callout-text { font-size: 0.95rem; font-weight: 400; margin: 0; line-height: 1.6; }
+.callout.tip  { background: var(--blue-light); border-left: 3px solid var(--blue); }
+.callout.tip .callout-title { color: var(--blue); }
+.callout.warn { background: var(--gold-light); border-left: 3px solid var(--gold); }
+.callout.warn .callout-title { color: var(--gold); }
+.callout.key  { background: var(--green-light); border-left: 3px solid var(--green); }
+.callout.key .callout-title { color: var(--green); }
+.callout.info { background: var(--purple-light); border-left: 3px solid var(--purple); }
+.callout.info .callout-title { color: var(--purple); }
+
+/* ── CARDS ── */
+.cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 20px 0; }
+.cards.three { grid-template-columns: repeat(3, 1fr); }
+.card { background: var(--paper-warm); border: 1px solid var(--rule); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; height: 100%; }
+.card-icon { font-size: 1.4rem; margin-bottom: 8px; }
+.card-title { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1rem; color: var(--ink); margin-bottom: 6px; }
+.card-body { font-size: 0.85rem; font-weight: 400; color: var(--ink-light); line-height: 1.6; flex-grow: 1; }
+@media (max-width: 900px) { .cards.three { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .cards, .cards.three { grid-template-columns: 1fr; } }
+
+/* ── STEPS ── */
+.steps { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
+.step { display: flex; align-items: flex-start; gap: 16px; background: var(--paper-warm); border-radius: 8px; padding: 14px 16px; }
+.step-num { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 500; display: flex; align-items: center; justify-content: center; }
+.step-content { flex: 1; }
+.step-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 3px; color: var(--ink); }
+.step-desc { font-size: 0.85rem; font-weight: 400; color: var(--ink-light); line-height: 1.55; }
+
+/* ── ANALOGY ── */
+.analogy { background: #fef3e2; border-left: 3px solid var(--gold); border-radius: 8px; padding: 16px 18px; margin: 24px 0; }
+.analogy-label { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 500; color: var(--gold); display: block; margin-bottom: 6px; letter-spacing: 0.06em; }
+.analogy-text { font-size: 0.95rem; font-style: italic; color: #3d2e1a; margin: 0; line-height: 1.65; }
+
+/* ── PULLQUOTE ── */
+.pullquote { border-left: 4px solid var(--accent); padding: 12px 24px; margin: 28px 0; }
+.pullquote p { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-style: italic; color: var(--ink); font-weight: 700; margin: 0; line-height: 1.5; }
+
+/* ── CODE ── */
+.code { background: var(--code-bg); border-radius: 8px; padding: 18px 20px; margin: 14px 0; overflow-x: auto; }
+.code pre { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; font-weight: 400; color: #d4d0c8; line-height: 1.65; white-space: pre; }
+.code pre .cm { color: #6a9955; }
+.code pre .kw { color: #569cd6; }
+.code pre .an { color: #c586c0; }
+.code pre .st { color: #ce9178; }
+.code pre .nm { color: #9cdcfe; }
+.code pre .tp { color: #4ec9b0; }
+.code pre .fn { color: #dcdcaa; }
+.code pre .nu { color: #b5cea8; }
+
+/* ── EXAMPLE SECTION ── */
+.example-section { margin: 28px 0; }
+.example-section-title { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 500; color: var(--accent); letter-spacing: 0.06em; display: block; margin-bottom: 8px; }
+.test-cases { display: flex; flex-direction: column; gap: 16px; }
+.test-case { border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+.test-case-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--paper-warm); border-bottom: 1px solid var(--rule); }
+.test-case-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.04em; padding: 3px 8px; border-radius: 12px; }
+.test-case-label { font-size: 0.85rem; font-weight: 400; color: var(--ink-light); }
+.test-case .code { border-radius: 0; margin: 0; }
+.badge-green  { background: var(--green-light);  color: var(--green); }
+.badge-gold   { background: var(--gold-light);   color: var(--gold); }
+.badge-blue   { background: var(--blue-light);   color: var(--blue); }
+.badge-red    { background: var(--red-light);    color: var(--red); }
+.badge-purple { background: var(--purple-light); color: var(--purple); }
+
+/* ── SCENARIO NAV ── */
+.scenario-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
+.scenario-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; text-decoration: none; border: 1px solid transparent; transition: opacity 0.15s; cursor: pointer; }
+.scenario-chip:hover { opacity: 0.75; }
+.chip-num { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 500; }
+.chip-green  { background: var(--green-light);  color: var(--green); border-color: #b0d9c0; }
+.chip-gold   { background: var(--gold-light);   color: var(--gold);  border-color: #e0c880; }
+.chip-blue   { background: var(--blue-light);   color: var(--blue);  border-color: #b0cceb; }
+.chip-red    { background: var(--red-light);    color: var(--red);   border-color: #e0b0b0; }
+.chip-purple { background: var(--purple-light); color: var(--purple);border-color: #c0a8e8; }
+
+/* ── TABLE ── */
+.tbl { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.88rem; }
+.tbl th { background: var(--paper-warm); font-weight: 600; color: var(--ink); padding: 10px 14px; text-align: left; border: 1px solid var(--rule); font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing: 0.02em; }
+.tbl td { padding: 9px 14px; border: 1px solid var(--rule); color: var(--ink-mid); vertical-align: top; line-height: 1.5; }
+.tbl tr:nth-child(even) td { background: var(--paper-warm); }
+
+/* ── CHAPTER NAV ── */
+.chapter-nav { display: flex; justify-content: space-between; align-items: stretch; gap: 12px; padding: 24px 32px 48px; max-width: var(--max-content-w); margin: 0 auto; }
+.nav-btn { display: flex; align-items: center; gap: 12px; flex: 1; background: var(--paper-warm); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 18px; cursor: pointer; font-family: inherit; text-align: left; transition: background 0.15s, border-color 0.15s; }
+.nav-btn:hover { background: var(--accent-light); border-color: var(--accent); }
+.nav-next { justify-content: flex-end; text-align: right; }
+.nav-arrow { font-size: 1.2rem; color: var(--accent); flex-shrink: 0; }
+.nav-hint { display: block; font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: var(--ink-light); text-transform: uppercase; letter-spacing: 0.08em; }
+.nav-title { display: block; font-size: 0.9rem; font-weight: 600; color: var(--ink-mid); }
+
+/* ── Q&A ── */
+.qa-item { border: 1px solid var(--rule); border-radius: 10px; margin: 20px 0; overflow: hidden; }
+.qa-question { background: var(--ink); padding: 16px 20px; display: flex; align-items: flex-start; gap: 12px; }
+.qa-level { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 12px; flex-shrink: 0; margin-top: 2px; }
+.qa-level.foundational { background: var(--green-light); color: var(--green); }
+.qa-level.intermediate { background: var(--gold-light); color: var(--gold); }
+.qa-level.senior { background: var(--red-light); color: var(--red); }
+.qa-text { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-style: italic; color: #fff; font-weight: 700; line-height: 1.4; }
+.qa-answer { padding: 18px 20px; }
+.qa-context { font-size: 0.85rem; color: var(--ink-light); font-style: italic; margin-bottom: 12px; }
+.qa-points { margin: 12px 0; }
+.qa-points ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.qa-points ul li { font-size: 0.88rem; padding-left: 18px; position: relative; color: var(--ink-mid); }
+.qa-points ul li::before { content: "→"; position: absolute; left: 0; color: var(--accent); font-weight: 600; }
+.qa-strong-answer { background: var(--paper-warm); border-radius: 8px; padding: 14px 16px; margin: 12px 0; font-size: 0.92rem; line-height: 1.7; border-left: 3px solid var(--accent); }
+.qa-trap { background: var(--red-light); border-radius: 8px; padding: 12px 16px; margin: 10px 0; font-size: 0.85rem; color: var(--red); border-left: 3px solid var(--red); }
+
+/* ── CONCEPT CARD ── */
+.concept-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 16px 0; }
+.concept-card { background: var(--paper-warm); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; }
+.concept-name { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; font-weight: 500; color: var(--accent); margin-bottom: 5px; }
+.concept-desc { font-size: 0.83rem; color: var(--ink-light); line-height: 1.55; margin: 0; }
+
+/* ── MOBILE ── */
+.mobile-header { display: none; position: sticky; top: 0; z-index: 110; background: var(--ink); padding: 12px 16px; align-items: center; gap: 12px; }
+.hamburger { background: none; border: none; cursor: pointer; padding: 4px; display: flex; flex-direction: column; gap: 4px; }
+.hamburger span { display: block; width: 20px; height: 2px; background: #fff; border-radius: 2px; }
+.mobile-title { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: #c8c0b8; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
+.sidebar-overlay.open { display: block; }
+@media (max-width: 900px) {
+  .mobile-header { display: flex; }
+  .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .main { margin-left: 0; width: 100%; }
+  .hero { padding: 36px 20px 32px; }
+  .content { padding: 0 20px 24px; }
+  .pills { padding: 16px 20px; }
+  .chapter-nav { padding: 20px 20px 36px; }
+}
+</style>
+</head>
+<body>
+
+<div class="mobile-header">
+  <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <span class="mobile-title">Production Monitoring</span>
+</div>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-title">Production Monitoring</div>
+      <div class="sidebar-brand-sub">Personal Reference · Spring Boot / Java</div>
+    </div>
+    <nav>
+      <div class="nav-group">
+        <div class="nav-group-label">Introduction</div>
+        <button class="nav-link active" onclick="show(0)">Overview</button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Foundations</div>
+        <button class="nav-link" onclick="show(1)">01 · Why Monitoring Matters</button>
+        <button class="nav-link" onclick="show(2)">02 · What to Monitor</button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">The Three Pillars</div>
+        <button class="nav-link" onclick="show(3)">03 · Centralized Logging</button>
+        <button class="nav-link" onclick="show(4)">04 · Metrics &amp; Alerting</button>
+        <button class="nav-link" onclick="show(5)">05 · Distributed Tracing</button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Implementation</div>
+        <button class="nav-link" onclick="show(6)">06 · Spring Boot Setup</button>
+        <button class="nav-link" onclick="show(7)">07 · GCP Solutions</button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Reference</div>
+        <button class="nav-link" onclick="show(8)">08 · Concepts &amp; Tools</button>
+        <button class="nav-link" onclick="show(9)">09 · Interview Prep</button>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="progress-bar"><div id="prog"></div></div>
+
+    <!-- ═══════════════════════════════════════════════════ SECTION 0: OVERVIEW -->
+    <div class="section active" id="s0">
+      <div class="hero" style="background: linear-gradient(135deg,#0d1f3c 0%,#1d4480 100%);">
+        <div class="hero-inner">
+          <span class="chapter-label">Production Monitoring — Personal Reference</span>
+          <h2>Know Before It Breaks</h2>
+          <p class="subtitle">A complete reference for building, operating, and reasoning about production observability with Spring Boot and GCP.</p>
+        </div>
+      </div>
+      <div class="pills">
+        <span class="pill">Spring Boot 3.x</span>
+        <span class="pill">Micrometer</span>
+        <span class="pill">OpenTelemetry</span>
+        <span class="pill">Prometheus</span>
+        <span class="pill">Grafana</span>
+        <span class="pill">ELK Stack</span>
+        <span class="pill">GCP Operations</span>
+        <span class="pill">Actuator</span>
+      </div>
+      <div class="content">
+        <p class="lead">Production systems fail in ways that development environments never reveal. This guide covers the full observability stack — what to watch, how to collect it, how to trace a user across servers, and how to wire it all into Spring Boot and GCP.</p>
+
+        <h3>What's in this guide</h3>
+        <div class="cards">
+          <div class="card">
+            <div class="card-icon">🎯</div>
+            <div class="card-title">Foundations</div>
+            <p class="card-body">The four golden signals, the three pillars of observability, and the mental model for why you monitor in the first place.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">📋</div>
+            <div class="card-title">What to Monitor</div>
+            <p class="card-body">Infrastructure, JVM internals, business KPIs, databases, queues, and external dependencies — the full checklist.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">📜</div>
+            <div class="card-title">Centralized Logging</div>
+            <p class="card-body">Log shippers, structured JSON, Elasticsearch, Loki, and how to aggregate logs from every server into one queryable place.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">📈</div>
+            <div class="card-title">Metrics &amp; Alerting</div>
+            <p class="card-body">Prometheus scraping, Grafana dashboards, Alertmanager routing, and custom Micrometer meters for your domain.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">🔗</div>
+            <div class="card-title">Distributed Tracing</div>
+            <p class="card-body">Correlation IDs, MDC injection, W3C traceparent header propagation, and OpenTelemetry across a stateless web tier.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">☁️</div>
+            <div class="card-title">GCP &amp; Spring Boot</div>
+            <p class="card-body">Cloud Logging, Cloud Monitoring, Cloud Trace, Actuator endpoints, Micrometer config, and production-ready YAML.</p>
+          </div>
+        </div>
+
+        <h3>The core principle</h3>
+        <div class="analogy">
+          <span class="analogy-label">// Analogy</span>
+          <p class="analogy-text">Think of observability like the instrument panel in a cockpit. The pilot doesn't watch every wire and fuel line directly — they read instruments. Logs are the flight recorder (what happened), metrics are the gauges (how things are right now), and traces are the flight path (how you got here).</p>
+        </div>
+
+        <div class="callout key">
+          <div class="callout-icon">✅</div>
+          <div class="callout-body">
+            <div class="callout-title">Rule of thumb</div>
+            <p class="callout-text">Alert on metrics → investigate with logs → confirm with traces. These three pillars serve different purposes and work best together, not as substitutes for each other.</p>
+          </div>
+        </div>
+      </div>
+      <div class="chapter-nav" style="justify-content:flex-end;">
+        <button class="nav-btn nav-next" onclick="show(1)">
+          <span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Why Monitoring Matters</span></span>
+          <span class="nav-arrow">→</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ SECTION 1: WHY MONITORING -->
+    <div class="section" id="s1">
+      <div class="hero" style="background:#1a2a1e;">
+        <div class="hero-inner">
+          <span class="chapter-label">Chapter 01 — Foundations</span>
+          <h2>Why Monitoring Matters</h2>
+          <p class="subtitle">The four golden signals and the three pillars that underpin every observability decision you'll ever make.</p>
+        </div>
+      </div>
+      <div class="pills">
+        <span class="pill">Four Golden Signals</span>
+        <span class="pill">Three Pillars</span>
+        <span class="pill">SRE</span>
+        <span class="pill">Observability</span>
+      </div>
+      <div class="content">
+        <p class="lead">You can't fix what you can't see. Monitoring is not about collecting data — it's about having the right data at the moment something goes wrong, before a customer tells you about it.</p>
+
+        <h3>The four golden signals</h3>
+        <p>Google's Site Reliability Engineering book defines four signals that, between them, tell you almost everything you need to know about a production system's health.</p>
+
+        <div class="cards">
+          <div class="card">
+            <div class="card-icon">⏱️</div>
+            <div class="card-title">Latency</div>
+            <p class="card-body">How long requests take to complete. Track successful requests separately from failed ones — a slow 200 is often as damaging as a 500. Always use p50, p95, p99 — never averages.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">🚦</div>
+            <div class="card-title">Traffic</div>
+            <p class="card-body">Requests per second, throughput, active sessions. This is your demand signal. Traffic trends establish your baseline — without it, you can't tell normal from abnormal.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">💥</div>
+            <div class="card-title">Errors</div>
+            <p class="card-body">The rate of failed requests — 5xx HTTP codes, uncaught exceptions, failed DB operations, null pointer exceptions. Both explicit failures and implicit ones (wrong results).</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">🪣</div>
+            <div class="card-title">Saturation</div>
+            <p class="card-body">How "full" your system is. CPU %, memory %, disk I/O, thread pool exhaustion, DB connection pool size. Systems degrade before they break — saturation is the early warning.</p>
+          </div>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-body">
+            <div class="callout-title">Never use averages for latency</div>
+            <p class="callout-text">An average of 100ms can hide that 5% of users experience 2000ms. Use percentiles: p50 (median), p95 (95th percentile), p99. Your worst users matter. Alert on p99, not mean.</p>
+          </div>
+        </div>
+
+        <h3>The three pillars of observability</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">L</div>
+            <div class="step-content">
+              <div class="step-title">Logs — What happened</div>
+              <div class="step-desc">Structured text events emitted during execution. Logs answer "why" — they contain the full context of an event. Best for debugging specific incidents once you know something went wrong. Use structured JSON, not plain strings.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">M</div>
+            <div class="step-content">
+              <div class="step-title">Metrics — How things are right now</div>
+              <div class="step-desc">Numeric time-series data sampled at regular intervals. Cheap to store, fast to query, great for alerting. Metrics tell you "that" something is wrong. They're the trigger for investigation — not the investigation itself.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">T</div>
+            <div class="step-content">
+              <div class="step-title">Traces — How you got here</div>
+              <div class="step-desc">End-to-end journeys across services. A trace is composed of spans — one per unit of work (HTTP call, DB query, cache lookup). Traces show where latency lives across service boundaries. Essential in microservices.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="analogy">
+          <span class="analogy-label">// Analogy</span>
+          <p class="analogy-text">Think of a hospital: metrics are the vital signs monitor beeping at the nurse station (tells you something is wrong), logs are the patient's medical notes (tell you the history and why), and traces are the patient's journey — ER → imaging → surgery → recovery — showing where time was spent.</p>
+        </div>
+
+        <div class="pullquote">
+          <p>"Alert on metrics, investigate with logs, confirm with traces."</p>
+        </div>
+
+        <div class="callout tip">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body">
+            <div class="callout-title">Start here, not with tools</div>
+            <p class="callout-text">Before choosing Prometheus vs Datadog or ELK vs Loki, get the four signals right and structure your logs as JSON. Tool choice is secondary — good observability habits come first.</p>
+          </div>
+        </div>
+      </div>
+      <div class="chapter-nav">
+        <button class="nav-btn nav-prev" onclick="show(0)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Overview</span></span></button>
+        <button class="nav-btn nav-next" onclick="show(2)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">What to Monitor</span></span><span class="nav-arrow">→</span></button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ SECTION 2: WHAT TO MONITOR -->
+    <div class="section" id="s2">
+      <div class="hero" style="background:#1e1a2e;">
+        <div class="hero-inner">
+          <span class="chapter-label">Chapter 02 — Foundations</span>
+          <h2>What to Monitor</h2>
+          <p class="subtitle">The complete checklist — infrastructure, JVM, business KPIs, databases, queues, and external dependencies.</p>
+        </div>
+      </div>
+      <div class="pills">
+        <span class="pill">JVM Metrics</span>
+        <span class="pill">Business KPIs</span>
+        <span class="pill">Database</span>
+        <span class="pill">Message Queues</span>
+        <span class="pill">External APIs</span>
+      </div>
+      <div class="content">
+        <p class="lead">Infrastructure metrics are just the starting point. The metrics that matter most are the ones tied to your business — they catch problems that CPU graphs will never reveal.</p>
+
+        <h3>Infrastructure layer</h3>
+        <table class="tbl">
+          <thead><tr><th>Metric</th><th>Why it matters</th><th>Alert threshold</th></tr></thead>
+          <tbody>
+            <tr><td>CPU utilization</td><td>Sustained high CPU causes latency spikes before crashes</td><td>&gt;80% sustained for 5 min</td></tr>
+            <tr><td>Memory (heap + off-heap)</td><td>OOM kills are instant; heap growth trends warn you early</td><td>Heap &gt;85%</td></tr>
+            <tr><td>Disk I/O</td><td>High write latency cascades into log shipper lag</td><td>Latency &gt;100ms</td></tr>
+            <tr><td>Network in/out</td><td>Egress spikes can indicate data exfil or runaway retries</td><td>Baseline +3σ</td></tr>
+            <tr><td>Thread pool utilization</td><td>Pool exhaustion causes request queuing before 500s</td><td>Active &gt;90% of pool size</td></tr>
+          </tbody>
+        </table>
+
+        <h3>JVM internals</h3>
+        <div class="cards three">
+          <div class="card">
+            <div class="card-icon">♻️</div>
+            <div class="card-title">GC Pause Times</div>
+            <p class="card-body">GC pauses &gt;500ms cause visible latency spikes. Watch G1GC pause time, GC frequency, and heap reclaimed per cycle.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">🧵</div>
+            <div class="card-title">Thread States</div>
+            <p class="card-body">Monitor BLOCKED, WAITING, and TIMED_WAITING thread counts. A deadlock shows up as BLOCKED threads piling up.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">🔌</div>
+            <div class="card-title">Connection Pools</div>
+            <p class="card-body">DB and HTTP connection pool utilization. Near-full pools cause request queuing. HikariCP exposes these via Micrometer.</p>
+          </div>
+        </div>
+
+        <h3>Business KPIs — the most important layer</h3>
+        <p>Infrastructure metrics tell you the system is struggling. Business metrics tell you the business is hurting. These are the signals your stakeholders actually care about.</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">Transaction success rate</div>
+              <div class="step-desc">Orders placed per minute, payment success rate, checkout completion rate. A drop here is a revenue signal that no CPU chart captures.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">User funnel completion</div>
+              <div class="step-desc">Signup rate, login success rate, onboarding completion. A drop in signups with healthy CPU often means a third-party auth provider is down.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">Queue / async job health</div>
+              <div class="step-desc">Consumer lag (Kafka), dead letter queue depth, job processing time. A growing DLQ means data is being lost silently.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-title">External dependency health</div>
+              <div class="step-desc">HTTP call latency and error rate to third-party APIs, circuit breaker state, timeout rate. Third-party failures cascade unless isolated.</div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Database metrics</h3>
+        <table class="tbl">
+          <thead><tr><th>Metric</th><th>What it reveals</th></tr></thead>
+          <tbody>
+            <tr><td>Slow query count (&gt;1s)</td><td>Missing indexes, N+1 problems, lock contention</td></tr>
+            <tr><td>Connection wait time</td><td>Pool exhaustion — requests queuing for a connection</td></tr>
+            <tr><td>Deadlock count</td><td>Transaction ordering bugs — will cause 500s intermittently</td></tr>
+            <tr><td>Replication lag</td><td>Read replicas serving stale data — data consistency bugs</td></tr>
+            <tr><td>Active connections</td><td>Approaching max_connections causes hard failures</td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout key">
+          <div class="callout-icon">✅</div>
+          <div class="callout-body">
+            <div class="callout-title">Start with what your business cares about</div>
+            <p class="callout-text">Every metric you add has a maintenance cost. Prioritize metrics that trigger action. A metric that nobody acts on when it alerts is noise. A business KPI that drops 10% without anyone noticing is a gap in your observability.</p>
+          </div>
+        </div>
+      </div>
+      <div class="chapter-nav">
+        <button class="nav-btn nav-prev" onclick="show(1)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Why Monitoring Matters</span></span></button>
+        <button class="nav-btn nav-next" onclick="show(3)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Centralized Logging</span></span><span class="nav-arrow">→</span></button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ SECTION 3: LOGGING -->
+    <div class="section" id="s3">
+      <div class="hero" style="background:#1c2235;">
+        <div class="hero-inner">
+          <span class="chapter-label">Chapter 03 — The Three Pillars</span>
+          <h2>Centralized Logging</h2>
+          <p class="subtitle">Aggregating logs from every server into one place — shippers, structured JSON, and the ELK / Loki pipeline.</p>
+        </div>
+      </div>
+      <div class="pills">
+        <span class="pill">Filebeat</span><span class="pill">Fluentd</span><span class="pill">Elasticsearch</span>
+        <span class="pill">Logstash</span><span class="pill">Kibana</span><span class="pill">Loki</span>
+        <span class="pill">Logback</span><span class="pill">JSON logs</span>
+      </div>
+      <div class="content">
+        <p class="lead">Logs written to a single server are useful during development. In production with multiple servers, they're useless without centralization — you can't manually SSH into 20 servers to grep a log file.</p>
+
+        <h3>The centralized logging pipeline</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">App writes structured JSON logs to stdout / file</div>
+              <div class="step-desc">Never ship logs from inside your application. Write JSON to stdout or a rolling file. Let an agent handle delivery. This decouples your app from the log destination.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">Log shipper on each server tails and forwards</div>
+              <div class="step-desc">Filebeat (Elastic), Fluentd / Fluent Bit (flexible, cloud-native), or Promtail (Grafana Loki). Each instance runs on every server, reads logs, and ships to the central collector.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">Logstash / Kafka acts as a buffer and transformer</div>
+              <div class="step-desc">Logstash parses, filters, and enriches log events. Kafka is often used as an intermediate buffer to absorb spikes without losing data when the downstream is slow.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-title">Elasticsearch / Loki stores and indexes</div>
+              <div class="step-desc">Elasticsearch indexes every field for full-text search. Loki stores compressed log chunks indexed only by labels — cheaper but less flexible. Choose based on query patterns.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-content">
+              <div class="step-title">Kibana / Grafana for querying and dashboards</div>
+              <div class="step-desc">Kibana's Discover for Elasticsearch, Grafana's Explore panel for Loki. Both let you filter by time, service, severity, and any field in your JSON log.</div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Why structured JSON logging</h3>
+        <p>A plain text log line like <code style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;background:var(--paper-mid);padding:1px 5px;border-radius:3px;">2024-01-15 ERROR Failed to process order 12345</code> requires a regex to parse. If the format changes, the regex breaks silently. JSON logs are parseable without fragile patterns.</p>
+
+        <nav class="scenario-nav">
+          <a class="scenario-chip chip-green" href="#log-json"><span class="chip-num">01</span> JSON log config</a>
+          <a class="scenario-chip chip-blue" href="#log-mdc"><span class="chip-num">02</span> MDC correlation</a>
+          <a class="scenario-chip chip-gold" href="#log-filter"><span class="chip-num">03</span> Servlet filter</a>
+          <a class="scenario-chip chip-purple" href="#log-filebeat"><span class="chip-num">04</span> Filebeat config</a>
+        </nav>
+
+        <div class="example-section">
+          <span class="example-section-title">// Logging configuration examples</span>
+          <div class="test-cases">
+            <div class="test-case" id="log-json">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-green">JSON Logging</span>
+                <span class="test-case-label">logback-spring.xml — structured JSON output via logstash-logback-encoder</span>
+              </div>
+              <div class="code"><pre><span class="cm">&lt;!-- pom.xml dependency --&gt;</span>
+<span class="cm">&lt;dependency&gt;</span>
+  <span class="cm">&lt;groupId&gt;net.logstash.logback&lt;/groupId&gt;</span>
+  <span class="cm">&lt;artifactId&gt;logstash-logback-encoder&lt;/artifactId&gt;</span>
+  <span class="cm">&lt;version&gt;7.4&lt;/version&gt;</span>
+<span class="cm">&lt;/dependency&gt;</span>
+
+<span class="cm">&lt;!-- logback-spring.xml --&gt;</span>
+<span class="cm">&lt;configuration&gt;</span>
+  <span class="cm">&lt;springProfile name="prod"&gt;</span>
+    <span class="cm">&lt;appender name="JSON" class="ch.qos.logback.core.ConsoleAppender"&gt;</span>
+      <span class="cm">&lt;encoder class="net.logstash.logback.encoder.LogstashEncoder"&gt;</span>
+        <span class="cm">&lt;!-- Adds MDC fields automatically --&gt;</span>
+        <span class="cm">&lt;includeMdcKeyName&gt;correlationId&lt;/includeMdcKeyName&gt;</span>
+        <span class="cm">&lt;includeMdcKeyName&gt;traceId&lt;/includeMdcKeyName&gt;</span>
+        <span class="cm">&lt;includeMdcKeyName&gt;userId&lt;/includeMdcKeyName&gt;</span>
+        <span class="cm">&lt;customFields&gt;{"service":"order-service","env":"prod"}&lt;/customFields&gt;</span>
+      <span class="cm">&lt;/encoder&gt;</span>
+    <span class="cm">&lt;/appender&gt;</span>
+    <span class="cm">&lt;root level="INFO"&gt;</span>
+      <span class="cm">&lt;appender-ref ref="JSON"/&gt;</span>
+    <span class="cm">&lt;/root&gt;</span>
+  <span class="cm">&lt;/springProfile&gt;</span>
+<span class="cm">&lt;/configuration&gt;</span>
+
+<span class="cm">/* Output JSON line looks like:
+{
+  "@timestamp": "2024-01-15T10:23:45.123Z",
+  "level": "ERROR",
+  "logger": "c.e.OrderService",
+  "message": "Payment failed for order 12345",
+  "correlationId": "f47ac10b-58cc",
+  "traceId": "3a4f9b2e1c8d",
+  "userId": "usr_789",
+  "service": "order-service",
+  "env": "prod"
+} */</span></pre></div>
+            </div>
+            <div class="test-case" id="log-mdc">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-blue">MDC Correlation</span>
+                <span class="test-case-label">Injecting correlation ID into every log line automatically</span>
+              </div>
+              <div class="code"><pre><span class="kw">import</span> org.slf4j.MDC;
+
+<span class="an">@Component</span>
+<span class="kw">public class</span> <span class="tp">CorrelationIdFilter</span> <span class="kw">implements</span> <span class="tp">Filter</span> {
+
+    <span class="kw">private static final</span> <span class="tp">String</span> <span class="nm">CORRELATION_HEADER</span> = <span class="st">"X-Correlation-ID"</span>;
+    <span class="kw">private static final</span> <span class="tp">String</span> <span class="nm">MDC_KEY</span> = <span class="st">"correlationId"</span>;
+
+    <span class="an">@Override</span>
+    <span class="kw">public void</span> <span class="fn">doFilter</span>(<span class="tp">ServletRequest</span> req, <span class="tp">ServletResponse</span> res,
+                          <span class="tp">FilterChain</span> chain) <span class="kw">throws</span> <span class="tp">IOException</span>, <span class="tp">ServletException</span> {
+        <span class="tp">HttpServletRequest</span> httpReq = (<span class="tp">HttpServletRequest</span>) req;
+        <span class="tp">HttpServletResponse</span> httpRes = (<span class="tp">HttpServletResponse</span>) res;
+
+        <span class="tp">String</span> correlationId = httpReq.getHeader(<span class="nm">CORRELATION_HEADER</span>);
+        <span class="kw">if</span> (correlationId == <span class="kw">null</span> || correlationId.isBlank()) {
+            correlationId = <span class="tp">UUID</span>.randomUUID().toString();
+        }
+
+        <span class="cm">// Inject into MDC — every subsequent log call gets this field</span>
+        MDC.put(<span class="nm">MDC_KEY</span>, correlationId);
+        <span class="cm">// Echo back so clients can trace their request</span>
+        httpRes.setHeader(<span class="nm">CORRELATION_HEADER</span>, correlationId);
+
+        <span class="kw">try</span> {
+            chain.doFilter(req, res);
+        } <span class="kw">finally</span> {
+            MDC.remove(<span class="nm">MDC_KEY</span>); <span class="cm">// ALWAYS clean up — thread pool reuse</span>
+        }
+    }
+}</pre></div>
+            </div>
+            <div class="test-case" id="log-filter">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-gold">Servlet Filter</span>
+                <span class="test-case-label">Enriching MDC with user context from JWT / SecurityContext</span>
+              </div>
+              <div class="code"><pre><span class="an">@Component</span>
+<span class="an">@Order</span>(<span class="nu">2</span>) <span class="cm">// runs after CorrelationIdFilter</span>
+<span class="kw">public class</span> <span class="tp">UserContextFilter</span> <span class="kw">implements</span> <span class="tp">Filter</span> {
+
+    <span class="an">@Override</span>
+    <span class="kw">public void</span> <span class="fn">doFilter</span>(<span class="tp">ServletRequest</span> req, <span class="tp">ServletResponse</span> res,
+                          <span class="tp">FilterChain</span> chain) <span class="kw">throws</span> <span class="tp">IOException</span>, <span class="tp">ServletException</span> {
+        <span class="kw">try</span> {
+            <span class="tp">Authentication</span> auth = <span class="tp">SecurityContextHolder</span>.getContext().getAuthentication();
+            <span class="kw">if</span> (auth != <span class="kw">null</span> &amp;&amp; auth.isAuthenticated()) {
+                MDC.put(<span class="st">"userId"</span>, auth.getName());
+                MDC.put(<span class="st">"roles"</span>, auth.getAuthorities().toString());
+            }
+            chain.doFilter(req, res);
+        } <span class="kw">finally</span> {
+            MDC.remove(<span class="st">"userId"</span>);
+            MDC.remove(<span class="st">"roles"</span>);
+        }
+    }
+}</pre></div>
+            </div>
+            <div class="test-case" id="log-filebeat">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-purple">Filebeat</span>
+                <span class="test-case-label">filebeat.yml — shipping JSON logs from each server to Elasticsearch</span>
+              </div>
+              <div class="code"><pre><span class="cm"># filebeat.yml (runs as agent on each server)</span>
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/myapp/*.log
+    json.keys_under_root: true     <span class="cm"># promote JSON fields to top level</span>
+    json.add_error_key: true
+    fields:
+      host_name: ${HOSTNAME}
+    fields_under_root: true
+
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+
+output.elasticsearch:
+  hosts: ["https://elasticsearch:9200"]
+  index: "app-logs-%{+yyyy.MM.dd}"
+  username: "${ES_USER}"
+  password: "${ES_PASS}"
+
+<span class="cm"># For Loki instead:</span>
+<span class="cm"># output.loki:</span>
+<span class="cm">#   host: http://loki:3100</span>
+<span class="cm">#   labels.agent: filebeat</span></pre></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout tip">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body">
+            <div class="callout-title">ELK vs Loki — how to choose</div>
+            <p class="callout-text">Elasticsearch indexes every JSON field — powerful full-text search but expensive at scale. Loki only indexes labels (service, env, level) and compresses the log body — much cheaper, but you can only filter by those labels before scanning. Choose ELK if you need ad-hoc field queries; Loki if you query mostly by service + time range.</p>
+          </div>
+        </div>
+      </div>
+      <div class="chapter-nav">
+        <button class="nav-btn nav-prev" onclick="show(2)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">What to Monitor</span></span></button>
+        <button class="nav-btn nav-next" onclick="show(4)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Metrics &amp; Alerting</span></span><span class="nav-arrow">→</span></button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ SECTION 4: METRICS -->
+    <div class="section" id="s4">
+      <div class="hero" style="background:#1e2420;">
+        <div class="hero-inner">
+          <span class="chapter-label">Chapter 04 — The Three Pillars</span>
+          <h2>Metrics &amp; Alerting</h2>
+          <p class="subtitle">Prometheus scraping, Micrometer custom meters, Grafana dashboards, and Alertmanager routing.</p>
+        </div>
+      </div>
+      <div class="pills">
+        <span class="pill">Prometheus</span><span class="pill">Grafana</span><span class="pill">Alertmanager</span>
+        <span class="pill">Micrometer</span><span class="pill">Counter</span><span class="pill">Timer</span><span class="pill">Gauge</span>
+      </div>
+      <div class="content">
+        <p class="lead">Metrics are cheap to store and fast to query — they're the first line of defence. The goal is not to collect everything, but to collect the right things and have the right alerts fire before customers notice.</p>
+
+        <h3>How Prometheus works</h3>
+        <div class="analogy">
+          <span class="analogy-label">// Analogy</span>
+          <p class="analogy-text">Prometheus is a polling system — it reaches out to each service on a schedule and asks "what are your numbers right now?". This is called scraping. Your app exposes an HTTP endpoint (usually /actuator/prometheus) and Prometheus calls it every 15 seconds. Think of it as a health inspector making rounds.</p>
+        </div>
+
+        <nav class="scenario-nav">
+          <a class="scenario-chip chip-green" href="#met-custom"><span class="chip-num">01</span> Custom meters</a>
+          <a class="scenario-chip chip-blue" href="#met-timer"><span class="chip-num">02</span> Timer / latency</a>
+          <a class="scenario-chip chip-gold" href="#met-gauge"><span class="chip-num">03</span> Gauge / queue depth</a>
+          <a class="scenario-chip chip-red" href="#met-alert"><span class="chip-num">04</span> Alert rules</a>
+        </nav>
+
+        <div class="example-section">
+          <span class="example-section-title">// Micrometer custom metrics</span>
+          <div class="test-cases">
+            <div class="test-case" id="met-custom">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-green">Counter</span>
+                <span class="test-case-label">Counting business events — orders placed, payments failed</span>
+              </div>
+              <div class="code"><pre><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="tp">OrderService</span> {
+
+    <span class="kw">private final</span> <span class="tp">Counter</span> ordersPlaced;
+    <span class="kw">private final</span> <span class="tp">Counter</span> paymentsFailed;
+
+    <span class="kw">public</span> <span class="tp">OrderService</span>(<span class="tp">MeterRegistry</span> registry) {
+        <span class="cm">// Tags partition metrics — query by region, product type, etc.</span>
+        <span class="kw">this</span>.ordersPlaced = <span class="tp">Counter</span>.builder(<span class="st">"orders.placed"</span>)
+            .description(<span class="st">"Total orders successfully placed"</span>)
+            .tag(<span class="st">"region"</span>, <span class="st">"us-east"</span>)
+            .register(registry);
+
+        <span class="kw">this</span>.paymentsFailed = <span class="tp">Counter</span>.builder(<span class="st">"payments.failed"</span>)
+            .description(<span class="st">"Payment processing failures"</span>)
+            .tag(<span class="st">"reason"</span>, <span class="st">"unknown"</span>)
+            .register(registry);
+    }
+
+    <span class="kw">public</span> <span class="tp">Order</span> <span class="fn">placeOrder</span>(<span class="tp">OrderRequest</span> request) {
+        <span class="kw">try</span> {
+            <span class="tp">Order</span> order = processOrder(request);
+            ordersPlaced.increment();
+            <span class="kw">return</span> order;
+        } <span class="kw">catch</span> (<span class="tp">PaymentException</span> e) {
+            paymentsFailed.increment();
+            <span class="kw">throw</span> e;
+        }
+    }
+}</pre></div>
+            </div>
+            <div class="test-case" id="met-timer">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-blue">Timer</span>
+                <span class="test-case-label">Measuring latency — p50, p95, p99 automatically computed</span>
+              </div>
+              <div class="code"><pre><span class="an">@Service</span>
+<span class="kw">public class</span> <span class="tp">PaymentService</span> {
+
+    <span class="kw">private final</span> <span class="tp">Timer</span> paymentTimer;
+
+    <span class="kw">public</span> <span class="tp">PaymentService</span>(<span class="tp">MeterRegistry</span> registry) {
+        <span class="kw">this</span>.paymentTimer = <span class="tp">Timer</span>.builder(<span class="st">"payment.processing.time"</span>)
+            .description(<span class="st">"Time to process a payment"</span>)
+            .publishPercentiles(<span class="nu">0.5</span>, <span class="nu">0.95</span>, <span class="nu">0.99</span>) <span class="cm">// p50, p95, p99</span>
+            .publishPercentileHistogram()
+            .register(registry);
+    }
+
+    <span class="kw">public</span> <span class="tp">PaymentResult</span> <span class="fn">process</span>(<span class="tp">Payment</span> payment) {
+        <span class="kw">return</span> paymentTimer.record(() -&gt; callPaymentGateway(payment));
+    }
+
+    <span class="cm">// Or use the annotation — Micrometer instruments the method automatically</span>
+    <span class="an">@Timed</span>(value = <span class="st">"payment.refund.time"</span>, percentiles = {<span class="nu">0.95</span>, <span class="nu">0.99</span>})
+    <span class="kw">public</span> <span class="tp">RefundResult</span> <span class="fn">refund</span>(<span class="tp">String</span> orderId) {
+        <span class="kw">return</span> callRefundGateway(orderId);
+    }
+}</pre></div>
+            </div>
+            <div class="test-case" id="met-gauge">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-gold">Gauge</span>
+                <span class="test-case-label">Tracking queue depth, cache size — values that go up and down</span>
+              </div>
+              <div class="code"><pre><span class="an">@Component</span>
+<span class="kw">public class</span> <span class="tp">QueueMetrics</span> {
+
+    <span class="kw">private final</span> <span class="tp">Queue</span>&lt;<span class="tp">Task</span>&gt; processingQueue;
+
+    <span class="kw">public</span> <span class="tp">QueueMetrics</span>(<span class="tp">MeterRegistry</span> registry, <span class="tp">Queue</span>&lt;<span class="tp">Task</span>&gt; processingQueue) {
+        <span class="kw">this</span>.processingQueue = processingQueue;
+
+        <span class="cm">// Gauge polls the queue size on each Prometheus scrape</span>
+        <span class="tp">Gauge</span>.builder(<span class="st">"task.queue.size"</span>, processingQueue, <span class="tp">Queue</span>::size)
+            .description(<span class="st">"Number of tasks pending processing"</span>)
+            .register(registry);
+
+        <span class="cm">// HikariCP pool — Micrometer binds these automatically</span>
+        <span class="cm">// just add spring.datasource.hikari.metric-registry=true</span>
+        <span class="cm">// Exposes: hikaricp.connections.active, .pending, .idle, .max</span>
+    }
+}</pre></div>
+            </div>
+            <div class="test-case" id="met-alert">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-red">Alert Rules</span>
+                <span class="test-case-label">Prometheus alerting rules — PromQL expressions that trigger Alertmanager</span>
+              </div>
+              <div class="code"><pre><span class="cm"># prometheus-alerts.yml</span>
+groups:
+  - name: application
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          rate(http_server_requests_seconds_count{status=~"5.."}[5m])
+          /
+          rate(http_server_requests_seconds_count[5m]) &gt; 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Error rate above 5% on {{ $labels.instance }}"
+
+      - alert: HighLatencyP99
+        expr: |
+          histogram_quantile(0.99,
+            rate(http_server_requests_seconds_bucket[5m])
+          ) &gt; 2.0
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p99 latency above 2s"
+
+      - alert: QueueDepthHigh
+        expr: task_queue_size &gt; 500
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Task queue has {{ $value }} pending items"</pre></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout tip">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body">
+            <div class="callout-title">The for: clause is critical</div>
+            <p class="callout-text">Without <code style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;">for: 2m</code>, every momentary spike fires an alert. The <code style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;">for</code> clause requires the condition to be true continuously before alerting. This dramatically reduces noise from transient spikes.</p>
+          </div>
+        </div>
+      </div>
+      <div class="chapter-nav">
+        <button class="nav-btn nav-prev" onclick="show(3)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Centralized Logging</span></span></button>
+        <button class="nav-btn nav-next" onclick="show(5)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Distributed Tracing</span></span><span class="nav-arrow">→</span></button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ SECTION 5: TRACING -->
+    <div class="section" id="s5">
+      <div class="hero" style="background:#221830;">
+        <div class="hero-inner">
+          <span class="chapter-label">Chapter 05 — The Three Pillars</span>
+          <h2>Distributed Tracing</h2>
+          <p class="subtitle">Correlation IDs, W3C traceparent propagation, and tracing a user across a stateless web tier with OpenTelemetry.</p>
+        </div>
+      </div>
+      <div class="pills">
+        <span class="pill">Correlation ID</span><span class="pill">MDC</span><span class="pill">traceparent</span>
+        <span class="pill">OpenTelemetry</span><span class="pill">Jaeger</span><span class="pill">Zipkin</span><span class="pill">Tempo</span>
+      </div>
+      <div class="content">
+        <p class="lead">In a stateless web tier, a user's Request 1 hits Server A and Request 2 hits Server B. Without a shared identifier threaded through every log line and HTTP call, these two requests are invisible to each other — and debugging a user's session becomes a nightmare.</p>
+
+        <h3>The correlation ID pattern</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">Generate at the entry point</div>
+              <div class="step-desc">When a request first enters your system (API Gateway, load balancer, or first service), generate a UUID. This becomes the correlation ID for the entire request chain — even across multiple downstream services.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">Inject into MDC immediately</div>
+              <div class="step-desc">MDC (Mapped Diagnostic Context) is a per-thread key-value store built into SLF4J. Every subsequent log.info(), log.error() call on that thread automatically includes every MDC key. Zero boilerplate on the caller side.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">Propagate on every outgoing HTTP call</div>
+              <div class="step-desc">Use a RestTemplate interceptor or WebClient filter to add X-Correlation-ID (or W3C traceparent) to every outgoing HTTP call. Each downstream service extracts it and repeats steps 1–3.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-title">Query logs by that ID</div>
+              <div class="step-desc">In Kibana or Grafana, search correlationId:"f47ac10b-58cc" and see every log line from every server, in order, for that single request chain. Instant cross-server debugging.</div>
+            </div>
+          </div>
+        </div>
+
+        <nav class="scenario-nav">
+          <a class="scenario-chip chip-blue" href="#tr-propagate"><span class="chip-num">01</span> RestTemplate propagation</a>
+          <a class="scenario-chip chip-green" href="#tr-webclient"><span class="chip-num">02</span> WebClient propagation</a>
+          <a class="scenario-chip chip-gold" href="#tr-otel"><span class="chip-num">03</span> OpenTelemetry setup</a>
+          <a class="scenario-chip chip-purple" href="#tr-async"><span class="chip-num">04</span> Async / thread pools</a>
+        </nav>
+
+        <div class="example-section">
+          <span class="example-section-title">// Correlation ID propagation</span>
+          <div class="test-cases">
+            <div class="test-case" id="tr-propagate">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-blue">RestTemplate</span>
+                <span class="test-case-label">Interceptor that adds X-Correlation-ID to every outgoing HTTP call</span>
+              </div>
+              <div class="code"><pre><span class="an">@Component</span>
+<span class="kw">public class</span> <span class="tp">CorrelationIdInterceptor</span> <span class="kw">implements</span> <span class="tp">ClientHttpRequestInterceptor</span> {
+
+    <span class="an">@Override</span>
+    <span class="kw">public</span> <span class="tp">ClientHttpResponse</span> <span class="fn">intercept</span>(<span class="tp">HttpRequest</span> request,
+            <span class="kw">byte</span>[] body, <span class="tp">ClientHttpRequestExecution</span> execution) <span class="kw">throws</span> <span class="tp">IOException</span> {
+
+        <span class="tp">String</span> correlationId = MDC.get(<span class="st">"correlationId"</span>);
+        <span class="kw">if</span> (correlationId != <span class="kw">null</span>) {
+            request.getHeaders().add(<span class="st">"X-Correlation-ID"</span>, correlationId);
+        }
+        <span class="kw">return</span> execution.execute(request, body);
+    }
+}
+
+<span class="an">@Configuration</span>
+<span class="kw">public class</span> <span class="tp">RestTemplateConfig</span> {
+
+    <span class="an">@Bean</span>
+    <span class="kw">public</span> <span class="tp">RestTemplate</span> <span class="fn">restTemplate</span>(<span class="tp">CorrelationIdInterceptor</span> interceptor) {
+        <span class="tp">RestTemplate</span> template = <span class="kw">new</span> <span class="tp">RestTemplate</span>();
+        template.setInterceptors(<span class="tp">List</span>.of(interceptor));
+        <span class="kw">return</span> template;
+    }
+}</pre></div>
+            </div>
+            <div class="test-case" id="tr-webclient">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-green">WebClient</span>
+                <span class="test-case-label">Reactive WebClient filter for correlation ID propagation</span>
+              </div>
+              <div class="code"><pre><span class="an">@Configuration</span>
+<span class="kw">public class</span> <span class="tp">WebClientConfig</span> {
+
+    <span class="an">@Bean</span>
+    <span class="kw">public</span> <span class="tp">WebClient</span> <span class="fn">webClient</span>() {
+        <span class="kw">return</span> <span class="tp">WebClient</span>.builder()
+            .filter((<span class="nm">request</span>, <span class="nm">next</span>) -&gt; {
+                <span class="tp">String</span> correlationId = MDC.get(<span class="st">"correlationId"</span>);
+                <span class="tp">ClientRequest</span> mutated = <span class="tp">ClientRequest</span>.from(request)
+                    .header(<span class="st">"X-Correlation-ID"</span>,
+                        correlationId != <span class="kw">null</span> ? correlationId : <span class="st">"unknown"</span>)
+                    .build();
+                <span class="kw">return</span> next.exchange(mutated);
+            })
+            .build();
+    }
+}</pre></div>
+            </div>
+            <div class="test-case" id="tr-otel">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-gold">OpenTelemetry</span>
+                <span class="test-case-label">Spring Boot 3.x — Micrometer Tracing with OTEL bridge (replaces Sleuth)</span>
+              </div>
+              <div class="code"><pre><span class="cm">&lt;!-- pom.xml --&gt;</span>
+<span class="cm">&lt;dependency&gt;</span>
+  <span class="cm">&lt;groupId&gt;io.micrometer&lt;/groupId&gt;</span>
+  <span class="cm">&lt;artifactId&gt;micrometer-tracing-bridge-otel&lt;/artifactId&gt;</span>
+<span class="cm">&lt;/dependency&gt;</span>
+<span class="cm">&lt;dependency&gt;</span>
+  <span class="cm">&lt;groupId&gt;io.opentelemetry&lt;/groupId&gt;</span>
+  <span class="cm">&lt;artifactId&gt;opentelemetry-exporter-otlp&lt;/artifactId&gt;</span>
+<span class="cm">&lt;/dependency&gt;</span>
+
+<span class="cm"># application.yml</span>
+management:
+  tracing:
+    sampling:
+      probability: <span class="nu">0.1</span>   <span class="cm"># 10% in prod — 100% for debug</span>
+  otlp:
+    tracing:
+      endpoint: http://otel-collector:4318/v1/traces
+
+<span class="cm"># Spring Boot auto-instruments:</span>
+<span class="cm">#  - All Spring MVC / WebFlux endpoints</span>
+<span class="cm">#  - RestTemplate and WebClient calls</span>
+<span class="cm">#  - Spring Data JPA queries</span>
+<span class="cm">#  - Kafka consumers / producers</span>
+<span class="cm">#  - MDC automatically gets traceId + spanId</span>
+
+<span class="cm">// Manual span for custom operations</span>
+<span class="an">@Autowired</span> <span class="tp">Tracer</span> tracer;
+
+<span class="tp">Span</span> span = tracer.nextSpan().name(<span class="st">"external-payment-call"</span>).start();
+<span class="kw">try</span> (<span class="tp">Tracer</span>.<span class="tp">SpanInScope</span> ws = tracer.withSpan(span)) {
+    span.tag(<span class="st">"payment.gateway"</span>, <span class="st">"stripe"</span>);
+    <span class="kw">return</span> callStripe(payment);
+} <span class="kw">finally</span> {
+    span.end();
+}</pre></div>
+            </div>
+            <div class="test-case" id="tr-async">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-purple">Async Threads</span>
+                <span class="test-case-label">MDC does NOT cross thread boundaries — explicit propagation required</span>
+              </div>
+              <div class="code"><pre><span class="cm">// PROBLEM: MDC is ThreadLocal — async tasks lose it</span>
+<span class="an">@Async</span>
+<span class="kw">public void</span> <span class="fn">processAsync</span>(<span class="tp">String</span> orderId) {
+    <span class="cm">// MDC is EMPTY here — correlationId is lost!</span>
+    log.info(<span class="st">"Processing {}"</span>, orderId);
+}
+
+<span class="cm">// SOLUTION 1: Pass correlationId explicitly</span>
+<span class="an">@Async</span>
+<span class="kw">public void</span> <span class="fn">processAsync</span>(<span class="tp">String</span> orderId, <span class="tp">String</span> correlationId) {
+    MDC.put(<span class="st">"correlationId"</span>, correlationId);
+    <span class="kw">try</span> {
+        log.info(<span class="st">"Processing {}"</span>, orderId); <span class="cm">// now has correlationId</span>
+    } <span class="kw">finally</span> { MDC.clear(); }
+}
+
+<span class="cm">// SOLUTION 2: MDC-aware task decorator on the thread pool</span>
+<span class="an">@Bean</span>
+<span class="kw">public</span> <span class="tp">Executor</span> <span class="fn">asyncExecutor</span>() {
+    <span class="tp">ThreadPoolTaskExecutor</span> executor = <span class="kw">new</span> <span class="tp">ThreadPoolTaskExecutor</span>();
+    executor.setTaskDecorator(runnable -&gt; {
+        <span class="tp">Map</span>&lt;<span class="tp">String</span>, <span class="tp">String</span>&gt; mdcContext = MDC.getCopyOfContextMap();
+        <span class="kw">return</span> () -&gt; {
+            <span class="kw">if</span> (mdcContext != <span class="kw">null</span>) MDC.setContextMap(mdcContext);
+            <span class="kw">try</span> { runnable.run(); } <span class="kw">finally</span> { MDC.clear(); }
+        };
+    });
+    executor.initialize();
+    <span class="kw">return</span> executor;
+}</pre></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-body">
+            <div class="callout-title">MDC is ThreadLocal — async is the #1 gotcha</div>
+            <p class="callout-text">MDC data lives on the current thread. The moment you use @Async, CompletableFuture, or a Kafka consumer on a different thread pool, the MDC map is empty. Always use a task decorator or pass the context explicitly. Micrometer Tracing handles this automatically for instrumented operations.</p>
+          </div>
+        </div>
+      </div>
+      <div class="chapter-nav">
+        <button class="nav-btn nav-prev" onclick="show(4)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Metrics &amp; Alerting</span></span></button>
+        <button class="nav-btn nav-next" onclick="show(6)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Spring Boot Setup</span></span><span class="nav-arrow">→</span></button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ SECTION 6: SPRING BOOT -->
+    <div class="section" id="s6">
+      <div class="hero" style="background:#1a2510;">
+        <div class="hero-inner">
+          <span class="chapter-label">Chapter 06 — Implementation</span>
+          <h2>Spring Boot Setup</h2>
+          <p class="subtitle">Actuator, Micrometer, custom health indicators, and the production-ready application.yml — all in one place.</p>
+        </div>
+      </div>
+      <div class="pills">
+        <span class="pill">Actuator</span><span class="pill">Micrometer</span><span class="pill">Health Indicators</span>
+        <span class="pill">Prometheus Endpoint</span><span class="pill">Log Level API</span><span class="pill">Thread Dump</span>
+      </div>
+      <div class="content">
+        <p class="lead">Spring Boot's observability story is batteries-included. Actuator exposes health, metrics, and thread state over HTTP. Micrometer bridges your app to any metrics backend. You just need to wire them correctly.</p>
+
+        <h3>Actuator endpoints — what you get for free</h3>
+        <table class="tbl">
+          <thead><tr><th>Endpoint</th><th>What it does</th><th>When to use</th></tr></thead>
+          <tbody>
+            <tr><td>/actuator/health</td><td>Liveness + readiness probes. Reports DB, Redis, disk, custom checks.</td><td>Kubernetes probes, load balancer checks</td></tr>
+            <tr><td>/actuator/metrics</td><td>All registered Micrometer meters and their current values</td><td>Quick inspection of a specific metric</td></tr>
+            <tr><td>/actuator/prometheus</td><td>All metrics in Prometheus text format — what Prometheus scrapes</td><td>Prometheus scrape target</td></tr>
+            <tr><td>/actuator/loggers</td><td>View and change log levels at runtime — no restart needed</td><td>Debug production without redeploy</td></tr>
+            <tr><td>/actuator/threaddump</td><td>Current thread states — RUNNABLE, BLOCKED, WAITING</td><td>Diagnosing thread pool exhaustion or deadlocks</td></tr>
+            <tr><td>/actuator/heapdump</td><td>JVM heap dump — download and analyze with VisualVM or MAT</td><td>Memory leak investigations</td></tr>
+            <tr><td>/actuator/env</td><td>Active configuration properties (sensitive values masked)</td><td>Verify config without SSH access</td></tr>
+            <tr><td>/actuator/info</td><td>App version, Git commit, build info</td><td>Quick "what version is this?" check</td></tr>
+          </tbody>
+        </table>
+
+        <nav class="scenario-nav">
+          <a class="scenario-chip chip-green" href="#sb-yml"><span class="chip-num">01</span> application.yml</a>
+          <a class="scenario-chip chip-blue" href="#sb-health"><span class="chip-num">02</span> Custom health indicator</a>
+          <a class="scenario-chip chip-gold" href="#sb-security"><span class="chip-num">03</span> Actuator security</a>
+          <a class="scenario-chip chip-purple" href="#sb-info"><span class="chip-num">04</span> Build info</a>
+        </nav>
+
+        <div class="example-section">
+          <span class="example-section-title">// Spring Boot production configuration</span>
+          <div class="test-cases">
+            <div class="test-case" id="sb-yml">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-green">application.yml</span>
+                <span class="test-case-label">Production-ready Actuator + Micrometer + tracing configuration</span>
+              </div>
+              <div class="code"><pre>management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, prometheus, loggers, threaddump, info
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized   <span class="cm"># never "always" in prod</span>
+      show-components: when-authorized
+      probes:
+        enabled: true                 <span class="cm"># /health/liveness, /health/readiness</span>
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      env: ${APP_ENV:local}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true    <span class="cm"># enables p50/p95/p99</span>
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+  tracing:
+    sampling:
+      probability: ${TRACE_SAMPLE_RATE:0.1}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_ENDPOINT:http://otel-collector:4318/v1/traces}
+
+spring:
+  application:
+    name: order-service
+
+logging:
+  level:
+    root: INFO
+    com.myapp: DEBUG   <span class="cm"># your package — verbose by default, change at runtime</span>
+    org.springframework.web: WARN</pre></div>
+            </div>
+            <div class="test-case" id="sb-health">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-blue">Custom Health</span>
+                <span class="test-case-label">HealthIndicator for an external dependency — payment gateway</span>
+              </div>
+              <div class="code"><pre><span class="an">@Component</span>
+<span class="kw">public class</span> <span class="tp">PaymentGatewayHealthIndicator</span> <span class="kw">implements</span> <span class="tp">HealthIndicator</span> {
+
+    <span class="kw">private final</span> <span class="tp">PaymentGatewayClient</span> client;
+
+    <span class="kw">public</span> <span class="tp">PaymentGatewayHealthIndicator</span>(<span class="tp">PaymentGatewayClient</span> client) {
+        <span class="kw">this</span>.client = client;
+    }
+
+    <span class="an">@Override</span>
+    <span class="kw">public</span> <span class="tp">Health</span> <span class="fn">health</span>() {
+        <span class="kw">try</span> {
+            <span class="kw">long</span> start = <span class="tp">System</span>.currentTimeMillis();
+            <span class="kw">boolean</span> reachable = client.ping();
+            <span class="kw">long</span> latency = <span class="tp">System</span>.currentTimeMillis() - start;
+
+            <span class="kw">if</span> (reachable) {
+                <span class="kw">return</span> <span class="tp">Health</span>.up()
+                    .withDetail(<span class="st">"latencyMs"</span>, latency)
+                    .withDetail(<span class="st">"gateway"</span>, <span class="st">"stripe"</span>)
+                    .build();
+            }
+            <span class="kw">return</span> <span class="tp">Health</span>.down().withDetail(<span class="st">"reason"</span>, <span class="st">"ping failed"</span>).build();
+        } <span class="kw">catch</span> (<span class="tp">Exception</span> e) {
+            <span class="kw">return</span> <span class="tp">Health</span>.down(e).build();
+        }
+    }
+}
+
+<span class="cm">// GET /actuator/health response:
+// {
+//   "status": "UP",
+//   "components": {
+//     "paymentGateway": { "status": "UP", "details": { "latencyMs": 45 } },
+//     "db":             { "status": "UP" },
+//     "diskSpace":      { "status": "UP" }
+//   }
+// }</span></pre></div>
+            </div>
+            <div class="test-case" id="sb-security">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-gold">Actuator Security</span>
+                <span class="test-case-label">Lock down sensitive endpoints — expose /prometheus only to Prometheus</span>
+              </div>
+              <div class="code"><pre><span class="an">@Configuration</span>
+<span class="kw">public class</span> <span class="tp">ActuatorSecurityConfig</span> {
+
+    <span class="an">@Bean</span>
+    <span class="kw">public</span> <span class="tp">SecurityFilterChain</span> <span class="fn">actuatorSecurity</span>(<span class="tp">HttpSecurity</span> http) <span class="kw">throws</span> <span class="tp">Exception</span> {
+        http
+            .securityMatcher(<span class="st">"/actuator/**"</span>)
+            .authorizeHttpRequests(auth -&gt; auth
+                <span class="cm">// /health and /info are safe to expose publicly</span>
+                .requestMatchers(<span class="st">"/actuator/health/**"</span>).permitAll()
+                .requestMatchers(<span class="st">"/actuator/info"</span>).permitAll()
+                <span class="cm">// /prometheus — restrict to monitoring network / IP</span>
+                .requestMatchers(<span class="st">"/actuator/prometheus"</span>)
+                    .hasIpAddress(<span class="st">"10.0.0.0/8"</span>) <span class="cm">// internal only</span>
+                <span class="cm">// Everything else requires admin role</span>
+                .anyRequest().hasRole(<span class="st">"ACTUATOR_ADMIN"</span>)
+            );
+        <span class="kw">return</span> http.build();
+    }
+}</pre></div>
+            </div>
+            <div class="test-case" id="sb-info">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-purple">Build Info</span>
+                <span class="test-case-label">Expose Git commit + version at /actuator/info — pom.xml + Maven plugin</span>
+              </div>
+              <div class="code"><pre><span class="cm">&lt;!-- pom.xml — spring-boot-maven-plugin generates build-info.properties --&gt;</span>
+<span class="cm">&lt;plugin&gt;</span>
+  <span class="cm">&lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span>
+  <span class="cm">&lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;</span>
+  <span class="cm">&lt;executions&gt;&lt;execution&gt;&lt;goals&gt;&lt;goal&gt;build-info&lt;/goal&gt;&lt;/goals&gt;&lt;/execution&gt;&lt;/executions&gt;</span>
+<span class="cm">&lt;/plugin&gt;</span>
+
+<span class="cm"># application.yml</span>
+management:
+  info:
+    git:
+      mode: full      <span class="cm"># shows branch, commit id, time</span>
+    build:
+      enabled: true
+
+<span class="cm">// GET /actuator/info returns:
+// {
+//   "git": { "branch": "main", "commit": { "id": "a1b2c3d", "time": "2024-01-15" } },
+//   "build": { "artifact": "order-service", "version": "1.4.2", "time": "2024-01-15" }
+// }</span></pre></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout key">
+          <div class="callout-icon">✅</div>
+          <div class="callout-body">
+            <div class="callout-title">/actuator/loggers is underrated</div>
+            <p class="callout-text">You can change log levels at runtime with a POST request: <code style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;">POST /actuator/loggers/com.myapp {"configuredLevel":"DEBUG"}</code>. No redeploy, no restart. This is invaluable for debugging a production issue — crank up DEBUG, reproduce, then set it back to INFO.</p>
+          </div>
+        </div>
+      </div>
+      <div class="chapter-nav">
+        <button class="nav-btn nav-prev" onclick="show(5)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Distributed Tracing</span></span></button>
+        <button class="nav-btn nav-next" onclick="show(7)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">GCP Solutions</span></span><span class="nav-arrow">→</span></button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ SECTION 7: GCP -->
+    <div class="section" id="s7">
+      <div class="hero" style="background:#1a1f30;">
+        <div class="hero-inner">
+          <span class="chapter-label">Chapter 07 — Implementation</span>
+          <h2>GCP Solutions</h2>
+          <p class="subtitle">Cloud Logging, Cloud Monitoring, Cloud Trace, Cloud Profiler — GCP's native observability suite and how it maps to open-source alternatives.</p>
+        </div>
+      </div>
+      <div class="pills">
+        <span class="pill">Cloud Logging</span><span class="pill">Cloud Monitoring</span><span class="pill">Cloud Trace</span>
+        <span class="pill">Cloud Profiler</span><span class="pill">Error Reporting</span><span class="pill">Synthetic Monitoring</span>
+      </div>
+      <div class="content">
+        <p class="lead">GCP's Operations suite (formerly Stackdriver) covers all three observability pillars natively. If you're deploying to GKE or Cloud Run, the default setup auto-collects a significant amount — you mostly configure, not build.</p>
+
+        <h3>GCP Observability — the full picture</h3>
+        <div class="cards">
+          <div class="card">
+            <div class="card-icon">📜</div>
+            <div class="card-title">Cloud Logging</div>
+            <p class="card-body">Centralized log management. Auto-collects from GKE, GCE, Cloud Run, Cloud Functions. Supports log-based metrics (turn log patterns into alertable metrics). Query with Logs Explorer using a powerful filter language similar to SQL.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">📊</div>
+            <div class="card-title">Cloud Monitoring</div>
+            <p class="card-body">Metrics collection, dashboards (MQL), and uptime alerting. Integrates natively with all GCP services. Push custom metrics from Spring Boot via Micrometer's Cloud Monitoring exporter. Includes uptime checks (equivalent to Site24x7 pings).</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">🔗</div>
+            <div class="card-title">Cloud Trace</div>
+            <p class="card-body">Distributed tracing integrated with OpenTelemetry. Shows request latency breakdowns per span across GKE pods and Cloud Run. Displays Gantt charts of service call hierarchies. Correlates with logs via trace ID.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">⚡</div>
+            <div class="card-title">Cloud Profiler</div>
+            <p class="card-body">Continuous CPU and memory profiling in production. Very low overhead (&lt;1% CPU). Generates flame graphs. Invaluable for identifying hot code paths and memory allocation sites in Java/Spring apps without a production slowdown.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">🚨</div>
+            <div class="card-title">Error Reporting</div>
+            <p class="card-body">Automatically groups and surfaces exceptions from Cloud Logging. Sends alerts on new error types. Shows error frequency over time. Saves you from manually grepping logs for NullPointerExceptions.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">🧪</div>
+            <div class="card-title">Synthetic Monitoring</div>
+            <p class="card-body">Runs Puppeteer-based scripts that simulate user journeys (click, fill form, check response) from multiple regions globally. GCP's equivalent of Site24x7 web transaction monitors. GA since 2023.</p>
+          </div>
+        </div>
+
+        <h3>GCP vs Site24x7</h3>
+        <p>Site24x7 is a turnkey external monitoring platform focused on uptime, synthetic checks, and real user monitoring (RUM). Here's how GCP compares:</p>
+        <table class="tbl">
+          <thead><tr><th>Capability</th><th>Site24x7</th><th>GCP Equivalent</th></tr></thead>
+          <tbody>
+            <tr><td>Uptime checks (ping from multiple regions)</td><td>✅ Core feature</td><td>✅ Cloud Monitoring Uptime Checks</td></tr>
+            <tr><td>Synthetic user journeys</td><td>✅ Web transaction monitor</td><td>✅ Synthetic Monitoring (Puppeteer)</td></tr>
+            <tr><td>Real User Monitoring (RUM)</td><td>✅ Browser agent</td><td>⚠️ Firebase Performance (limited)</td></tr>
+            <tr><td>Infrastructure metrics</td><td>✅ Agent-based</td><td>✅ Cloud Monitoring + Ops Agent</td></tr>
+            <tr><td>Log management</td><td>⚠️ Basic</td><td>✅ Cloud Logging (much more powerful)</td></tr>
+            <tr><td>Distributed tracing</td><td>❌</td><td>✅ Cloud Trace + OpenTelemetry</td></tr>
+            <tr><td>Continuous profiling</td><td>❌</td><td>✅ Cloud Profiler</td></tr>
+            <tr><td>Setup effort</td><td>Low (SaaS, agent install)</td><td>Medium (GCP config, IAM setup)</td></tr>
+          </tbody>
+        </table>
+
+        <nav class="scenario-nav">
+          <a class="scenario-chip chip-green" href="#gcp-logging"><span class="chip-num">01</span> Cloud Logging config</a>
+          <a class="scenario-chip chip-blue" href="#gcp-metrics"><span class="chip-num">02</span> Cloud Monitoring</a>
+          <a class="scenario-chip chip-gold" href="#gcp-trace"><span class="chip-num">03</span> Cloud Trace</a>
+        </nav>
+
+        <div class="example-section">
+          <span class="example-section-title">// Spring Boot + GCP configuration</span>
+          <div class="test-cases">
+            <div class="test-case" id="gcp-logging">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-green">Cloud Logging</span>
+                <span class="test-case-label">Spring Boot → Cloud Logging with JSON structured logs via GCP starter</span>
+              </div>
+              <div class="code"><pre><span class="cm">&lt;!-- pom.xml --&gt;</span>
+<span class="cm">&lt;dependency&gt;</span>
+  <span class="cm">&lt;groupId&gt;com.google.cloud&lt;/groupId&gt;</span>
+  <span class="cm">&lt;artifactId&gt;spring-cloud-gcp-starter-logging&lt;/artifactId&gt;</span>
+<span class="cm">&lt;/dependency&gt;</span>
+
+<span class="cm"># application.yml</span>
+spring:
+  cloud:
+    gcp:
+      project-id: ${GCP_PROJECT_ID}
+      logging:
+        enabled: true
+        flushLevel: WARNING   <span class="cm"># flush immediately on WARNING+</span>
+
+<span class="cm"># On GKE / Cloud Run — logs written to stdout are auto-collected.
+# The GCP starter formats them as JSON with the trace ID embedded:
+# {
+#   "severity": "ERROR",
+#   "message": "Payment failed",
+#   "logging.googleapis.com/trace": "projects/my-proj/traces/abc123",
+#   "logging.googleapis.com/spanId": "d4e5f6",
+#   "httpRequest": { "requestUrl": "/api/orders", "status": 500 }
+# }
+# Cloud Logging links these to Cloud Trace automatically via the trace field.</span></pre></div>
+            </div>
+            <div class="test-case" id="gcp-metrics">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-blue">Cloud Monitoring</span>
+                <span class="test-case-label">Micrometer → Cloud Monitoring exporter for custom metrics</span>
+              </div>
+              <div class="code"><pre><span class="cm">&lt;!-- pom.xml --&gt;</span>
+<span class="cm">&lt;dependency&gt;</span>
+  <span class="cm">&lt;groupId&gt;com.google.cloud&lt;/groupId&gt;</span>
+  <span class="cm">&lt;artifactId&gt;spring-cloud-gcp-starter-metrics&lt;/artifactId&gt;</span>
+<span class="cm">&lt;/dependency&gt;</span>
+
+<span class="cm"># application.yml</span>
+management:
+  metrics:
+    export:
+      stackdriver:
+        project-id: ${GCP_PROJECT_ID}
+        enabled: true
+        step: 60s   <span class="cm"># push every 60 seconds</span>
+    tags:
+      application: order-service
+      environment: prod
+
+<span class="cm"># All Micrometer meters (including your custom Counters, Timers, Gauges)
+# are pushed to Cloud Monitoring as custom metrics.
+# Find them under: custom.googleapis.com/orders_placed_total
+# Build dashboards in Cloud Monitoring Console or connect Grafana
+# to Cloud Monitoring as a data source.</span></pre></div>
+            </div>
+            <div class="test-case" id="gcp-trace">
+              <div class="test-case-header">
+                <span class="test-case-badge badge-gold">Cloud Trace</span>
+                <span class="test-case-label">Exporting OpenTelemetry traces directly to Cloud Trace</span>
+              </div>
+              <div class="code"><pre><span class="cm">&lt;!-- pom.xml --&gt;</span>
+<span class="cm">&lt;dependency&gt;</span>
+  <span class="cm">&lt;groupId&gt;com.google.cloud&lt;/groupId&gt;</span>
+  <span class="cm">&lt;artifactId&gt;spring-cloud-gcp-starter-trace&lt;/artifactId&gt;</span>
+<span class="cm">&lt;/dependency&gt;</span>
+
+<span class="cm"># application.yml</span>
+spring:
+  cloud:
+    gcp:
+      trace:
+        enabled: true
+        project-id: ${GCP_PROJECT_ID}
+        sample-rate: <span class="nu">0.1</span>   <span class="cm"># 10% sampling in production</span>
+
+management:
+  tracing:
+    sampling:
+      probability: <span class="nu">0.1</span>
+
+<span class="cm"># Alternatively — use OTEL collector → Cloud Trace:
+# In your OTel collector config:
+# exporters:
+#   googlecloud:
+#     project: my-gcp-project
+# service:
+#   pipelines:
+#     traces:
+#       exporters: [googlecloud]</span></pre></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body">
+            <div class="callout-title">On GKE — you get a lot for free</div>
+            <p class="callout-text">Apps on GKE with Cloud Operations enabled automatically get: log collection from stdout, resource metadata (pod name, namespace, node), Kubernetes system metrics, and Workload Identity for secure API access. You mostly configure retention and alerting on top of what's already collected.</p>
+          </div>
+        </div>
+      </div>
+      <div class="chapter-nav">
+        <button class="nav-btn nav-prev" onclick="show(6)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Spring Boot Setup</span></span></button>
+        <button class="nav-btn nav-next" onclick="show(8)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Concepts &amp; Tools</span></span><span class="nav-arrow">→</span></button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ SECTION 8: CONCEPTS -->
+    <div class="section" id="s8">
+      <div class="hero" style="background:#1e1a2e;">
+        <div class="hero-inner">
+          <span class="chapter-label">Chapter 08 — Reference</span>
+          <h2>Concepts &amp; Tools</h2>
+          <p class="subtitle">Every tool, framework, and concept mentioned in this guide — explained in one place.</p>
+        </div>
+      </div>
+      <div class="content">
+        <h3>The three pillars</h3>
+        <div class="concept-grid">
+          <div class="concept-card"><div class="concept-name">Logs</div><p class="concept-desc">Structured text events emitted during execution. Best for debugging why something happened. Should be JSON in production.</p></div>
+          <div class="concept-card"><div class="concept-name">Metrics</div><p class="concept-desc">Numeric time-series data sampled at intervals. Cheap to store, fast to query. Best for alerting and dashboards.</p></div>
+          <div class="concept-card"><div class="concept-name">Traces</div><p class="concept-desc">End-to-end request journeys composed of spans. Show latency across service boundaries. Essential in microservices.</p></div>
+          <div class="concept-card"><div class="concept-name">Span</div><p class="concept-desc">A single unit of work within a trace — one HTTP call, one DB query, one cache lookup. Has a start time and duration.</p></div>
+          <div class="concept-card"><div class="concept-name">Trace ID</div><p class="concept-desc">A unique identifier shared by all spans in a single request chain, across all services and servers.</p></div>
+          <div class="concept-card"><div class="concept-name">Correlation ID</div><p class="concept-desc">A simpler per-request UUID threaded through logs and HTTP headers. A manual, log-based version of a trace ID.</p></div>
+        </div>
+
+        <h3>Logging tools</h3>
+        <div class="concept-grid">
+          <div class="concept-card"><div class="concept-name">SLF4J</div><p class="concept-desc">Logging facade for Java. Logger.info(), Logger.error() etc. Actual logging done by Logback or Log4j2 behind the scenes.</p></div>
+          <div class="concept-card"><div class="concept-name">Logback</div><p class="concept-desc">Default logging implementation in Spring Boot. Configured via logback-spring.xml. Supports async appenders and JSON encoding.</p></div>
+          <div class="concept-card"><div class="concept-name">MDC</div><p class="concept-desc">Mapped Diagnostic Context. Per-thread key-value map in SLF4J. Keys are auto-injected into every log line on that thread.</p></div>
+          <div class="concept-card"><div class="concept-name">logstash-logback-encoder</div><p class="concept-desc">Logback encoder that outputs each log event as a JSON object. Essential for structured logging to Elasticsearch/Loki.</p></div>
+          <div class="concept-card"><div class="concept-name">Filebeat</div><p class="concept-desc">Lightweight log shipper from Elastic. Runs as an agent on each server, tails log files, ships to Logstash or Elasticsearch.</p></div>
+          <div class="concept-card"><div class="concept-name">Fluentd / Fluent Bit</div><p class="concept-desc">Open-source log shippers. Fluent Bit is lighter and better for cloud-native / container environments. Both support many output plugins.</p></div>
+          <div class="concept-card"><div class="concept-name">Promtail</div><p class="concept-desc">Grafana's log shipper designed specifically for Loki. Like Filebeat but for the Loki ecosystem.</p></div>
+          <div class="concept-card"><div class="concept-name">Logstash</div><p class="concept-desc">Log pipeline tool. Receives, parses, filters, and enriches log events before forwarding to Elasticsearch. The "L" in ELK.</p></div>
+          <div class="concept-card"><div class="concept-name">Elasticsearch</div><p class="concept-desc">Distributed search and analytics engine. Indexes every JSON field for full-text search. The "E" in ELK stack.</p></div>
+          <div class="concept-card"><div class="concept-name">Kibana</div><p class="concept-desc">Web UI for querying and visualizing Elasticsearch data. The "K" in ELK. Used for log search, dashboards, alerting.</p></div>
+          <div class="concept-card"><div class="concept-name">Grafana Loki</div><p class="concept-desc">Log aggregation system that only indexes labels (service, env). Much cheaper than Elasticsearch but less powerful for ad-hoc queries.</p></div>
+        </div>
+
+        <h3>Metrics tools</h3>
+        <div class="concept-grid">
+          <div class="concept-card"><div class="concept-name">Micrometer</div><p class="concept-desc">Metrics facade for JVM apps. Like SLF4J but for metrics. Supports backends: Prometheus, Datadog, CloudWatch, Influx, etc.</p></div>
+          <div class="concept-card"><div class="concept-name">Counter</div><p class="concept-desc">Micrometer meter that only goes up. For counting events: orders placed, emails sent, exceptions thrown.</p></div>
+          <div class="concept-card"><div class="concept-name">Timer</div><p class="concept-desc">Micrometer meter for latency measurement. Records count and sum. Computes p50/p95/p99 automatically.</p></div>
+          <div class="concept-card"><div class="concept-name">Gauge</div><p class="concept-desc">Micrometer meter for values that go up and down. For queue depth, active connections, cache size.</p></div>
+          <div class="concept-card"><div class="concept-name">Prometheus</div><p class="concept-desc">Open-source metrics database. Scrapes HTTP endpoints on a schedule. Stores time-series data. PromQL for queries.</p></div>
+          <div class="concept-card"><div class="concept-name">PromQL</div><p class="concept-desc">Prometheus Query Language. Used in alert rules and Grafana panels. rate(), histogram_quantile(), label_replace() are key functions.</p></div>
+          <div class="concept-card"><div class="concept-name">Grafana</div><p class="concept-desc">Open-source dashboarding. Connects to Prometheus, Loki, Elasticsearch, Cloud Monitoring and many more. The standard visualization layer.</p></div>
+          <div class="concept-card"><div class="concept-name">Alertmanager</div><p class="concept-desc">Prometheus's alerting component. Routes alerts to Slack, PagerDuty, OpsGenie. Handles deduplication, silencing, and grouping.</p></div>
+        </div>
+
+        <h3>Tracing tools</h3>
+        <div class="concept-grid">
+          <div class="concept-card"><div class="concept-name">OpenTelemetry</div><p class="concept-desc">Vendor-neutral observability framework covering logs, metrics, and traces. The industry standard. Instrument once, export anywhere.</p></div>
+          <div class="concept-card"><div class="concept-name">Micrometer Tracing</div><p class="concept-desc">Spring Boot 3.x tracing abstraction (replaces Spring Cloud Sleuth). Bridges to OpenTelemetry or Brave (Zipkin).</p></div>
+          <div class="concept-card"><div class="concept-name">Spring Cloud Sleuth</div><p class="concept-desc">Older Spring tracing library (pre-Boot 3.x). Auto-instruments Spring components. Now superseded by Micrometer Tracing.</p></div>
+          <div class="concept-card"><div class="concept-name">Jaeger</div><p class="concept-desc">Open-source distributed tracing backend from Uber. Stores and visualizes traces. Compatible with OpenTelemetry exporter.</p></div>
+          <div class="concept-card"><div class="concept-name">Zipkin</div><p class="concept-desc">Open-source tracing backend. Older than Jaeger, still widely used. Compatible with OpenTelemetry Zipkin exporter.</p></div>
+          <div class="concept-card"><div class="concept-name">Grafana Tempo</div><p class="concept-desc">Grafana's distributed tracing backend. Cost-efficient (no indexing), works seamlessly with Loki for log correlation.</p></div>
+          <div class="concept-card"><div class="concept-name">W3C traceparent</div><p class="concept-desc">Standard HTTP header for distributed trace context propagation. Format: version-traceId-parentSpanId-flags. Understood by all OTEL-compatible systems.</p></div>
+          <div class="concept-card"><div class="concept-name">X-Correlation-ID</div><p class="concept-desc">Custom HTTP header convention for passing a request correlation ID. Simpler than traceparent but not standardized. Use traceparent when possible.</p></div>
+        </div>
+
+        <h3>Spring Boot tooling</h3>
+        <div class="concept-grid">
+          <div class="concept-card"><div class="concept-name">Spring Boot Actuator</div><p class="concept-desc">Auto-configures HTTP endpoints for health checks, metrics, log level management, thread dumps, and environment inspection.</p></div>
+          <div class="concept-card"><div class="concept-name">HealthIndicator</div><p class="concept-desc">Interface to implement for custom health checks. Registered automatically in /actuator/health. Return Health.up() or Health.down().</p></div>
+          <div class="concept-card"><div class="concept-name">MeterRegistry</div><p class="concept-desc">Micrometer's central registry. Inject it into any Spring bean to register Counters, Timers, Gauges. Auto-configured by Spring Boot.</p></div>
+          <div class="concept-card"><div class="concept-name">@Timed</div><p class="concept-desc">Micrometer annotation that wraps a method in a Timer automatically. Requires the TimedAspect bean to be registered.</p></div>
+          <div class="concept-card"><div class="concept-name">HikariCP</div><p class="concept-desc">Default Spring Boot JDBC connection pool. Exposes active, idle, pending, max connection counts as Micrometer metrics automatically.</p></div>
+        </div>
+
+        <h3>GCP services</h3>
+        <div class="concept-grid">
+          <div class="concept-card"><div class="concept-name">Cloud Logging</div><p class="concept-desc">GCP's centralized log management. Auto-collects from GKE, Cloud Run, GCE. Logs Explorer for querying. Supports log-based metrics.</p></div>
+          <div class="concept-card"><div class="concept-name">Cloud Monitoring</div><p class="concept-desc">GCP metrics, dashboards, and alerting. Includes uptime checks. Accepts custom metrics via Micrometer Stackdriver exporter.</p></div>
+          <div class="concept-card"><div class="concept-name">Cloud Trace</div><p class="concept-desc">GCP's distributed tracing. Integrates with OpenTelemetry. Correlates with Cloud Logging via trace ID in log entries.</p></div>
+          <div class="concept-card"><div class="concept-name">Cloud Profiler</div><p class="concept-desc">Continuous production CPU/memory profiling. Low overhead. Generates flame graphs. Best way to find hot code paths in Java.</p></div>
+          <div class="concept-card"><div class="concept-name">Error Reporting</div><p class="concept-desc">Auto-groups exceptions from Cloud Logging. Sends alerts on new error types. Shows error trends over time.</p></div>
+          <div class="concept-card"><div class="concept-name">Synthetic Monitoring</div><p class="concept-desc">Puppeteer-based scripts that simulate user journeys from multiple global regions. GCP's equivalent of Site24x7 web transaction monitoring.</p></div>
+        </div>
+      </div>
+      <div class="chapter-nav">
+        <button class="nav-btn nav-prev" onclick="show(7)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">GCP Solutions</span></span></button>
+        <button class="nav-btn nav-next" onclick="show(9)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Interview Prep</span></span><span class="nav-arrow">→</span></button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════ SECTION 9: INTERVIEW -->
+    <div class="section" id="s9">
+      <div class="hero" style="background:#1f1a14;">
+        <div class="hero-inner">
+          <span class="chapter-label">Chapter 09 — Reference</span>
+          <h2>Interview Prep</h2>
+          <p class="subtitle">Questions that come up in senior and staff engineering rounds — with model answers that show depth, not just definitions.</p>
+        </div>
+      </div>
+      <div class="content">
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span class="qa-level foundational">Foundational</span>
+            <span class="qa-text">"What are the three pillars of observability and how do they differ?"</span>
+          </div>
+          <div class="qa-answer">
+            <p class="qa-context">The interviewer wants to know if you understand these as distinct tools with different purposes — not just buzz words.</p>
+            <div class="qa-points"><ul>
+              <li>Logs are for debugging why — full event context, expensive to search at scale</li>
+              <li>Metrics are for detecting that — cheap time-series, fast to query, basis for alerting</li>
+              <li>Traces are for locating where — latency across service call chains</li>
+              <li>They complement, not replace, each other — metrics trigger, logs explain, traces locate</li>
+            </ul></div>
+            <div class="qa-strong-answer">The three pillars serve different questions. Metrics tell you <em>that</em> something is wrong — your error rate spiked. Logs tell you <em>why</em> — the stack trace and context around the event. Traces tell you <em>where</em> — which service in a chain of calls is taking 2 seconds. In practice, a Prometheus alert fires first, you open Grafana to see the spike, then grep logs by correlation ID to find the root cause, then look at traces to confirm which downstream call is the bottleneck. Each one leads you to the next.</div>
+            <div class="qa-trap">Weak answer: listing definitions without connecting them to how you'd use them together during an actual incident.</div>
+          </div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span class="qa-level foundational">Foundational</span>
+            <span class="qa-text">"Why should you use percentiles instead of averages for latency metrics?"</span>
+          </div>
+          <div class="qa-answer">
+            <p class="qa-context">Tests whether you understand how averages mask tail latency — a very common production monitoring mistake.</p>
+            <div class="qa-points"><ul>
+              <li>Averages are easily skewed by a large number of fast requests hiding slow outliers</li>
+              <li>p99 tells you what 1 in 100 users actually experiences</li>
+              <li>SLAs are almost always percentile-based ("99% of requests under 500ms")</li>
+              <li>In practice, slow users are often premium customers or users with large accounts</li>
+            </ul></div>
+            <div class="qa-strong-answer">If you have 1000 requests: 990 take 10ms and 10 take 5000ms, the average is about 60ms — looks totally fine. But p99 is 5000ms — 1% of users are waiting 5 seconds. Those might be your highest-value customers running large batch operations. Averages are actively misleading for latency. I always configure Micrometer with publishPercentiles(0.5, 0.95, 0.99) and alert on p99, not mean.</div>
+            <div class="qa-trap">Only mentioning that averages "aren't accurate" without giving a concrete example of why they deceive you.</div>
+          </div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span class="qa-level intermediate">Intermediate</span>
+            <span class="qa-text">"In a stateless web tier where requests go to different servers, how do you trace a user's request across servers in your logs?"</span>
+          </div>
+          <div class="qa-answer">
+            <p class="qa-context">Tests practical distributed systems knowledge — correlation IDs and MDC are the expected answer.</p>
+            <div class="qa-points"><ul>
+              <li>Generate a correlation ID (UUID) at the first entry point</li>
+              <li>Store it in MDC so every log line on that thread carries it automatically</li>
+              <li>Propagate it via HTTP header (X-Correlation-ID or W3C traceparent) on all outgoing calls</li>
+              <li>Watch out for async — MDC is ThreadLocal, must be copied explicitly across thread boundaries</li>
+            </ul></div>
+            <div class="qa-strong-answer">We use a servlet filter that reads X-Correlation-ID from the incoming request — or generates a UUID if it's absent — and puts it into MDC. Since we use logstash-logback-encoder, every subsequent log.info() on that thread automatically includes the correlation ID in the JSON output. For outgoing HTTP calls, we have a RestTemplate interceptor that reads the ID from MDC and adds it as a header. The downstream service repeats the process. In Kibana, you search for correlationId:"abc123" and see the complete request chain across all servers in chronological order. The main gotcha is async processing — MDC doesn't cross thread boundaries, so we use a task decorator on our thread pools to copy the MDC map to the new thread.</div>
+            <div class="qa-trap">Saying "we use distributed tracing" without explaining the concrete mechanism — correlation ID, MDC, header propagation.</div>
+          </div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span class="qa-level intermediate">Intermediate</span>
+            <span class="qa-text">"What would you monitor for a Spring Boot microservice — walk me through your checklist."</span>
+          </div>
+          <div class="qa-answer">
+            <p class="qa-context">Tests breadth — do you go beyond CPU/memory to business metrics and JVM internals?</p>
+            <div class="qa-points"><ul>
+              <li>Four golden signals: latency (p99), traffic (req/s), errors (5xx rate), saturation (CPU, threads)</li>
+              <li>JVM: heap usage, GC pause times, thread pool states, connection pool utilization</li>
+              <li>Business KPIs: domain-specific counters (orders placed, payments failed)</li>
+              <li>External dependencies: downstream HTTP latency and error rates, circuit breaker state</li>
+              <li>Queue health: consumer lag, DLQ depth</li>
+            </ul></div>
+            <div class="qa-strong-answer">I start with the four golden signals from Google SRE — latency at p95 and p99, request rate, 5xx error rate, and saturation. For saturation, I watch both CPU and thread pool utilization, since thread pool exhaustion is often what kills a Java service before CPU does. Beyond that: JVM heap and GC pause times because a GC pause over 500ms shows up as a latency spike in your p99. HikariCP connection pool — near-full pools cause requests to queue before you hit any errors. Then business metrics: for an order service that means orders placed per minute and payment failure rate. Those catch problems that infra metrics never will. Finally, any external dependencies — their latency and error rate, and whether circuit breakers are open. In Spring Boot I wire all of this through Micrometer so it exports automatically to Prometheus.</div>
+            <div class="qa-trap">Stopping at CPU, memory, and HTTP error rate without mentioning JVM internals, business KPIs, or dependency health.</div>
+          </div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span class="qa-level senior">Senior</span>
+            <span class="qa-text">"When would you choose Loki over Elasticsearch for log storage, and what are the trade-offs?"</span>
+          </div>
+          <div class="qa-answer">
+            <p class="qa-context">Tests architectural trade-off thinking — is there a principled reason for the choice, or just "we used what we knew"?</p>
+            <div class="qa-points"><ul>
+              <li>Elasticsearch indexes every field — powerful ad-hoc queries, much higher storage and CPU cost</li>
+              <li>Loki indexes only labels — far cheaper, but you must filter by labels before scanning log bodies</li>
+              <li>Query pattern drives the choice: ad-hoc investigation → Elasticsearch, time+service filter → Loki</li>
+              <li>Loki integrates naturally with Grafana/Prometheus stack — consistent tooling</li>
+            </ul></div>
+            <div class="qa-strong-answer">The decision comes down to query patterns and cost. Elasticsearch indexes every JSON field, so you can search by any field at any time — great for ad-hoc investigation where you don't know in advance what you'll need to query. But that indexing is expensive: storage costs are significantly higher and it needs substantial resources to run. Loki only indexes label values like service name, environment, and log level — the log body is stored compressed. So you query by labels first to narrow down the set, then scan the body. If your team's workflow is always "filter by service and time range, then search the text" — which is most teams — Loki works great and costs far less. The other factor is ecosystem: if you're already on Grafana + Prometheus, Loki fits naturally. If you need full-text search across arbitrary fields or you're doing security analysis, Elasticsearch is the right tool.</div>
+            <div class="qa-trap">Saying "Elasticsearch is better" or "Loki is better" without articulating the query pattern and cost trade-off that drives the choice.</div>
+          </div>
+        </div>
+
+        <div class="qa-item">
+          <div class="qa-question">
+            <span class="qa-level senior">Senior</span>
+            <span class="qa-text">"How do you prevent alert fatigue in a team? What's your philosophy on alerting?"</span>
+          </div>
+          <div class="qa-answer">
+            <p class="qa-context">Tests maturity and culture — purely technical engineers often miss this. It's as much about process as tooling.</p>
+            <div class="qa-points"><ul>
+              <li>Only alert on things that require human action — if no action, it should be a dashboard, not an alert</li>
+              <li>Use the for: clause to require conditions to persist before firing</li>
+              <li>Alert on symptoms (user-facing impact), not causes (high CPU isn't a user problem yet)</li>
+              <li>Treat every alert that fires without action as a bug — it should be deleted, raised, or fixed</li>
+            </ul></div>
+            <div class="qa-strong-answer">My rule is: if a page doesn't require someone to do something right now, it shouldn't page. Alert fatigue happens when on-call gets trained to ignore alerts because half of them are noise. Every alert that fires and gets silenced without action is a false alarm that erodes trust in the system. Practically: I alert on symptoms over causes — "5% of requests are failing" is a symptom, "CPU is at 80%" is a cause that might resolve itself. I always use the for: clause in Prometheus rules so transient spikes don't fire. And we do a monthly alert audit: any alert that fired in the last month without generating an incident is either deleted or its threshold is revisited. The goal is that when an alert fires, the on-call engineer trusts that it's real and acts immediately.</div>
+            <div class="qa-trap">Talking only about tooling (Alertmanager, PagerDuty routing) without addressing the culture and process of alert maintenance.</div>
+          </div>
+        </div>
+
+      </div>
+      <div class="chapter-nav">
+        <button class="nav-btn nav-prev" onclick="show(8)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Concepts &amp; Tools</span></span></button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+(function() {
+  var TOTAL = 10;
+  var current = 0;
+  var navLinks = document.querySelectorAll('.nav-link');
+  var sectionEls = document.querySelectorAll('.section');
+
+  window.show = function(n) {
+    sectionEls[current].classList.remove('active');
+    navLinks[current].classList.remove('active');
+    current = n;
+    sectionEls[current].classList.add('active');
+    navLinks[current].classList.add('active');
+    var prog = document.getElementById('prog');
+    if (prog) prog.style.width = (((current + 1) / TOTAL) * 100) + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.closeSidebar();
+  };
+
+  window.toggleSidebar = function() {
+    var sb = document.getElementById('sidebar');
+    var ov = document.getElementById('overlay');
+    if (sb) sb.classList.toggle('mobile-open');
+    if (ov) ov.classList.toggle('open');
+  };
+
+  window.closeSidebar = function() {
+    var sb = document.getElementById('sidebar');
+    var ov = document.getElementById('overlay');
+    if (sb) sb.classList.remove('mobile-open');
+    if (ov) ov.classList.remove('open');
+  };
+
+  var prog = document.getElementById('prog');
+  if (prog) prog.style.width = (((current + 1) / TOTAL) * 100) + '%';
+})();
+</script>
+</body>
+</html>
