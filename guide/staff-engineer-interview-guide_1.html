@@ -1,0 +1,2483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Engineer Interview Prep Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sidebar-w: 270px;
+  --max-content-w: 850px;
+  --ink: #1a1714;
+  --ink-mid: #3d3830;
+  --ink-light: #7a7068;
+  --paper: #faf8f5;
+  --paper-warm: #f3efe8;
+  --paper-mid: #ece7de;
+  --rule: #ddd8cf;
+  --accent: #2d7a4f;
+  --accent-light: #d8f0e4;
+  --accent-deep: #1e5c39;
+  --blue: #2a5fa5;
+  --blue-light: #dce8f7;
+  --green: #2d7a4f;
+  --green-light: #d8f0e4;
+  --gold: #b07d20;
+  --gold-light: #f5edda;
+  --purple: #5e3d8f;
+  --purple-light: #ebe0fa;
+  --red: #b53535;
+  --red-light: #fde8e8;
+  --code-bg: #1a1c1a;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 17px; scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; font-weight: 400; line-height: 1.72; letter-spacing: -0.008em; color: var(--ink-mid); background: var(--paper); }
+
+/* SIDEBAR */
+.sidebar {
+  position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh;
+  background: var(--ink); overflow-y: auto; z-index: 100;
+  display: flex; flex-direction: column;
+}
+.sidebar-brand { padding: 24px 20px 16px; border-bottom: 1px solid #2e2a26; }
+.sidebar-brand .brand-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.sidebar-brand .brand-title { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; color: #f0ece6; line-height: 1.3; }
+.sidebar-nav { padding: 16px 0 32px; flex: 1; }
+.nav-group { margin-bottom: 8px; }
+.nav-group-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #7a7068; padding: 8px 20px 4px; }
+.nav-link {
+  display: block; padding: 7px 20px; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem; font-weight: 400; color: #c8c0b8; text-decoration: none;
+  cursor: pointer; letter-spacing: 0.01em; line-height: 1.4; white-space: normal;
+  border-left: 3px solid transparent; transition: all .15s;
+}
+.nav-link:hover { color: #f0ece6; background: #2a2521; }
+.nav-link.active { color: #f0ece6; border-left-color: var(--accent); background: #2a2521; }
+
+/* LAYOUT */
+.layout { }
+.main { margin-left: var(--sidebar-w); width: calc(100% - var(--sidebar-w)); }
+.progress-bar { position: sticky; top: 0; z-index: 50; height: 3px; background: var(--rule); }
+.progress-bar #prog { height: 100%; width: 0%; background: var(--accent); transition: width .25s ease; }
+
+/* SECTIONS */
+.section { display: none; }
+.section.active { display: block; }
+
+/* HERO */
+.hero { background: var(--ink); color: #f0ece6; padding: 56px 32px 48px; }
+.hero-inner { max-width: var(--max-content-w); margin: 0 auto; }
+.chapter-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+.hero h2 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 900; line-height: 1.08; letter-spacing: -0.02em; color: #f0ece6; margin-bottom: 16px; }
+.hero .subtitle { font-family: 'DM Sans', sans-serif; font-size: 1.08rem; font-weight: 300; color: #c8c0b8; line-height: 1.5; }
+
+/* PILLS */
+.pills { padding: 20px 32px 0; max-width: var(--max-content-w); margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.04em; background: var(--paper-mid); color: var(--ink-light); border-radius: 20px; padding: 4px 12px; border: 1px solid var(--rule); }
+.pill.accent { background: var(--accent-light); color: var(--accent-deep); border-color: var(--accent); }
+
+/* CONTENT */
+.content { max-width: var(--max-content-w); margin: 0 auto; padding: 32px 32px 8px; }
+.lead { font-size: 1.08rem; font-style: italic; color: var(--ink-mid); line-height: 1.65; border-left: 3px solid var(--accent); padding-left: 20px; margin-bottom: 32px; }
+
+/* HEADINGS */
+h3 { font-family: 'Playfair Display', serif; font-size: clamp(1.3rem, 2.5vw, 1.7rem); font-weight: 700; line-height: 1.2; color: var(--ink); margin: 36px 0 12px; }
+h4 { font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; line-height: 1.4; color: var(--ink); margin: 24px 0 8px; }
+p { margin-bottom: 16px; }
+ul, ol { margin: 0 0 16px 20px; }
+li { margin-bottom: 6px; }
+strong { font-weight: 600; color: var(--ink); }
+
+/* CARDS */
+.cards { display: grid; gap: 16px; margin: 24px 0; }
+.cards.two { grid-template-columns: repeat(2, 1fr); }
+.cards.three { grid-template-columns: repeat(3, 1fr); }
+.card { background: var(--paper-warm); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; height: 100%; }
+.card-header { padding: 14px 18px 10px; border-bottom: 1px solid var(--rule); }
+.card-header h4 { margin: 0; font-size: 0.88rem; }
+.card-body { padding: 14px 18px; font-size: 0.85rem; line-height: 1.6; color: var(--ink-light); flex-grow: 1; }
+.card-body code { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; background: var(--paper-mid); padding: 1px 5px; border-radius: 3px; }
+
+/* COMPARISON TABLE */
+.compare-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 0.88rem; }
+.compare-table th { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; background: var(--paper-mid); padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--rule); }
+.compare-table td { padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table tr:hover td { background: var(--paper-warm); }
+.badge { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 4px; }
+.badge-green { background: var(--green-light); color: var(--green); }
+.badge-blue { background: var(--blue-light); color: var(--blue); }
+.badge-red { background: var(--red-light); color: var(--red); }
+.badge-gold { background: var(--gold-light); color: var(--gold); }
+.badge-purple { background: var(--purple-light); color: var(--purple); }
+
+/* STEPS */
+.steps { margin: 24px 0; }
+.step { display: flex; gap: 16px; margin-bottom: 20px; }
+.step-num { width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: #f0ece6; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.step-content { flex: 1; }
+.step-content strong { display: block; font-size: 0.88rem; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+.step-content p { font-size: 0.85rem; margin: 0; color: var(--ink-light); }
+
+/* CODE BLOCKS */
+pre { background: var(--code-bg); border-radius: 8px; padding: 20px; overflow-x: auto; margin: 16px 0; }
+pre code { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: #c9d1d9; line-height: 1.6; }
+.inline-code { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; background: var(--paper-mid); padding: 2px 6px; border-radius: 4px; color: var(--ink); }
+code { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; }
+
+/* CALLOUT */
+.callout { display: flex; gap: 16px; background: var(--accent-light); border: 1px solid var(--accent); border-left: 4px solid var(--accent); border-radius: 8px; padding: 18px 20px; margin: 32px 0 24px; }
+.callout-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+.callout-body { flex: 1; font-size: 0.95rem; line-height: 1.6; }
+.callout-body strong { display: block; font-weight: 600; margin-bottom: 4px; color: var(--accent-deep); }
+.callout.blue { background: var(--blue-light); border-color: var(--blue); }
+.callout.blue .callout-body strong { color: var(--blue); }
+.callout.red { background: var(--red-light); border-color: var(--red); }
+.callout.red .callout-body strong { color: var(--red); }
+.callout.gold { background: var(--gold-light); border-color: var(--gold); }
+.callout.gold .callout-body strong { color: var(--gold); }
+
+/* ANALOGY BOX */
+.analogy { background: #fef3e2; border: 1px solid #e8c97a; border-left: 4px solid #c4941c; border-radius: 8px; padding: 18px 20px; margin: 24px 0; }
+.analogy-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #7a5c10; margin-bottom: 8px; }
+.analogy p { color: #3d2e1a; font-size: 0.95rem; margin: 0; }
+
+/* SCENARIO NAV */
+.scenario-nav { display: flex; flex-wrap: wrap; gap: 8px; padding: 24px 32px 0; max-width: var(--max-content-w); margin: 0 auto; }
+.scenario-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 0.82rem; font-weight: 500; transition: opacity .15s; border: 1px solid transparent; }
+.scenario-chip:hover { opacity: .8; }
+.chip-num { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 500; }
+.chip-green { background: var(--green-light); color: var(--green); border-color: #a8dcc0; }
+.chip-blue  { background: var(--blue-light); color: var(--blue); border-color: #b0c8e8; }
+.chip-gold  { background: var(--gold-light); color: var(--gold); border-color: #d4b060; }
+.chip-red   { background: var(--red-light); color: var(--red); border-color: #e0a0a0; }
+.chip-purple { background: var(--purple-light); color: var(--purple); border-color: #c0a8e0; }
+
+/* EXAMPLES */
+.example-section { max-width: var(--max-content-w); margin: 0 auto; padding: 24px 32px; }
+.test-case { background: var(--paper-warm); border: 1px solid var(--rule); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+.test-case-header { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--rule); background: #f7f3ec; }
+.test-case-header .badge { font-size: 0.68rem; }
+.test-case-header h4 { margin: 0; font-size: 0.9rem; }
+.test-case-body { padding: 16px 18px; }
+.test-case-body p { font-size: 0.88rem; margin-bottom: 10px; color: var(--ink-light); }
+.test-case-body pre { margin: 8px 0 0; }
+.test-case-body pre code { font-size: 0.82rem; }
+
+/* QUESTION CARDS */
+.question-list { margin: 24px 0; }
+.question-item { background: var(--paper-warm); border: 1px solid var(--rule); border-radius: 8px; padding: 16px 18px; margin-bottom: 12px; }
+.question-item .q-text { font-weight: 600; color: var(--ink); font-size: 0.92rem; margin-bottom: 6px; }
+.question-item .q-expect { font-size: 0.85rem; color: var(--ink-light); line-height: 1.6; }
+.q-tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; padding: 2px 7px; border-radius: 4px; margin-right: 6px; margin-bottom: 6px; font-weight: 500; letter-spacing: 0.04em; }
+
+/* CHAPTER NAV */
+.chapter-nav { display: flex; justify-content: space-between; align-items: stretch; gap: 12px; padding: 24px 32px 40px; max-width: var(--max-content-w); margin: 0 auto; }
+.nav-btn { display: flex; align-items: center; gap: 12px; flex: 1; background: var(--paper-warm); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 18px; cursor: pointer; font-family: inherit; text-align: left; transition: all .15s; }
+.nav-btn:hover { background: var(--accent-light); border-color: var(--accent); }
+.nav-next { justify-content: flex-end; text-align: right; }
+.nav-arrow { font-size: 1.2rem; color: var(--accent); flex-shrink: 0; }
+.nav-hint { display: block; font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: var(--ink-light); text-transform: uppercase; letter-spacing: .08em; }
+.nav-title { display: block; font-size: 0.9rem; font-weight: 600; color: var(--ink-mid); }
+
+/* DIVIDER */
+.divider { border: none; border-top: 1px solid var(--rule); margin: 32px 0; }
+
+/* MOBILE */
+.mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 52px; background: var(--ink); z-index: 110; align-items: center; padding: 0 16px; gap: 12px; }
+.hamburger { background: none; border: none; color: #c8c0b8; font-size: 1.3rem; cursor: pointer; padding: 4px; }
+.mobile-title { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: #c8c0b8; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 90; }
+.sidebar-overlay.open { display: block; }
+
+/* GLOSSARY */
+.glossary-entry { padding: 14px 0; border-bottom: 1px solid var(--rule); display: flex; gap: 20px; }
+.glossary-entry:last-child { border-bottom: none; }
+.glossary-term { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; font-weight: 500; color: var(--accent-deep); min-width: 140px; padding-top: 2px; }
+.glossary-def { font-size: 0.88rem; color: var(--ink-light); line-height: 1.6; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); transition: transform .3s ease; }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .main { margin-left: 0; width: 100%; }
+  .mobile-header { display: flex; }
+  .hero { padding-top: 80px; }
+  .cards.two, .cards.three { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .cards.two { grid-template-columns: 1fr; }
+  .pills { padding: 16px 16px 0; }
+  .content { padding: 24px 16px 8px; }
+  .scenario-nav { padding: 16px 16px 0; }
+  .example-section { padding: 16px 16px; }
+  .chapter-nav { padding: 16px 16px 32px; flex-direction: column; }
+  .hero { padding: 80px 16px 36px; }
+}
+</style>
+</head>
+<body>
+
+<header class="mobile-header">
+  <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  <span class="mobile-title">Staff Eng Interview Prep</span>
+</header>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-label">Interview Prep</div>
+    <div class="brand-title">Senior → Staff Engineer Guide</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group">
+      <div class="nav-group-label">Overview</div>
+      <a class="nav-link active" onclick="show(0)">Introduction</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Tech Stack</div>
+      <a class="nav-link" onclick="show(1)">Spring Boot</a>
+      <a class="nav-link" onclick="show(2)">GraphQL</a>
+      <a class="nav-link" onclick="show(3)">Cloud Spanner &amp; GCP</a>
+      <a class="nav-link" onclick="show(4)">React (Staff Lens)</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Past Questions</div>
+      <a class="nav-link" onclick="show(5)">Unit Testing &amp; Design Patterns</a>
+      <a class="nav-link" onclick="show(6)">Scalability &amp; DB Constraints</a>
+      <a class="nav-link" onclick="show(7)">Security: PII &amp; Password Hashing</a>
+      <a class="nav-link" onclick="show(8)">Production Monitoring</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Best Practices</div>
+      <a class="nav-link" onclick="show(9)">Testing Best Practices</a>
+      <a class="nav-link" onclick="show(10)">Java &amp; Spring Boot</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Reference</div>
+      <a class="nav-link" onclick="show(11)">Concepts &amp; Tools</a>
+      <a class="nav-link" onclick="show(12)">Interview Prep — All Qs</a>
+    </div>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="progress-bar"><div id="prog"></div></div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SECTION 0 — INTRO -->
+  <div class="section active" id="s0">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="chapter-label">Introduction</div>
+        <h2>Senior → Staff Engineer Interview Prep</h2>
+        <p class="subtitle">A deep-reference guide covering the tech stack, past interview themes, and best practices expected at staff-engineer calibre.</p>
+      </div>
+    </div>
+    <div class="pills" style="max-width:var(--max-content-w);margin:20px auto 0;">
+      <span class="pill accent">Spring Boot</span>
+      <span class="pill accent">GraphQL</span>
+      <span class="pill accent">Cloud Spanner</span>
+      <span class="pill accent">GCP</span>
+      <span class="pill accent">React</span>
+      <span class="pill">Security</span>
+      <span class="pill">Scalability</span>
+      <span class="pill">Observability</span>
+      <span class="pill">Testing</span>
+    </div>
+    <div class="content">
+      <p class="lead">This guide is written for engineers targeting the Senior → Staff transition. Every topic is approached at the depth a staff engineer is expected to demonstrate — not just "what is X" but "when, why, trade-offs, failure modes, and how you'd evolve it at scale."</p>
+
+      <h3>How to Use This Guide</h3>
+      <p>Navigate using the sidebar. Each chapter covers a domain in depth, followed by scenario examples and a curated set of questions with expected answer depth. The final two chapters are a quick-reference glossary and a consolidated question bank.</p>
+
+      <div class="cards two">
+        <div class="card">
+          <div class="card-header"><h4>🏗 Tech Stack Chapters</h4></div>
+          <div class="card-body">Deep dives on Spring Boot, GraphQL, Cloud Spanner, GCP, and React. Focus on architecture decisions, trade-offs, and scaling concerns — not just syntax.</div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h4>💬 Past Questions</h4></div>
+          <div class="card-body">Expanded answers to questions already asked: unit testing, aggregation vs inheritance, horizontal scalability, password hashing, PII, and production monitoring.</div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h4>✅ Best Practices</h4></div>
+          <div class="card-body">Testing pyramids, Java idioms, Spring Boot production patterns — the kind of opinionated, experience-backed answers that signal staff-level thinking.</div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h4>📚 Interview Prep</h4></div>
+          <div class="card-body">Every chapter ends with questions and expected depth. Chapter 12 consolidates all questions for last-minute review the night before the panel.</div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <div class="callout-icon">🎯</div>
+        <div class="callout-body">
+          <strong>Staff-Engineer Signal</strong>
+          At this level, interviewers are not checking if you know facts. They want to see <em>judgment</em>: knowing when to use a pattern, what it costs, and how it fails. Always answer with context: "We chose X because Y, and the trade-off was Z."
+        </div>
+      </div>
+    </div>
+    <div class="chapter-nav">
+      <div></div>
+      <button class="nav-btn nav-next" onclick="show(1)">
+        <span class="nav-label">
+          <span class="nav-hint">Next</span>
+          <span class="nav-title">Spring Boot</span>
+        </span>
+        <span class="nav-arrow">→</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SECTION 1 — SPRING BOOT -->
+  <div class="section" id="s1">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="chapter-label">Tech Stack · Chapter 01</div>
+        <h2>Spring Boot</h2>
+        <p class="subtitle">Autoconfiguration, dependency injection, production-readiness, and scaling patterns for backend services.</p>
+      </div>
+    </div>
+    <div class="pills" style="max-width:var(--max-content-w);margin:20px auto 0;">
+      <span class="pill">Autoconfiguration</span><span class="pill">DI / IoC</span><span class="pill">Actuator</span>
+      <span class="pill">Spring Security</span><span class="pill">Spring Data</span><span class="pill">Transactions</span>
+      <span class="pill">Async / Reactive</span><span class="pill">Profiles</span>
+    </div>
+    <div class="content">
+      <p class="lead">Spring Boot is not just a framework — it's an opinionated production platform. A staff engineer must understand the full lifecycle: how autoconfiguration works, how the IoC container manages beans, how transactions behave, and where the sharp edges are at scale.</p>
+
+      <h3>Autoconfiguration & the IoC Container</h3>
+      <p>Spring Boot's <strong>autoconfiguration</strong> works via <span class="inline-code">@EnableAutoConfiguration</span>, which reads <span class="inline-code">META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</span> (Boot 3.x). Each autoconfiguration class is conditional — it only fires when specific classes are on the classpath (<span class="inline-code">@ConditionalOnClass</span>) or beans are absent (<span class="inline-code">@ConditionalOnMissingBean</span>).</p>
+
+      <div class="analogy">
+        <div class="analogy-label">Mental Model</div>
+        <p>Autoconfiguration is like a smart factory that wires up machines based on what raw materials it finds. If it sees a JDBC driver on the classpath, it auto-creates a <code>DataSource</code>. If you supply your own, it steps aside. You stay in control by overriding; the factory handles defaults.</p>
+      </div>
+
+      <h4>Bean Scopes — Production Implications</h4>
+      <div class="cards two">
+        <div class="card"><div class="card-header"><h4>Singleton (Default)</h4></div><div class="card-body">One instance per Spring context. Shared across all threads. Fastest but requires thread-safe state. Injecting prototype beans into singletons requires <code>ObjectProvider</code> or method injection to avoid stale instances.</div></div>
+        <div class="card"><div class="card-header"><h4>Prototype</h4></div><div class="card-body">New instance per injection point. Spring does not manage the full lifecycle (destroy never called). Use for stateful objects. Common mistake: injecting into singleton causes only one prototype to ever be created.</div></div>
+        <div class="card"><div class="card-header"><h4>Request / Session</h4></div><div class="card-body">Web-only scopes. <code>@RequestScope</code> bean tied to HTTP request lifecycle. Useful for per-request context (e.g., user principal caching). Requires <code>ScopedProxyMode</code> when injecting into longer-lived beans.</div></div>
+        <div class="card"><div class="card-header"><h4>Custom Scopes</h4></div><div class="card-body">Implement <code>org.springframework.beans.factory.config.Scope</code>. Used for tenant-scoped or conversation-scoped beans in multi-tenant SaaS applications. Rarely needed but shows depth.</div></div>
+      </div>
+
+      <h3>Transaction Management</h3>
+      <p>Spring's declarative transactions via <span class="inline-code">@Transactional</span> proxy calls through AOP. This means <strong>self-invocation breaks transactionality</strong> — calling a <span class="inline-code">@Transactional</span> method from within the same class bypasses the proxy.</p>
+
+      <h4>Propagation Modes — Know These Cold</h4>
+      <table class="compare-table">
+        <thead><tr><th>Propagation</th><th>Behaviour</th><th>Use Case</th></tr></thead>
+        <tbody>
+          <tr><td><code>REQUIRED</code> (default)</td><td>Join existing tx; create if none</td><td>General CRUD operations</td></tr>
+          <tr><td><code>REQUIRES_NEW</code></td><td>Suspend existing, create new</td><td>Audit logging — must commit even if outer tx rolls back</td></tr>
+          <tr><td><code>NESTED</code></td><td>Savepoint within existing tx</td><td>Partial rollback of sub-operations</td></tr>
+          <tr><td><code>NOT_SUPPORTED</code></td><td>Suspend tx, run non-transactionally</td><td>Bulk reads that should not hold locks</td></tr>
+          <tr><td><code>NEVER</code></td><td>Throw if tx exists</td><td>Enforce read-only non-transactional contexts</td></tr>
+          <tr><td><code>MANDATORY</code></td><td>Throw if no tx exists</td><td>Assert that caller must provide a transaction</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Spring Security Architecture</h3>
+      <p>The security filter chain intercepts every request. Key filters in order: <span class="inline-code">SecurityContextPersistenceFilter</span> → <span class="inline-code">UsernamePasswordAuthenticationFilter</span> → <span class="inline-code">ExceptionTranslationFilter</span> → <span class="inline-code">FilterSecurityInterceptor</span>.</p>
+      <p><strong>JWT with Spring Security:</strong> Replace form-based authentication with a custom <span class="inline-code">OncePerRequestFilter</span> that validates JWTs and populates the <span class="inline-code">SecurityContext</span>. Use method security (<span class="inline-code">@PreAuthorize</span>, <span class="inline-code">@PostAuthorize</span>) for fine-grained access control.</p>
+
+      <h3>Spring Boot Actuator for Production</h3>
+      <p>Actuator endpoints are the primary observability surface for Spring Boot apps in production. Key endpoints: <span class="inline-code">/actuator/health</span>, <span class="inline-code">/actuator/metrics</span>, <span class="inline-code">/actuator/env</span>, <span class="inline-code">/actuator/threaddump</span>, <span class="inline-code">/actuator/heapdump</span>.</p>
+      <p>Always secure actuator endpoints — expose only <span class="inline-code">/health</span> and <span class="inline-code">/info</span> publicly, others behind an internal port or auth. In GCP, expose metrics via Micrometer → Cloud Monitoring integration.</p>
+
+      <h3>Async &amp; Reactive Patterns</h3>
+      <p><span class="inline-code">@Async</span> runs tasks on a <span class="inline-code">TaskExecutor</span> thread pool. Always configure a named executor — default is <span class="inline-code">SimpleAsyncTaskExecutor</span> which creates a new thread per task (catastrophic at scale). Reactive via Spring WebFlux (Project Reactor) provides non-blocking I/O on Netty — ideal for high-concurrency I/O-bound workloads. Not a silver bullet for CPU-bound work.</p>
+
+    </div>
+
+    <nav class="scenario-nav">
+      <a class="scenario-chip chip-green" href="#sb-q1"><span class="chip-num">01</span> Autoconfiguration Deep-Dive</a>
+      <a class="scenario-chip chip-blue"  href="#sb-q2"><span class="chip-num">02</span> Transaction Pitfalls</a>
+      <a class="scenario-chip chip-gold"  href="#sb-q3"><span class="chip-num">03</span> Security Architecture</a>
+      <a class="scenario-chip chip-red"   href="#sb-q4"><span class="chip-num">04</span> Production Readiness</a>
+    </nav>
+
+    <div class="example-section">
+      <div class="test-case" id="sb-q1">
+        <div class="test-case-header"><span class="badge badge-green">DEEP DIVE</span><h4>How does autoconfiguration actually work under the hood?</h4></div>
+        <div class="test-case-body">
+          <p>Expected answer: Trace from <code>@SpringBootApplication</code> → <code>@EnableAutoConfiguration</code> → <code>AutoConfigurationImportSelector</code> reading the imports file. Explain conditional annotations with an example. Mention how to debug with <code>--debug</code> flag (conditions report).</p>
+<pre><code>// Autoconfiguration class example (simplified)
+@AutoConfiguration
+@ConditionalOnClass({ DataSource.class, EmbeddedDatabaseType.class })
+@ConditionalOnMissingBean(type = "io.r2dbc.spi.ConnectionFactory")
+@EnableConfigurationProperties(DataSourceProperties.class)
+public class DataSourceAutoConfiguration {
+
+  @Bean
+  @ConditionalOnMissingBean(DataSource.class)
+  public DataSource dataSource(DataSourceProperties properties) {
+    return properties.initializeDataSourceBuilder().build();
+  }
+}
+
+// To debug which conditions fired/skipped:
+// java -jar app.jar --debug  → prints ConditionEvaluationReport</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="sb-q2">
+        <div class="test-case-header"><span class="badge badge-blue">PITFALL</span><h4>Self-invocation and transaction proxy bypass</h4></div>
+        <div class="test-case-body">
+          <p>Staff signal: explain WHY it breaks (proxy-based AOP), not just that it breaks. Then give 3 solutions.</p>
+<pre><code>// ❌ BROKEN — self-invocation bypasses proxy
+@Service
+public class OrderService {
+  public void placeOrder(Order o) {
+    this.processPayment(o); // direct call, no proxy
+  }
+
+  @Transactional
+  public void processPayment(Order o) { ... }
+}
+
+// ✅ FIX 1 — Inject self via ApplicationContext
+@Service
+public class OrderService implements ApplicationContextAware {
+  private OrderService self;
+
+  @Override
+  public void setApplicationContext(ApplicationContext ctx) {
+    self = ctx.getBean(OrderService.class);
+  }
+  public void placeOrder(Order o) { self.processPayment(o); }
+}
+
+// ✅ FIX 2 — Extract to a separate @Service bean
+// ✅ FIX 3 — Use AspectJ weaving (compile-time, no proxy needed)</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="sb-q3">
+        <div class="test-case-header"><span class="badge badge-gold">ARCHITECTURE</span><h4>JWT-based stateless authentication setup</h4></div>
+        <div class="test-case-body">
+<pre><code>@Component
+public class JwtAuthFilter extends OncePerRequestFilter {
+  private final JwtService jwtService;
+  private final UserDetailsService userDetailsService;
+
+  @Override
+  protected void doFilterInternal(HttpServletRequest req,
+      HttpServletResponse res, FilterChain chain)
+      throws ServletException, IOException {
+
+    String header = req.getHeader("Authorization");
+    if (header == null || !header.startsWith("Bearer ")) {
+      chain.doFilter(req, res); return;
+    }
+    String token = header.substring(7);
+    String username = jwtService.extractUsername(token);
+
+    if (username != null && SecurityContextHolder.getContext()
+        .getAuthentication() == null) {
+      UserDetails user = userDetailsService.loadUserByUsername(username);
+      if (jwtService.isTokenValid(token, user)) {
+        var authToken = new UsernamePasswordAuthenticationToken(
+            user, null, user.getAuthorities());
+        authToken.setDetails(new WebAuthenticationDetailsSource()
+            .buildDetails(req));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+      }
+    }
+    chain.doFilter(req, res);
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="sb-q4">
+        <div class="test-case-header"><span class="badge badge-red">PRODUCTION</span><h4>Actuator security + custom health indicators</h4></div>
+        <div class="test-case-body">
+<pre><code>// Custom health indicator (e.g. for Spanner connectivity)
+@Component
+public class SpannerHealthIndicator implements HealthIndicator {
+  private final DatabaseClient dbClient;
+
+  @Override
+  public Health health() {
+    try {
+      dbClient.singleUse().executeQuery(
+        Statement.of("SELECT 1")).next();
+      return Health.up().withDetail("database", "Cloud Spanner").build();
+    } catch (Exception e) {
+      return Health.down(e).withDetail("database", "Cloud Spanner").build();
+    }
+  }
+}
+
+# application.yml — secure actuator endpoints
+management:
+  server:
+    port: 8081           # internal port only
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true    # /health/liveness  /health/readiness for K8s</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h3>Questions You May Be Asked</h3>
+      <div class="question-list">
+        <div class="question-item">
+          <div class="q-text">How does Spring Boot autoconfiguration differ from the traditional Spring XML/Java config approach?</div>
+          <div class="q-expect"><strong>Expected:</strong> Explain conditional beans, the imports file, and how you override defaults. Mention <code>@ConditionalOnMissingBean</code> as the escape hatch. Mention the debug conditions report.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">Explain all the ways @Transactional can silently fail to do what you expect.</div>
+          <div class="q-expect"><strong>Expected:</strong> (1) Self-invocation proxy bypass. (2) Exception swallowed — by default only unchecked exceptions trigger rollback; checked exceptions do not unless <code>rollbackFor</code> set. (3) Different propagation values. (4) Wrong transaction manager when multiple DataSources.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">You have a service that is getting 5000 req/s. Walk me through how you'd configure the Spring Boot thread pool / async model for this.</div>
+          <div class="q-expect"><strong>Expected:</strong> Distinguish blocking Tomcat model (thread-per-request) vs WebFlux (event loop). For blocking: tune <code>server.tomcat.threads.max</code>; for WebFlux: set parallelism to 2× CPU cores. Discuss where Spanner/DB calls block and how to handle with <code>publishOn(Schedulers.boundedElastic())</code>.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">What is the Spring Security filter chain and how would you add a custom authentication mechanism?</div>
+          <div class="q-expect"><strong>Expected:</strong> Know the filter ordering, <code>OncePerRequestFilter</code>, how to register via <code>SecurityFilterChain</code> bean, and where to populate the <code>SecurityContext</code>. Mention that order of <code>addFilterBefore</code>/<code>addFilterAfter</code> matters.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-icon">⚡</div>
+        <div class="callout-body">
+          <strong>Staff Signal for Spring Boot</strong>
+          Don't just describe features — frame answers around operational concerns: "We use <code>REQUIRES_NEW</code> for audit logging so that audit records survive even if the outer transaction rolls back. The trade-off is two physical transactions and an extra round-trip to Spanner."
+        </div>
+      </div>
+    </div>
+    <div class="chapter-nav">
+      <button class="nav-btn nav-prev" onclick="show(0)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Introduction</span></span></button>
+      <button class="nav-btn nav-next" onclick="show(2)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">GraphQL</span></span><span class="nav-arrow">→</span></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SECTION 2 — GRAPHQL -->
+  <div class="section" id="s2">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="chapter-label">Tech Stack · Chapter 02</div>
+        <h2>GraphQL</h2>
+        <p class="subtitle">Schema design, N+1 problem, DataLoaders, subscriptions, federation, and the real trade-offs against REST.</p>
+      </div>
+    </div>
+    <div class="pills" style="max-width:var(--max-content-w);margin:20px auto 0;">
+      <span class="pill">Schema Design</span><span class="pill">N+1 Problem</span><span class="pill">DataLoader</span>
+      <span class="pill">Federation</span><span class="pill">Subscriptions</span><span class="pill">Spring for GraphQL</span>
+      <span class="pill">Persisted Queries</span><span class="pill">Introspection Security</span>
+    </div>
+    <div class="content">
+      <p class="lead">GraphQL shifts API design from resource-centric to capability-centric. The power is client-driven queries; the cost is server-side complexity — especially the N+1 problem, caching challenges, and schema governance at scale.</p>
+
+      <h3>GraphQL vs REST — The Real Trade-offs</h3>
+      <table class="compare-table">
+        <thead><tr><th>Dimension</th><th>GraphQL</th><th>REST</th></tr></thead>
+        <tbody>
+          <tr><td>Data fetching</td><td>Client specifies exact fields — no over/under-fetch</td><td>Server defines the shape — often requires multiple calls or fat payloads</td></tr>
+          <tr><td>Caching</td><td>Hard — all queries go to one endpoint via POST; HTTP cache headers don't apply cleanly</td><td>Native HTTP caching via CDN/Varnish on GET requests</td></tr>
+          <tr><td>API evolution</td><td>Deprecate fields in schema; additive changes are easy</td><td>Versioning (/v1, /v2) required for breaking changes</td></tr>
+          <tr><td>Error handling</td><td>Returns 200 even for partial errors — clients must check <code>errors[]</code></td><td>Standard HTTP status codes carry semantic meaning</td></tr>
+          <tr><td>File uploads</td><td>Multipart spec is non-standard and complex</td><td>First-class with multipart/form-data</td></tr>
+          <tr><td>Real-time</td><td>Built-in subscriptions via WebSocket</td><td>Requires Server-Sent Events or WebSocket separately</td></tr>
+          <tr><td>Security surface</td><td>Introspection exposes full schema; complex nested queries can DoS</td><td>Endpoint-by-endpoint, easier to rate-limit</td></tr>
+          <tr><td>Best for</td><td>Complex domains, mobile clients, BFF patterns</td><td>Public APIs, simple CRUD, file operations, CDN-heavy use cases</td></tr>
+        </tbody>
+      </table>
+
+      <h3>The N+1 Problem &amp; DataLoader</h3>
+      <p>The N+1 problem occurs when resolving a list of N items each triggers an individual database query for a child field — resulting in 1 + N queries instead of 2.</p>
+      <div class="analogy">
+        <div class="analogy-label">Mental Model</div>
+        <p>Imagine fetching a list of 100 orders and then separately querying for each order's customer. Without batching, that's 100 individual DB calls. DataLoader is the solution: it collects all 100 customer IDs across a request tick, fires <em>one</em> batched query, then distributes the results back to each resolver.</p>
+      </div>
+      <p><strong>DataLoader Pattern:</strong> Spring for GraphQL integrates with <span class="inline-code">dataloader</span>. You register a <span class="inline-code">BatchLoaderRegistry</span> per entity type. Requests within the same "tick" are automatically batched.</p>
+
+      <h3>Schema Design Best Practices</h3>
+      <ul>
+        <li><strong>Design for the client, not the database.</strong> GraphQL types should reflect what clients need, not mirror table schemas.</li>
+        <li><strong>Use Connections for pagination</strong> (Relay spec): <code>UserConnection { edges { node cursor } pageInfo }</code></li>
+        <li><strong>Prefer nullable fields conservatively.</strong> Non-null (<code>!</code>) types are a contract — if they ever return null, the entire parent field nulls out, which can cascade up the response tree.</li>
+        <li><strong>Union vs Interface:</strong> Use interfaces for shared fields; unions for heterogeneous types with no common fields.</li>
+        <li><strong>Mutations should be fat</strong> — accept a full input type, return the modified object. Avoid fine-grained mutations per field.</li>
+      </ul>
+
+      <h3>Security Concerns</h3>
+      <p><strong>Disable introspection in production</strong> — the schema is a roadmap for attackers. Use persisted queries (only allow pre-registered query hashes) for public-facing APIs. Apply <strong>query depth limits</strong> and <strong>query complexity analysis</strong> to prevent DoS via deeply nested queries. Rate-limit by token/IP at the gateway level.</p>
+
+      <h3>Federation &amp; Micro-Frontends</h3>
+      <p>GraphQL Federation (Apollo Federation or Spring's equivalent) allows splitting a schema across services. Each subgraph owns a slice; the gateway stitches them at query time. Key concepts: <code>@key</code> directive marks entity identifiers, <code>@extends</code> allows subgraphs to contribute fields to another service's type.</p>
+    </div>
+
+    <nav class="scenario-nav">
+      <a class="scenario-chip chip-green" href="#gql-q1"><span class="chip-num">01</span> N+1 with DataLoader</a>
+      <a class="scenario-chip chip-blue"  href="#gql-q2"><span class="chip-num">02</span> Spring for GraphQL Setup</a>
+      <a class="scenario-chip chip-red"   href="#gql-q3"><span class="chip-num">03</span> Security: Introspection Off</a>
+      <a class="scenario-chip chip-purple" href="#gql-q4"><span class="chip-num">04</span> Complexity Limiting</a>
+    </nav>
+
+    <div class="example-section">
+      <div class="test-case" id="gql-q1">
+        <div class="test-case-header"><span class="badge badge-green">PATTERN</span><h4>DataLoader to fix N+1 — Spring for GraphQL</h4></div>
+        <div class="test-case-body">
+<pre><code>// Register a batch loader for User entities
+@Configuration
+public class DataLoaderConfig {
+  @Bean
+  public RuntimeWiringConfigurer batchLoaderWiring(UserRepository repo) {
+    return builder -> builder.dataFetcher("Order", "customer",
+      env -> {
+        DataLoader&lt;String, User&gt; loader =
+          env.getDataLoader("userLoader");
+        String userId = env.getSource().getUserId();
+        return loader.load(userId); // batched across the request tick
+      });
+  }
+
+  @Bean
+  public BatchLoaderRegistry batchLoaderRegistry(UserRepository repo) {
+    return registrar -> registrar
+      .forTypePair(String.class, User.class)
+      .withName("userLoader")
+      .registerBatchLoader((ids, env) ->
+        Flux.fromIterable(repo.findAllById(ids))); // ONE query for all IDs
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="gql-q2">
+        <div class="test-case-header"><span class="badge badge-blue">SETUP</span><h4>Spring for GraphQL controller-style resolver</h4></div>
+        <div class="test-case-body">
+<pre><code>@Controller
+public class OrderController {
+  private final OrderService orderService;
+
+  @QueryMapping
+  public List&lt;Order&gt; orders(@Argument String status) {
+    return orderService.findByStatus(status);
+  }
+
+  @MutationMapping
+  public Order createOrder(@Argument OrderInput input) {
+    return orderService.create(input);
+  }
+
+  @SubscriptionMapping
+  public Flux&lt;OrderEvent&gt; orderEvents(@Argument String orderId) {
+    return orderService.subscribeToOrder(orderId); // Reactive stream
+  }
+
+  @SchemaMapping(typeName = "Order", field = "customer")
+  public CompletableFuture&lt;User&gt; customer(Order order,
+      DataLoader&lt;String, User&gt; userLoader) {
+    return userLoader.load(order.getUserId()); // auto-batched
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="gql-q3">
+        <div class="test-case-header"><span class="badge badge-red">SECURITY</span><h4>Disable introspection + persisted queries</h4></div>
+        <div class="test-case-body">
+<pre><code># application.yml
+spring:
+  graphql:
+    graphiql:
+      enabled: false           # disable in prod
+    schema:
+      introspection:
+        enabled: false         # disable schema exposure
+
+# Custom instrumentation for query depth limit
+@Component
+public class MaxQueryDepthInstrumentation extends SimplePerformantInstrumentation {
+  private static final int MAX_DEPTH = 10;
+
+  @Override
+  public @Nullable ExecutionContext instrumentExecutionContext(
+      ExecutionContext ctx, InstrumentationState state) {
+    int depth = new QueryDepthCalculator().getDepth(ctx.getDocument());
+    if (depth > MAX_DEPTH) {
+      throw new GraphQLException("Query depth " + depth
+        + " exceeds max allowed " + MAX_DEPTH);
+    }
+    return ctx;
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="gql-q4">
+        <div class="test-case-header"><span class="badge badge-purple">RESILIENCE</span><h4>Query complexity cost limiting</h4></div>
+        <div class="test-case-body">
+<pre><code>// Assign costs to fields; reject queries exceeding budget
+@Component
+public class QueryComplexityInstrumentation
+    extends SimplePerformantInstrumentation {
+
+  @Override
+  public @Nullable DocumentAndVariables instrumentDocumentAndVariables(
+      DocumentAndVariables dv, InstrumentationState state,
+      InstrumentationExecuteOperationParameters params) {
+
+    int cost = CostDirectiveUtil.computeCost(dv.getDocument(),
+        params.getExecutionInput().getVariables());
+
+    if (cost > 1000) {
+      throw new AbortExecutionException(
+        "Query complexity " + cost + " exceeds limit 1000");
+    }
+    return dv;
+  }
+}
+
+// Schema annotation
+type Query {
+  orders(first: Int, filter: OrderFilter): OrderConnection
+    @cost(complexity: 10, multipliers: ["first"])
+}</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h3>Questions You May Be Asked</h3>
+      <div class="question-list">
+        <div class="question-item">
+          <div class="q-text">Explain the N+1 problem in GraphQL and how DataLoader solves it.</div>
+          <div class="q-expect"><strong>Expected:</strong> Concrete example (orders + customers). Explain the "tick" / event loop batching concept. Mention that DataLoader only works within a single request; it's not a global cache. Mention cache-per-request option for deduplication within the same request.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">When would you choose GraphQL over REST for a new API? When would you not?</div>
+          <div class="q-expect"><strong>Expected:</strong> Pro-GraphQL: mobile clients that need flexible queries, BFF for multiple frontends, complex domains. Anti-GraphQL: file uploads, public API with CDN caching, simple CRUD where REST's HTTP semantics are sufficient, teams unfamiliar with schema governance.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">How do you handle authorization at the field level in GraphQL?</div>
+          <div class="q-expect"><strong>Expected:</strong> Options: (1) Resolver-level with Spring Security <code>@PreAuthorize</code>. (2) Directive-based (<code>@auth</code> in schema). (3) Schema masking — different schemas per role. Discuss why filtering in resolvers is better than returning null (which can cascade nullification).</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">How does GraphQL handle errors differently from REST, and what are the implications?</div>
+          <div class="q-expect"><strong>Expected:</strong> Always 200 status. Errors array alongside data. Partial success possible. Client must check both. Implications: monitoring tools need to parse body not just status code; logging middleware must look at response body for error tracking.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-icon">⚡</div>
+        <div class="callout-body">
+          <strong>Staff Signal for GraphQL</strong>
+          Bring up schema governance proactively — at scale, the hardest problem is not N+1 (which DataLoader solves), it's preventing schema sprawl, enforcing naming conventions, and managing breaking changes. Mention schema registry and linting tools.
+        </div>
+      </div>
+    </div>
+    <div class="chapter-nav">
+      <button class="nav-btn nav-prev" onclick="show(1)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Spring Boot</span></span></button>
+      <button class="nav-btn nav-next" onclick="show(3)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Cloud Spanner &amp; GCP</span></span><span class="nav-arrow">→</span></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SECTION 3 — SPANNER + GCP -->
+  <div class="section" id="s3">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="chapter-label">Tech Stack · Chapter 03</div>
+        <h2>Cloud Spanner &amp; GCP</h2>
+        <p class="subtitle">Globally distributed ACID transactions, schema design, hotspot avoidance, and GCP observability at scale.</p>
+      </div>
+    </div>
+    <div class="pills" style="max-width:var(--max-content-w);margin:20px auto 0;">
+      <span class="pill">TrueTime</span><span class="pill">Interleaving</span><span class="pill">Hotspot Avoidance</span>
+      <span class="pill">Read Staleness</span><span class="pill">Cloud Armor</span><span class="pill">Pub/Sub</span>
+      <span class="pill">Cloud Run</span><span class="pill">GKE</span><span class="pill">Secret Manager</span>
+    </div>
+    <div class="content">
+      <p class="lead">Cloud Spanner is not just a scalable relational database — it's a horizontally scalable, externally consistent database that redefines what's possible with distributed ACID transactions. Understanding its internals is what separates a developer who uses it from an architect who designs with it.</p>
+
+      <h3>Why Spanner Is Different</h3>
+      <p>Traditional distributed DBs sacrifice either consistency (eventual consistency) or availability (CAP theorem). Spanner achieves <strong>external consistency</strong> (stronger than serializability) by using <strong>TrueTime</strong> — atomic clocks and GPS in every datacenter — to assign globally ordered commit timestamps. This means transactions across regions are linearizable.</p>
+
+      <div class="analogy">
+        <div class="analogy-label">Mental Model</div>
+        <p>Imagine a bank with branches in New York, London, and Tokyo. Traditional distributed DBs require you to accept that a transfer seen in NY might not be visible in Tokyo immediately. Spanner's TrueTime is like having a single global atomic clock so that every branch sees exactly the same transaction order — worldwide, always.</p>
+      </div>
+
+      <h3>Schema Design — Hotspot Avoidance</h3>
+      <p>Spanner splits data into <strong>splits</strong> (like shards) based on key range. Sequential primary keys (e.g., <span class="inline-code">AUTO_INCREMENT</span> integers) create a "hotspot" — all inserts land on the same split. This is the most common Spanner performance mistake.</p>
+      <p><strong>Solutions:</strong></p>
+      <ul>
+        <li><strong>UUID v4</strong> as primary key — random distribution across splits</li>
+        <li><strong>Bit reversal</strong> of sequential integers</li>
+        <li><strong>Hash prefix</strong> prepended to sequential ID</li>
+        <li><strong>Timestamp-based sharding</strong>: prefix with <span class="inline-code">FARM_FINGERPRINT(GENERATE_UUID())</span></li>
+      </ul>
+
+      <h3>Interleaved Tables</h3>
+      <p>Interleaving co-locates child rows with parent rows on the same split. Reading a parent with all its children becomes a local operation with no cross-split joins — dramatically faster for hierarchical data. Parent key must be the prefix of child's primary key.</p>
+
+      <h3>Read Staleness</h3>
+      <p>Spanner offers two read modes:</p>
+      <ul>
+        <li><strong>Strong reads</strong> — always read the latest committed data. Higher latency (must wait for quorum).</li>
+        <li><strong>Stale reads</strong> — read data as of a timestamp in the past (e.g., 15 seconds ago). Much lower latency, no quorum needed. Safe for analytics, dashboards, read-heavy GET endpoints where slight staleness is acceptable.</li>
+      </ul>
+      <p>Staff insight: use stale reads for 80% of your API reads. This dramatically reduces read latency and Spanner compute usage with no perceptible user impact.</p>
+
+      <h3>GCP Architecture Patterns</h3>
+      <div class="cards two">
+        <div class="card"><div class="card-header"><h4>Cloud Run vs GKE</h4></div><div class="card-body">Cloud Run: fully managed, scales to zero, per-request billing. Ideal for bursty or stateless APIs. GKE: full Kubernetes, needed for stateful workloads, complex networking (service mesh), or when you need DaemonSets/sidecar patterns. Spring Boot works well on both.</div></div>
+        <div class="card"><div class="card-header"><h4>Secret Manager</h4></div><div class="card-body">Store DB credentials, API keys, and JWT secrets in Secret Manager. Inject into Spring Boot via <code>spring-cloud-gcp-starter-secretmanager</code>. Avoid environment variables for secrets — they appear in process lists and K8s pod specs in plaintext. Use Workload Identity to bind service accounts to pods.</div></div>
+        <div class="card"><div class="card-header"><h4>Pub/Sub for Async</h4></div><div class="card-body">Use Pub/Sub for event-driven decoupling. Spring Cloud GCP provides <code>PubSubTemplate</code> and <code>@PubSubListener</code>. Key considerations: exactly-once delivery requires idempotent consumers. Use message attributes for filtering; don't encode routing in the topic name.</div></div>
+        <div class="card"><div class="card-header"><h4>Cloud Armor</h4></div><div class="card-body">WAF + DDoS protection at the load balancer level. Configure security policies for SQL injection, XSS detection, rate limiting per IP. For GraphQL, add a custom rule to reject requests with excessively large bodies (query bombs).</div></div>
+      </div>
+
+    </div>
+
+    <nav class="scenario-nav">
+      <a class="scenario-chip chip-green" href="#sp-q1"><span class="chip-num">01</span> Hotspot Fix: UUID Keys</a>
+      <a class="scenario-chip chip-blue"  href="#sp-q2"><span class="chip-num">02</span> Stale Reads in Spring</a>
+      <a class="scenario-chip chip-gold"  href="#sp-q3"><span class="chip-num">03</span> Interleaved Tables DDL</a>
+    </nav>
+
+    <div class="example-section">
+      <div class="test-case" id="sp-q1">
+        <div class="test-case-header"><span class="badge badge-green">SCHEMA</span><h4>Hotspot-safe primary key design</h4></div>
+        <div class="test-case-body">
+<pre><code>-- ❌ BAD — sequential ints cause hotspot on leading split
+CREATE TABLE orders (
+  order_id INT64 NOT NULL,
+  user_id  STRING(36),
+  ...
+) PRIMARY KEY (order_id);
+
+-- ✅ GOOD — UUID v4 distributes across all splits uniformly
+CREATE TABLE orders (
+  order_id STRING(36) NOT NULL DEFAULT (GENERATE_UUID()),
+  user_id  STRING(36),
+  created_at TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp = true),
+  ...
+) PRIMARY KEY (order_id);
+
+-- ✅ ALSO GOOD — hash-prefixed for time-range queries
+CREATE TABLE events (
+  shard_id INT64 NOT NULL,   -- FARM_FINGERPRINT(UUID) % 20
+  event_ts TIMESTAMP NOT NULL,
+  event_id STRING(36) NOT NULL,
+  ...
+) PRIMARY KEY (shard_id, event_ts, event_id);</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="sp-q2">
+        <div class="test-case-header"><span class="badge badge-blue">PERFORMANCE</span><h4>Stale reads via Spring Cloud Spanner</h4></div>
+        <div class="test-case-body">
+<pre><code>@Service
+public class ProductService {
+  private final DatabaseClient dbClient;
+
+  // Strong read — for checkout/payment flows
+  public Product getProductForCheckout(String id) {
+    return dbClient.singleUse()  // default = strong read
+      .readRow("products", Key.of(id), ALL_COLS)
+      .map(this::toProduct);
+  }
+
+  // Stale read — for product listing pages (15s staleness ok)
+  public List&lt;Product&gt; listProducts() {
+    TimestampBound staleness = TimestampBound
+        .ofExactStaleness(15, TimeUnit.SECONDS);
+    return dbClient.singleUse(staleness)
+      .executeQuery(Statement.of("SELECT * FROM products"))
+      .stream().map(this::toProduct).toList();
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="sp-q3">
+        <div class="test-case-header"><span class="badge badge-gold">SCHEMA</span><h4>Interleaved table for order line items</h4></div>
+        <div class="test-case-body">
+<pre><code>-- Parent: orders
+CREATE TABLE orders (
+  order_id STRING(36) NOT NULL,
+  user_id  STRING(36) NOT NULL,
+  status   STRING(20),
+  total    NUMERIC,
+) PRIMARY KEY (order_id);
+
+-- Child: order_items INTERLEAVED IN PARENT orders
+-- Rows for same order_id are stored adjacent on disk
+CREATE TABLE order_items (
+  order_id    STRING(36) NOT NULL,   -- must match parent PK prefix
+  item_id     STRING(36) NOT NULL,
+  product_id  STRING(36),
+  quantity    INT64,
+  unit_price  NUMERIC,
+) PRIMARY KEY (order_id, item_id),
+  INTERLEAVE IN PARENT orders ON DELETE CASCADE;
+
+-- Reading an order + all items = one local operation, no cross-split join
+SELECT o.*, i.*
+FROM orders o
+JOIN order_items i USING (order_id)
+WHERE o.order_id = @orderId;</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h3>Questions You May Be Asked</h3>
+      <div class="question-list">
+        <div class="question-item">
+          <div class="q-text">How does Cloud Spanner achieve external consistency across regions?</div>
+          <div class="q-expect"><strong>Expected:</strong> TrueTime API — atomic clocks + GPS gives bounded clock uncertainty. Commits wait for the uncertainty interval to pass (commit-wait) so that the assigned timestamp is guaranteed to be in the past globally. This enables serializability across geographies without the usual distributed coordination penalty.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">You're designing a schema for a high-write event stream in Spanner. What are your considerations?</div>
+          <div class="q-expect"><strong>Expected:</strong> Hotspot avoidance (no sequential PKs), shard_id prefix for range queries, allow_commit_timestamp for ordering, partitioned DML for bulk deletes, TTL policies. Discuss split boundaries and how Spanner automatically splits hot ranges.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">When would you use Pub/Sub vs direct Spanner writes for an event-sourcing pattern?</div>
+          <div class="q-expect"><strong>Expected:</strong> Pub/Sub for decoupling producers from consumers, fan-out to multiple downstream systems, buffering bursts. Direct Spanner write for transactional outbox patterns (event + state change in same transaction). Outbox pattern avoids dual-write inconsistency.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-icon">⚡</div>
+        <div class="callout-body">
+          <strong>Staff Signal for Spanner</strong>
+          Mention the difference between Spanner mutations vs DML, and when to use each. Mutations are faster (no query planning) but non-readable-your-own-writes within a transaction. DML participates in transactions and is readable within the same transaction. This nuance shows you've used Spanner in production.
+        </div>
+      </div>
+    </div>
+    <div class="chapter-nav">
+      <button class="nav-btn nav-prev" onclick="show(2)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">GraphQL</span></span></button>
+      <button class="nav-btn nav-next" onclick="show(4)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">React (Staff Lens)</span></span><span class="nav-arrow">→</span></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SECTION 4 — REACT -->
+  <div class="section" id="s4">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="chapter-label">Tech Stack · Chapter 04</div>
+        <h2>React — The Staff Engineer Lens</h2>
+        <p class="subtitle">Component architecture, state management trade-offs, performance patterns, and full-stack design decisions with a GraphQL backend.</p>
+      </div>
+    </div>
+    <div class="pills" style="max-width:var(--max-content-w);margin:20px auto 0;">
+      <span class="pill">Component Architecture</span><span class="pill">State Management</span>
+      <span class="pill">Apollo Client</span><span class="pill">Render Optimization</span>
+      <span class="pill">Server Components</span><span class="pill">Micro-frontends</span>
+      <span class="pill">Accessibility</span>
+    </div>
+    <div class="content">
+      <p class="lead">At staff level, React questions are rarely about hooks syntax — they're about architectural decisions: where state lives, how the frontend integrates with your GraphQL backend, how you prevent performance regressions at scale, and how you structure a large team's frontend codebase.</p>
+
+      <h3>State Management Trade-offs</h3>
+      <table class="compare-table">
+        <thead><tr><th>Solution</th><th>Best For</th><th>Avoid When</th></tr></thead>
+        <tbody>
+          <tr><td><strong>useState / useReducer</strong></td><td>Local component state, form state, UI toggles</td><td>State needed by distant components (prop drilling hell)</td></tr>
+          <tr><td><strong>Context API</strong></td><td>Low-frequency global state (theme, auth user, locale)</td><td>High-frequency updates — every context consumer re-renders on any change</td></tr>
+          <tr><td><strong>Apollo Client Cache</strong></td><td>Server state from GraphQL — normalized, query-driven</td><td>Client-only UI state that has nothing to do with server data</td></tr>
+          <tr><td><strong>Zustand / Jotai</strong></td><td>Complex client state, cross-cutting concerns, minimal boilerplate</td><td>When Apollo/React Query already handles the server state slice</td></tr>
+          <tr><td><strong>Redux Toolkit</strong></td><td>Enterprise, team already on Redux, DevTools needed</td><td>New projects — overhead is rarely justified today</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Apollo Client &amp; GraphQL Integration</h3>
+      <p>Apollo Client's normalized cache stores every object by <span class="inline-code">__typename:id</span>. This means a mutation that returns an updated object automatically updates every query that contains that object — no manual cache invalidation needed for simple cases.</p>
+      <p><strong>Common cache patterns:</strong></p>
+      <ul>
+        <li><strong>Optimistic updates</strong>: Update the cache before the mutation completes for instant UI feedback. Roll back on error.</li>
+        <li><strong>Cache eviction</strong>: After operations that affect list ordering (e.g., sort by date after insert), use <span class="inline-code">cache.evict</span> + <span class="inline-code">cache.gc</span> to invalidate stale list queries.</li>
+        <li><strong>Field policies</strong>: Custom merge functions for paginated fields using Relay-style connections. Essential for infinite scroll.</li>
+      </ul>
+
+      <h3>Render Performance</h3>
+      <ul>
+        <li><strong>useMemo / useCallback</strong>: Only wrap computations/functions that are genuinely expensive or passed to memoized children. Overuse creates cognitive overhead with no perf benefit.</li>
+        <li><strong>React.memo</strong>: Prevents re-renders when parent re-renders but props haven't changed. Only valuable when combined with stable references (useCallback).</li>
+        <li><strong>Virtualization</strong>: For lists of 100+ items, use <code>react-window</code> or <code>react-virtual</code> to render only visible items.</li>
+        <li><strong>Code splitting</strong>: <code>React.lazy</code> + <code>Suspense</code> for route-level splitting. Every route should be its own bundle chunk.</li>
+      </ul>
+
+      <h3>React Server Components (RSC) — Staff-Level Understanding</h3>
+      <p>RSC runs on the server and sends HTML (not JS) to the client — zero bundle size for the component. Ideal for data-fetching components that don't need interactivity. Cannot use hooks or browser APIs. In a Next.js + Spring Boot + GraphQL architecture, RSC can query your GraphQL endpoint directly at the server, sending ready HTML to the client with no client-side round-trip needed.</p>
+
+    </div>
+
+    <nav class="scenario-nav">
+      <a class="scenario-chip chip-green" href="#re-q1"><span class="chip-num">01</span> Apollo Optimistic Update</a>
+      <a class="scenario-chip chip-blue"  href="#re-q2"><span class="chip-num">02</span> Paginated Cache Policy</a>
+    </nav>
+
+    <div class="example-section">
+      <div class="test-case" id="re-q1">
+        <div class="test-case-header"><span class="badge badge-green">PATTERN</span><h4>Optimistic mutation with rollback</h4></div>
+        <div class="test-case-body">
+<pre><code>const [updateStatus] = useMutation(UPDATE_ORDER_STATUS, {
+  optimisticResponse: {
+    updateOrder: {
+      __typename: 'Order',
+      id: orderId,
+      status: 'SHIPPED',  // assume success immediately
+    }
+  },
+  update(cache, { data: { updateOrder } }) {
+    cache.modify({
+      id: cache.identify(updateOrder),
+      fields: {
+        status() { return updateOrder.status; }
+      }
+    });
+  },
+  onError(err) {
+    // Apollo automatically rolls back the optimistic update
+    console.error('Mutation failed, cache reverted:', err);
+  }
+});</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="re-q2">
+        <div class="test-case-header"><span class="badge badge-blue">CACHE</span><h4>Field policy for paginated lists (Relay connections)</h4></div>
+        <div class="test-case-body">
+<pre><code>const cache = new InMemoryCache({
+  typePolicies: {
+    Query: {
+      fields: {
+        orders: relayStylePagination(['status', 'userId']),
+        // relayStylePagination merges pages automatically
+        // keyed by query variables: status + userId
+      }
+    }
+  }
+});
+
+// Usage in component — cursor-based infinite scroll
+const { data, fetchMore } = useQuery(GET_ORDERS, {
+  variables: { first: 20, status: 'ACTIVE' }
+});
+
+const loadMore = () => fetchMore({
+  variables: {
+    after: data.orders.pageInfo.endCursor
+  }
+});</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h3>Questions You May Be Asked</h3>
+      <div class="question-list">
+        <div class="question-item">
+          <div class="q-text">How would you architect the frontend state for an application with a GraphQL backend?</div>
+          <div class="q-expect"><strong>Expected:</strong> Apollo Client handles all server state. Local UI state via useState/useReducer. Zustand for cross-cutting client state (e.g., notifications, modal stack). Don't double-store server data in Zustand. Discuss Apollo's normalized cache as the source of truth for all server data.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">How do you prevent performance regressions in a large React codebase?</div>
+          <div class="q-expect"><strong>Expected:</strong> React DevTools Profiler for identifying expensive renders. Lighthouse CI in pipeline. Bundle analysis with webpack-bundle-analyzer. Monitoring with Web Vitals (LCP, CLS, INP). Component-level code splitting. Mention that premature memoization is itself a smell.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-icon">⚡</div>
+        <div class="callout-body">
+          <strong>Staff Signal for React</strong>
+          Don't just talk about hooks. Discuss the full-stack picture: how the React frontend influences the GraphQL schema design (BFF pattern, client-driven schema evolution), how to structure a monorepo for multiple frontends sharing a design system, and how micro-frontend architecture impacts team autonomy.
+        </div>
+      </div>
+    </div>
+    <div class="chapter-nav">
+      <button class="nav-btn nav-prev" onclick="show(3)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Cloud Spanner &amp; GCP</span></span></button>
+      <button class="nav-btn nav-next" onclick="show(5)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Unit Testing &amp; Design Patterns</span></span><span class="nav-arrow">→</span></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SECTION 5 — TESTING + OOP -->
+  <div class="section" id="s5">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="chapter-label">Past Questions · Chapter 05</div>
+        <h2>Unit Testing &amp; Aggregation vs Inheritance</h2>
+        <p class="subtitle">Deep answers to past interview questions: test design principles, mocking strategy, and the composition-over-inheritance philosophy.</p>
+      </div>
+    </div>
+    <div class="pills" style="max-width:var(--max-content-w);margin:20px auto 0;">
+      <span class="pill">FIRST Principles</span><span class="pill">Testability</span><span class="pill">Mockito</span>
+      <span class="pill">Test Doubles</span><span class="pill">Composition</span><span class="pill">SOLID</span>
+      <span class="pill">Interface Segregation</span>
+    </div>
+    <div class="content">
+      <p class="lead">Unit testing and OOP design were asked in your last round — which means the panel values engineering foundations. Your answers should go beyond definitions: show the reasoning, the failure modes, and how these principles affect real architecture decisions.</p>
+
+      <h3>Unit Testing — The Right Mental Model</h3>
+      <p>A unit test verifies a <em>unit of behaviour</em>, not a unit of code. One test class per method is not the goal — testing all meaningful observable behaviours of a component in isolation is. Good unit tests follow <strong>FIRST</strong>:</p>
+      <div class="cards two">
+        <div class="card"><div class="card-header"><h4>F — Fast</h4></div><div class="card-body">Tests run in milliseconds. If a test needs a real DB or HTTP call, it's an integration test. Use mocks/stubs for I/O. Slow tests get skipped under deadline pressure — the worst outcome.</div></div>
+        <div class="card"><div class="card-header"><h4>I — Isolated</h4></div><div class="card-body">Each test sets up its own state. No shared mutable state between tests. Order-independent. <code>@BeforeEach</code> should reset all mocks and re-create the SUT. Tests that fail based on execution order are time bombs.</div></div>
+        <div class="card"><div class="card-header"><h4>R — Repeatable</h4></div><div class="card-body">Same result on every machine, every run. No dependency on system clock (use <code>Clock</code> injection), no random data without seeding, no external service calls without mocking.</div></div>
+        <div class="card"><div class="card-header"><h4>S — Self-validating</h4></div><div class="card-body">Binary pass/fail. No manual inspection of output. Assert all meaningful state changes and outputs. Use assertj for fluent, readable assertions — not just <code>assertTrue(result != null)</code>.</div></div>
+      </div>
+
+      <h3>Test Doubles — Know the Vocabulary</h3>
+      <table class="compare-table">
+        <thead><tr><th>Double Type</th><th>Definition</th><th>When to Use</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Stub</strong></td><td>Returns canned responses. No behaviour verification.</td><td>When you need a dependency to return a value for the SUT to proceed.</td></tr>
+          <tr><td><strong>Mock</strong></td><td>Pre-programmed expectations. Test fails if expectations not met.</td><td>When you want to verify <em>what the SUT did</em> — e.g., it called an EmailService.</td></tr>
+          <tr><td><strong>Spy</strong></td><td>Real implementation, but records calls for later verification.</td><td>When you want to call through to real logic but also verify interactions.</td></tr>
+          <tr><td><strong>Fake</strong></td><td>A working lightweight implementation (e.g., in-memory repo).</td><td>When the real implementation is too slow/complex; fake must be maintained.</td></tr>
+          <tr><td><strong>Dummy</strong></td><td>Passed to satisfy signatures but never used.</td><td>Constructor arguments you don't need for the test scenario.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Aggregation vs Inheritance</h3>
+      <p><strong>Inheritance</strong> (<span class="inline-code">extends</span>) creates an "is-a" relationship. The subclass gets the parent's interface and implementation. <strong>Aggregation</strong> (composition, "has-a") creates an object that <em>uses</em> another object through a reference.</p>
+
+      <div class="callout gold">
+        <div class="callout-icon">⚠️</div>
+        <div class="callout-body">
+          <strong>The Fragile Base Class Problem</strong>
+          When you inherit from a class, you couple tightly to its implementation — not just its interface. A change to the base class can silently break subclasses. This is the strongest argument for preferring composition: the composed dependency is a black box; only its interface contract matters.
+        </div>
+      </div>
+
+      <p><strong>When to use inheritance:</strong> True "is-a" relationships where the subtype must pass the <strong>Liskov Substitution Principle (LSP)</strong> — every subclass must be substitutable for its parent without breaking callers. Classic example: <span class="inline-code">Exception</span> hierarchy, <span class="inline-code">InputStream</span> hierarchy.</p>
+      <p><strong>When to use composition (default choice):</strong> Reusing behaviour, varying behaviour at runtime (strategy pattern), avoiding deep hierarchies, following the Open/Closed Principle without modifying base classes.</p>
+
+      <h4>Concrete Example: Notification System</h4>
+    </div>
+
+    <nav class="scenario-nav">
+      <a class="scenario-chip chip-green" href="#test-q1"><span class="chip-num">01</span> Testing a Spring Service</a>
+      <a class="scenario-chip chip-blue"  href="#test-q2"><span class="chip-num">02</span> Composition over Inheritance</a>
+      <a class="scenario-chip chip-red"   href="#test-q3"><span class="chip-num">03</span> LSP Violation Example</a>
+    </nav>
+
+    <div class="example-section">
+      <div class="test-case" id="test-q1">
+        <div class="test-case-header"><span class="badge badge-green">UNIT TEST</span><h4>Testing a service with mocked dependencies</h4></div>
+        <div class="test-case-body">
+<pre><code>@ExtendWith(MockitoExtension.class)
+class OrderServiceTest {
+  @Mock private OrderRepository orderRepo;
+  @Mock private PaymentService paymentService;
+  @Mock private NotificationService notificationService;
+  @InjectMocks private OrderService orderService;
+
+  @Test
+  void placeOrder_success_sendsConfirmationNotification() {
+    // Given
+    var order = new Order("user-1", List.of(item("prod-1", 2)));
+    when(paymentService.charge(any(), any())).thenReturn(paymentResult());
+    when(orderRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    // When
+    orderService.placeOrder(order);
+
+    // Then
+    verify(notificationService).sendOrderConfirmation(
+      argThat(o -> o.getUserId().equals("user-1")));
+  }
+
+  @Test
+  void placeOrder_paymentFails_doesNotSaveOrder() {
+    // Given
+    when(paymentService.charge(any(), any()))
+      .thenThrow(new PaymentException("Declined"));
+
+    // When + Then
+    assertThatThrownBy(() -> orderService.placeOrder(new Order()))
+      .isInstanceOf(PaymentException.class);
+    verifyNoInteractions(orderRepo);
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="test-q2">
+        <div class="test-case-header"><span class="badge badge-blue">DESIGN</span><h4>Composition: swappable notification channels</h4></div>
+        <div class="test-case-body">
+<pre><code>// Interface contract — the only thing consumers depend on
+public interface NotificationChannel {
+  void send(Notification notification);
+}
+
+// Implementations via composition — each is independently testable
+@Component public class EmailChannel implements NotificationChannel { ... }
+@Component public class SmsChannel   implements NotificationChannel { ... }
+@Component public class PushChannel  implements NotificationChannel { ... }
+
+// ✅ Aggregation — NotificationService HAS channels; doesn't inherit them
+@Service
+public class NotificationService {
+  private final List&lt;NotificationChannel&gt; channels; // injected
+
+  public void sendAll(Notification n) {
+    channels.forEach(c -> c.send(n)); // open for extension, closed for modification
+  }
+}
+
+// Compare: ❌ Inheritance approach
+// class EmailNotificationService extends NotificationService
+//   — adding SMS requires another subclass, or modifying base
+//   — can't combine channels without multiple inheritance</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="test-q3">
+        <div class="test-case-header"><span class="badge badge-red">PITFALL</span><h4>LSP violation — the classic Square/Rectangle trap</h4></div>
+        <div class="test-case-body">
+<pre><code>// ❌ LSP violation — Square extends Rectangle
+class Rectangle {
+  protected int width, height;
+  void setWidth(int w) { this.width = w; }
+  void setHeight(int h) { this.height = h; }
+  int area() { return width * height; }
+}
+
+class Square extends Rectangle {
+  @Override void setWidth(int w)  { this.width = this.height = w; } // breaks expectations
+  @Override void setHeight(int h) { this.width = this.height = h; } // breaks expectations
+}
+
+// Code that was valid for Rectangle now breaks with Square:
+void resizeWidth(Rectangle r) {
+  r.setWidth(10);
+  r.setHeight(5);
+  assert r.area() == 50; // FAILS for Square — area is 25
+}
+
+// ✅ Fix: don't use inheritance for conceptual relationships
+// Use separate Shape interface without setters, or model differently</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h3>Questions You May Be Asked</h3>
+      <div class="question-list">
+        <div class="question-item">
+          <div class="q-text">What makes a unit test valuable vs brittle?</div>
+          <div class="q-expect"><strong>Expected:</strong> Valuable: tests behaviour not implementation (black-box), survives refactoring, fast, clear failure messages. Brittle: tests internal state, verifies every method call (over-mocking), coupled to implementation details. Ask yourself: "If I refactor the internals without changing behaviour, does this test still pass?" If no — it's testing the wrong thing.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">When is inheritance appropriate and when does it become a liability?</div>
+          <div class="q-expect"><strong>Expected:</strong> Appropriate: true IS-A relationship, LSP holds, hierarchy stays shallow (2 levels max). Liability: deep hierarchies, overriding methods to change semantics, coupling to base implementation, needing to inherit from multiple sources (Java can't). Compose when in doubt.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">How do you test code that depends on the current time?</div>
+          <div class="q-expect"><strong>Expected:</strong> Inject a <code>java.time.Clock</code> into the service. Tests pass a fixed <code>Clock.fixed(instant, zone)</code>. Production uses <code>Clock.systemUTC()</code>. Never call <code>LocalDateTime.now()</code> directly in business logic — it's untestable.</div>
+        </div>
+      </div>
+    </div>
+    <div class="chapter-nav">
+      <button class="nav-btn nav-prev" onclick="show(4)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">React</span></span></button>
+      <button class="nav-btn nav-next" onclick="show(6)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Scalability &amp; DB Constraints</span></span><span class="nav-arrow">→</span></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SECTION 6 — SCALABILITY + DB -->
+  <div class="section" id="s6">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="chapter-label">Past Questions · Chapter 06</div>
+        <h2>Scalability &amp; DB Constraints</h2>
+        <p class="subtitle">Horizontal scaling principles, how they interact with database-layer constraints, and the patterns that bridge stateless services with stateful persistence.</p>
+      </div>
+    </div>
+    <div class="pills" style="max-width:var(--max-content-w);margin:20px auto 0;">
+      <span class="pill">Horizontal Scaling</span><span class="pill">CAP Theorem</span><span class="pill">Idempotency</span>
+      <span class="pill">Distributed Locks</span><span class="pill">CQRS</span><span class="pill">Sharding</span>
+      <span class="pill">Connection Pooling</span><span class="pill">Outbox Pattern</span>
+    </div>
+    <div class="content">
+      <p class="lead">Horizontal scaling of stateless services is easy — add instances behind a load balancer. The hard part is what happens to your database, your sessions, your distributed state, and your transactional guarantees when you do. This is where staff engineers think differently.</p>
+
+      <h3>The Core Tension</h3>
+      <p>Adding more application instances creates stateless compute scale. But the database is stateful — it becomes the bottleneck. Every scaling decision at the application tier must be analyzed for its database impact.</p>
+
+      <div class="cards two">
+        <div class="card"><div class="card-header"><h4>Problem: Distributed Session State</h4></div><div class="card-body">If each app instance stores session in memory, a user's request may hit a different instance and lose their session. <strong>Solutions:</strong> Sticky sessions (routing, but single point of failure), or externalize session to Redis/Spanner (stateless instances, any can handle any request).</div></div>
+        <div class="card"><div class="card-header"><h4>Problem: Race Conditions Under Scale</h4></div><div class="card-body">With N instances, concurrent requests can cause inventory oversell, double-charge, or duplicate inserts that weren't possible with a single instance. Solutions: optimistic locking (version column), database-level unique constraints, idempotency keys.</div></div>
+        <div class="card"><div class="card-header"><h4>Problem: Connection Pool Exhaustion</h4></div><div class="card-body">With 20 instances × 20 pool connections = 400 DB connections. Spanner handles this well (sessions are multiplexed), but traditional DBs can choke. Solutions: connection pooler (PgBouncer), async/reactive stack to reduce threads-per-connection ratio.</div></div>
+        <div class="card"><div class="card-header"><h4>Problem: Unique Constraint Violations</h4></div><div class="card-body">Two instances concurrently try to INSERT the same record (e.g., creating user with same email). DB UNIQUE constraint is the final guardrail — catch <code>DataIntegrityViolationException</code> and handle gracefully. Application-level checks are not reliable without locks.</div></div>
+      </div>
+
+      <h3>Idempotency — The Key Pattern for Scale</h3>
+      <p>An idempotent operation produces the same result no matter how many times it's called. Critical for horizontal scaling because retries are inevitable (network failures, load balancer timeouts). Design every mutating API to accept an <strong>idempotency key</strong>:</p>
+      <ol>
+        <li>Client generates a UUID and attaches it as a header (<span class="inline-code">Idempotency-Key: uuid</span>)</li>
+        <li>Server stores the key + response in Spanner with a TTL</li>
+        <li>On duplicate request: return cached response immediately, no re-execution</li>
+      </ol>
+
+      <h3>Optimistic vs Pessimistic Locking</h3>
+      <table class="compare-table">
+        <thead><tr><th></th><th>Optimistic Locking</th><th>Pessimistic Locking</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Mechanism</strong></td><td>Version column; reject update if version changed</td><td>DB-level lock (SELECT FOR UPDATE) held during transaction</td></tr>
+          <tr><td><strong>Throughput</strong></td><td>High — no blocking</td><td>Lower — lock contention</td></tr>
+          <tr><td><strong>Best for</strong></td><td>Low-contention updates (typical user profile edit)</td><td>High-contention (inventory decrement, seat reservation)</td></tr>
+          <tr><td><strong>Failure mode</strong></td><td>OptimisticLockException — must retry</td><td>Deadlocks — must detect and resolve</td></tr>
+          <tr><td><strong>Spanner</strong></td><td>Native (compare-and-swap via mutations)</td><td>SELECT FOR UPDATE in read-write transaction</td></tr>
+        </tbody>
+      </table>
+
+      <h3>The Outbox Pattern</h3>
+      <p>A critical pattern for publishing events to Pub/Sub reliably from a horizontally scaled service: write to a Spanner <span class="inline-code">outbox</span> table in the <em>same transaction</em> as your business data. A separate poller reads unprocessed outbox rows and publishes to Pub/Sub, then marks them as published. This avoids dual-write inconsistency (where the DB write succeeds but the Pub/Sub publish fails).</p>
+
+    </div>
+
+    <nav class="scenario-nav">
+      <a class="scenario-chip chip-green" href="#sc-q1"><span class="chip-num">01</span> Idempotency Key Service</a>
+      <a class="scenario-chip chip-blue"  href="#sc-q2"><span class="chip-num">02</span> Optimistic Locking with JPA</a>
+      <a class="scenario-chip chip-gold"  href="#sc-q3"><span class="chip-num">03</span> Outbox Pattern</a>
+    </nav>
+
+    <div class="example-section">
+      <div class="test-case" id="sc-q1">
+        <div class="test-case-header"><span class="badge badge-green">PATTERN</span><h4>Idempotency key enforcement in Spring</h4></div>
+        <div class="test-case-body">
+<pre><code>@Component
+public class IdempotencyFilter extends OncePerRequestFilter {
+  private final IdempotencyKeyRepository repo;
+
+  @Override
+  protected void doFilterInternal(HttpServletRequest req,
+      HttpServletResponse res, FilterChain chain)
+      throws ServletException, IOException {
+
+    String key = req.getHeader("Idempotency-Key");
+    if (key == null) { chain.doFilter(req, res); return; }
+
+    Optional&lt;CachedResponse&gt; cached = repo.findByKey(key);
+    if (cached.isPresent()) {
+      // Return stored response without re-executing
+      res.setStatus(cached.get().getStatus());
+      res.getWriter().write(cached.get().getBody());
+      return;
+    }
+
+    // Wrap response to capture it for caching
+    CachingResponseWrapper wrapper = new CachingResponseWrapper(res);
+    chain.doFilter(req, wrapper);
+
+    // Store result — expires in 24h
+    repo.save(new CachedResponse(key, wrapper.getStatus(),
+      wrapper.getCapturedBody(), Instant.now().plus(24, HOURS)));
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="sc-q2">
+        <div class="test-case-header"><span class="badge badge-blue">LOCKING</span><h4>Optimistic locking with @Version in JPA / Spanner</h4></div>
+        <div class="test-case-body">
+<pre><code>@Entity
+public class InventoryItem {
+  @Id private String productId;
+  private int quantity;
+
+  @Version  // Spanner: last_update_time or a dedicated INT64 column
+  private long version;
+}
+
+@Service
+public class InventoryService {
+  @Transactional
+  public void decrementStock(String productId, int qty) {
+    InventoryItem item = repo.findById(productId)
+      .orElseThrow(() -> new NotFoundException(productId));
+
+    if (item.getQuantity() < qty) throw new InsufficientStockException();
+    item.setQuantity(item.getQuantity() - qty);
+    // JPA will include WHERE version = :current in the UPDATE
+    // If concurrent update happened: OptimisticLockException thrown
+    repo.save(item);
+  }
+}
+
+// Caller retries on OptimisticLockException — safe under horizontal scale
+@Retryable(value = OptimisticLockException.class, maxAttempts = 3)
+public void decrementWithRetry(String productId, int qty) {
+  inventoryService.decrementStock(productId, qty);
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="sc-q3">
+        <div class="test-case-header"><span class="badge badge-gold">PATTERN</span><h4>Transactional outbox for Pub/Sub reliability</h4></div>
+        <div class="test-case-body">
+<pre><code>// Step 1: Write business data + outbox record in ONE transaction
+@Transactional
+public Order placeOrder(OrderRequest req) {
+  Order order = orderRepo.save(new Order(req));
+
+  // In same Spanner transaction — either both commit or both rollback
+  OutboxEvent event = new OutboxEvent(
+    UUID.randomUUID().toString(),
+    "order.placed",
+    objectMapper.writeValueAsString(new OrderPlacedEvent(order)),
+    Instant.now(),
+    false // published = false
+  );
+  outboxRepo.save(event);
+  return order;
+}
+
+// Step 2: Background poller publishes and marks as done
+@Scheduled(fixedDelay = 1000)
+public void pollOutbox() {
+  outboxRepo.findUnpublished(PageRequest.of(0, 100)).forEach(event -> {
+    pubSubTemplate.publish("order-events", event.getPayload());
+    event.setPublished(true);
+    outboxRepo.save(event); // idempotent — can run multiple times safely
+  });
+}</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h3>Questions You May Be Asked</h3>
+      <div class="question-list">
+        <div class="question-item">
+          <div class="q-text">How do horizontal scaling considerations change your database schema design?</div>
+          <div class="q-expect"><strong>Expected:</strong> No sequential PKs (hotspot in Spanner), UUID or hash-distributed keys. Idempotency columns. Optimistic locking version columns. Outbox tables for reliable event publishing. Avoiding application-level checks for uniqueness — trust the DB constraint. Partitioning strategies for time-series data.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">How do you handle the case where 50 instances all try to process the same event simultaneously?</div>
+          <div class="q-expect"><strong>Expected:</strong> Idempotency keys for at-least-once delivery safety. Pub/Sub with competing consumers and acknowledgement — only one subscriber acks first. Spanner read-write transactions with unique constraint on event_id as deduplication. Distributed leader election if coordination is needed (Spanner-backed leader lock).</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-icon">⚡</div>
+        <div class="callout-body">
+          <strong>Staff Signal for Scalability</strong>
+          Always connect application-tier scaling to its database impact. "Adding 10 more instances" is not a complete answer — what does that do to connection pool counts, write contention on hot rows, query cache invalidation, and distributed transaction rates? That's the staff-level analysis.
+        </div>
+      </div>
+    </div>
+    <div class="chapter-nav">
+      <button class="nav-btn nav-prev" onclick="show(5)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Unit Testing &amp; Design Patterns</span></span></button>
+      <button class="nav-btn nav-next" onclick="show(7)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Security: PII &amp; Passwords</span></span><span class="nav-arrow">→</span></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SECTION 7 — SECURITY -->
+  <div class="section" id="s7">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="chapter-label">Past Questions · Chapter 07</div>
+        <h2>Security: PII Handling &amp; Password Hashing</h2>
+        <p class="subtitle">How to protect sensitive user data at rest and in transit, the right way to hash passwords, and PII governance at scale.</p>
+      </div>
+    </div>
+    <div class="pills" style="max-width:var(--max-content-w);margin:20px auto 0;">
+      <span class="pill">bcrypt / Argon2</span><span class="pill">Salting</span><span class="pill">Data Classification</span>
+      <span class="pill">Encryption at Rest</span><span class="pill">Field-Level Encryption</span>
+      <span class="pill">GDPR / CCPA</span><span class="pill">Data Masking</span><span class="pill">Audit Logging</span>
+    </div>
+    <div class="content">
+      <p class="lead">Security questions are often asked to gauge judgment, not just knowledge. The key is understanding why certain approaches are correct — what attacks they prevent — and where the residual risk lies even after mitigation.</p>
+
+      <h3>Password Hashing — The Full Answer</h3>
+      <p><strong>Never store plaintext passwords. Never use MD5 or SHA-256 alone for passwords.</strong> MD5/SHA-256 are fast hash functions designed for checksums/data integrity — their speed is a security liability for passwords because it enables fast brute-force attacks.</p>
+      <p>Password hashing requires <strong>slow, memory-hard algorithms</strong> designed specifically to resist GPU-accelerated brute force:</p>
+      <div class="cards three">
+        <div class="card"><div class="card-header"><h4>bcrypt</h4></div><div class="card-body">Industry standard since 1999. Work factor (cost parameter) is adjustable — increase it as hardware speeds up. Built-in salt. Spring Security's <code>BCryptPasswordEncoder</code> handles everything. Default cost factor 10 ≈ 100ms per hash.</div></div>
+        <div class="card"><div class="card-header"><h4>Argon2id</h4></div><div class="card-body">Winner of Password Hashing Competition (2015). Best choice for new systems. Memory-hard (resist GPU/FPGA attacks). Three parameters: time cost, memory cost, parallelism. <code>argon2-jvm</code> library for Java. OWASP recommendation as of 2024.</div></div>
+        <div class="card"><div class="card-header"><h4>scrypt</h4></div><div class="card-body">Memory-hard predecessor to Argon2. Still acceptable. More tunable than bcrypt. Less widely supported in language ecosystems than bcrypt/Argon2id. Use Argon2id for new systems.</div></div>
+      </div>
+
+      <h4>Why Salting Matters</h4>
+      <p>A salt is a random value prepended to the password before hashing. Purpose: prevents rainbow table attacks and ensures that two users with the same password produce different hash values. bcrypt and Argon2 generate and embed the salt automatically — you don't manage salts manually.</p>
+
+      <h3>PII Handling — The Governance Framework</h3>
+      <p><strong>Data Classification first:</strong> Not all PII is equal. Define tiers:</p>
+      <ul>
+        <li><strong>Tier 1 — Highly Sensitive:</strong> SSN, financial account numbers, health records, passwords. Always encrypted at field level, access requires explicit justification.</li>
+        <li><strong>Tier 2 — Sensitive:</strong> Email, phone number, home address, date of birth. Encrypted at rest, access logged.</li>
+        <li><strong>Tier 3 — Internal:</strong> User ID, order history, behavioral data. Access controlled but not field-level encrypted.</li>
+      </ul>
+
+      <h4>Technical Controls</h4>
+      <div class="cards two">
+        <div class="card"><div class="card-header"><h4>Encryption at Rest</h4></div><div class="card-body">GCP encrypts Spanner data at rest by default (Google-managed keys). For additional control: CMEK (Customer-Managed Encryption Keys) via Cloud KMS. For field-level encryption (FLE), encrypt before writing to Spanner using AES-256-GCM with KMS-managed keys.</div></div>
+        <div class="card"><div class="card-header"><h4>Encryption in Transit</h4></div><div class="card-body">TLS 1.2+ mandatory for all service-to-service calls. In GCP: service mesh (Istio on GKE) provides mTLS automatically. For Cloud Run: Google manages TLS. Spanner Java client uses TLS by default.</div></div>
+        <div class="card"><div class="card-header"><h4>Data Masking in Logs</h4></div><div class="card-body">Never log raw PII — phone numbers, emails, SSNs. Use log masking filters. In Spring Boot: customize Jackson serializer to mask fields annotated with <code>@Sensitive</code>. Structured logging (JSON) with field-level masking is easier to audit than free-text logs.</div></div>
+        <div class="card"><div class="card-header"><h4>Right to Erasure (GDPR)</h4></div><div class="card-body">Design for data deletion: pseudonymization (replace real values with UUID, store mapping in a crypto-erase table). Delete the mapping key → all references become meaningless. More practical than finding and deleting all copies of PII scattered across tables and event streams.</div></div>
+      </div>
+
+      <h3>Audit Logging for PII Access</h3>
+      <p>Every access to Tier 1/2 PII must be logged: who accessed it, when, from what service/endpoint, for what purpose. Use GCP Cloud Audit Logs (Data Access audit logs) at the Spanner level, and application-level audit events published to Pub/Sub → BigQuery for analysis.</p>
+
+    </div>
+
+    <nav class="scenario-nav">
+      <a class="scenario-chip chip-green" href="#sec-q1"><span class="chip-num">01</span> Password Encoding in Spring</a>
+      <a class="scenario-chip chip-blue"  href="#sec-q2"><span class="chip-num">02</span> Field-Level PII Encryption</a>
+      <a class="scenario-chip chip-red"   href="#sec-q3"><span class="chip-num">03</span> Log Masking</a>
+    </nav>
+
+    <div class="example-section">
+      <div class="test-case" id="sec-q1">
+        <div class="test-case-header"><span class="badge badge-green">SECURITY</span><h4>Password encoding — bcrypt vs Argon2 in Spring</h4></div>
+        <div class="test-case-body">
+<pre><code>// Recommended for new systems: Argon2id
+@Bean
+public PasswordEncoder passwordEncoder() {
+  // Argon2id: 3 iterations, 64MB memory, 1 thread, 32-byte salt, 64-byte hash
+  return new Argon2PasswordEncoder(
+    16,   // salt length
+    32,   // hash length
+    1,    // parallelism
+    65536,// memory KB (64MB)
+    3     // iterations
+  );
+}
+
+// Legacy systems: bcrypt (still secure, widely used)
+@Bean
+public PasswordEncoder passwordEncoder() {
+  return new BCryptPasswordEncoder(12); // strength 12 ≈ ~250ms
+}
+
+// ✅ Usage — framework handles salt automatically
+String rawPassword = "user-supplied-password";
+String hashed = encoder.encode(rawPassword);
+// hashed = "$argon2id$v=19$m=65536,t=3,p=1$[salt]$[hash]"
+
+boolean matches = encoder.matches(rawPassword, hashed); // true
+
+// ❌ NEVER do this
+String insecure = DigestUtils.md5Hex(password);    // fast = insecure
+String alsoWrong = DigestUtils.sha256Hex(password); // still fast
+String samePassword1 = sha256("password123");
+String samePassword2 = sha256("password123");
+// samePassword1.equals(samePassword2) == true → rainbow table attack</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="sec-q2">
+        <div class="test-case-header"><span class="badge badge-blue">PII</span><h4>Field-level encryption with KMS before Spanner write</h4></div>
+        <div class="test-case-body">
+<pre><code>@Service
+public class PiiEncryptionService {
+  private final KeyManagementServiceClient kmsClient;
+  private final String keyName; // projects/.../cryptoKeyVersions/...
+
+  // Encrypt before storing
+  public String encrypt(String plaintext) throws Exception {
+    EncryptResponse response = kmsClient.encrypt(keyName,
+      ByteString.copyFromUtf8(plaintext));
+    return Base64.getEncoder()
+      .encodeToString(response.getCiphertext().toByteArray());
+  }
+
+  // Decrypt after reading
+  public String decrypt(String ciphertext) throws Exception {
+    byte[] decoded = Base64.getDecoder().decode(ciphertext);
+    DecryptResponse response = kmsClient.decrypt(keyName,
+      ByteString.copyFrom(decoded));
+    return response.getPlaintext().toStringUtf8();
+  }
+}
+
+@Entity
+public class UserProfile {
+  private String userId;
+
+  // Stored encrypted in Spanner — KMS handles key rotation
+  @Convert(converter = PiiFieldConverter.class)
+  private String phoneNumber;  // encrypted at rest
+
+  @Convert(converter = PiiFieldConverter.class)
+  private String ssn;          // encrypted at rest
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="sec-q3">
+        <div class="test-case-header"><span class="badge badge-red">LOGGING</span><h4>Mask PII in application logs</h4></div>
+        <div class="test-case-body">
+<pre><code>// Custom annotation to mark PII fields
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface Sensitive { }
+
+// Jackson serializer that masks annotated fields in logs
+public class SensitiveMaskingSerializer extends JsonSerializer&lt;String&gt; {
+  @Override
+  public void serialize(String value, JsonGenerator gen,
+      SerializerProvider prov) throws IOException {
+    if (value == null) { gen.writeNull(); return; }
+    // Show first + last char only: j*****@e*****.com
+    String masked = value.charAt(0) + "***" + value.charAt(value.length()-1);
+    gen.writeString(masked);
+  }
+}
+
+// Usage on DTO — safe to log this object
+public class UserEvent {
+  public String userId;
+
+  @Sensitive
+  @JsonSerialize(using = SensitiveMaskingSerializer.class)
+  public String email;
+
+  @Sensitive
+  @JsonSerialize(using = SensitiveMaskingSerializer.class)
+  public String phoneNumber;
+}
+
+// Log masking output:
+// {"userId":"abc123","email":"j***n","phoneNumber":"4***7"}</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h3>Questions You May Be Asked</h3>
+      <div class="question-list">
+        <div class="question-item">
+          <div class="q-text">Why is SHA-256 not suitable for password storage, and what should you use instead?</div>
+          <div class="q-expect"><strong>Expected:</strong> SHA-256 is fast — designed for checksums, not passwords. Speed enables GPU-accelerated brute-force (billions of hashes/sec on commodity hardware). bcrypt/Argon2 are intentionally slow and memory-hard. Also explain salting — prevents rainbow tables and identical-password leakage. Spring Security's <code>BCryptPasswordEncoder</code> / <code>Argon2PasswordEncoder</code> handle this correctly.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">How do you design a system to handle GDPR right-to-erasure requests?</div>
+          <div class="q-expect"><strong>Expected:</strong> Pseudonymization with crypto-erase pattern. Audit all locations where PII is stored (Spanner, Pub/Sub messages, BigQuery, logs, backups). Backups are the hardest — either exclude PII from backups or accept that deletion propagation takes until backup TTL expires. Event sourcing creates a special challenge — stored events can't be edited; crypto-erase solves this.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">What are the security implications of logging in a distributed system?</div>
+          <div class="q-expect"><strong>Expected:</strong> PII leakage through logs is one of the most common accidental GDPR violations. Structured logging with field-level masking. Separate log access controls for PII vs operational logs. Retention policies — logs should not outlive the data's legal retention period. Access patterns in logs can themselves be sensitive data.</div>
+        </div>
+      </div>
+    </div>
+    <div class="chapter-nav">
+      <button class="nav-btn nav-prev" onclick="show(6)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Scalability &amp; DB Constraints</span></span></button>
+      <button class="nav-btn nav-next" onclick="show(8)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Production Monitoring</span></span><span class="nav-arrow">→</span></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SECTION 8 — MONITORING -->
+  <div class="section" id="s8">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="chapter-label">Past Questions · Chapter 08</div>
+        <h2>Production Monitoring</h2>
+        <p class="subtitle">Observability pillars, SLOs/SLAs, alerting philosophy, and how to design a monitoring strategy for a Spring Boot + Spanner + GCP system.</p>
+      </div>
+    </div>
+    <div class="pills" style="max-width:var(--max-content-w);margin:20px auto 0;">
+      <span class="pill">Metrics</span><span class="pill">Logs</span><span class="pill">Traces</span>
+      <span class="pill">SLO / SLA / SLI</span><span class="pill">Alerting</span><span class="pill">Micrometer</span>
+      <span class="pill">Cloud Monitoring</span><span class="pill">Cloud Trace</span><span class="pill">Error Budget</span>
+    </div>
+    <div class="content">
+      <p class="lead">Monitoring is not just dashboards — it's your feedback loop for production systems. At staff level, the question is never "are you monitoring?" but "are you monitoring the right things, acting on the right signals, and using observability to drive engineering decisions?"</p>
+
+      <h3>The Three Pillars of Observability</h3>
+      <div class="cards three">
+        <div class="card"><div class="card-header"><h4>📊 Metrics</h4></div><div class="card-body">Aggregated numeric measurements over time. Low storage cost. Great for alerting thresholds and dashboards. Micrometer → Cloud Monitoring. KEY: track business metrics alongside technical metrics (orders/min, not just HTTP req/s).</div></div>
+        <div class="card"><div class="card-header"><h4>📋 Logs</h4></div><div class="card-body">Detailed event records. High storage cost. Essential for debugging individual failures. Structured JSON logging (Logback + GCP logging) enables querying. Never log PII. Correlate with trace IDs for request-level debugging.</div></div>
+        <div class="card"><div class="card-header"><h4>🔍 Traces</h4></div><div class="card-body">Distributed request traces across services. Spring Cloud Sleuth (Micrometer Tracing in Boot 3) adds trace/span IDs. Cloud Trace visualises end-to-end latency. Identifies which service or Spanner query is causing p99 latency spikes.</div></div>
+      </div>
+
+      <h3>SLI / SLO / SLA — The Framework</h3>
+      <table class="compare-table">
+        <thead><tr><th>Concept</th><th>Definition</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><strong>SLI</strong> (Indicator)</td><td>The metric being measured</td><td>Percentage of HTTP requests returning 2xx in ≤ 200ms</td></tr>
+          <tr><td><strong>SLO</strong> (Objective)</td><td>Target value for the SLI — internal commitment</td><td>99.9% of requests succeed in ≤ 200ms, measured over 30 days</td></tr>
+          <tr><td><strong>SLA</strong> (Agreement)</td><td>External contract with consequences for breach</td><td>99.5% uptime guaranteed; credits issued if violated</td></tr>
+          <tr><td><strong>Error Budget</strong></td><td>Allowed failures before SLO breach (100% - SLO)</td><td>0.1% = 43.8 min/month of allowed downtime</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Error Budget Decision Framework:</strong> If error budget is healthy → ship features aggressively. If error budget is burning → freeze releases, prioritize reliability work. This removes blame from reliability conversations and makes it data-driven.</p>
+
+      <h3>The Four Golden Signals (Google SRE)</h3>
+      <ul>
+        <li><strong>Latency:</strong> Time to serve a request. Track p50, p95, p99 — averages hide tail latency issues.</li>
+        <li><strong>Traffic:</strong> Demand on the system. Requests/sec, queries/sec, messages/sec.</li>
+        <li><strong>Errors:</strong> Rate of failed requests. Distinguish 5xx (server errors) from 4xx (client errors).</li>
+        <li><strong>Saturation:</strong> How full the system is. CPU %, memory %, thread pool queue depth, DB connection pool utilization.</li>
+      </ul>
+
+      <h3>Alerting Philosophy</h3>
+      <p><strong>Alert on symptoms, not causes.</strong> Alert on high error rate (what users experience), not CPU spike (internal state that may or may not matter). Avoid alert fatigue — every alert must be actionable. If an alert fires and the on-call engineer has no clear action to take, remove or downgrade the alert.</p>
+      <p><strong>Alert levels:</strong> Page (PagerDuty, immediate action) → Ticket (actionable next business day) → Dashboard-only (informational, monitor trends).</p>
+
+    </div>
+
+    <nav class="scenario-nav">
+      <a class="scenario-chip chip-green" href="#mon-q1"><span class="chip-num">01</span> Custom Business Metrics</a>
+      <a class="scenario-chip chip-blue"  href="#mon-q2"><span class="chip-num">02</span> Distributed Tracing Setup</a>
+      <a class="scenario-chip chip-gold"  href="#mon-q3"><span class="chip-num">03</span> Alerting on Error Rate</a>
+    </nav>
+
+    <div class="example-section">
+      <div class="test-case" id="mon-q1">
+        <div class="test-case-header"><span class="badge badge-green">METRICS</span><h4>Custom business metric with Micrometer</h4></div>
+        <div class="test-case-body">
+<pre><code>@Service
+public class OrderService {
+  private final MeterRegistry meterRegistry;
+  private final Counter ordersPlaced;
+  private final Counter ordersFailedPayment;
+  private final Timer orderProcessingTime;
+
+  public OrderService(MeterRegistry meterRegistry) {
+    this.meterRegistry = meterRegistry;
+    this.ordersPlaced = Counter.builder("orders.placed")
+      .description("Total orders successfully placed")
+      .register(meterRegistry);
+    this.ordersFailedPayment = Counter.builder("orders.failed")
+      .tag("reason", "payment_declined")
+      .register(meterRegistry);
+    this.orderProcessingTime = Timer.builder("orders.processing.duration")
+      .description("End-to-end order processing latency")
+      .publishPercentiles(0.5, 0.95, 0.99) // track p50, p95, p99
+      .register(meterRegistry);
+  }
+
+  public Order placeOrder(OrderRequest req) {
+    return orderProcessingTime.record(() -> {
+      try {
+        Order order = processOrder(req);
+        ordersPlaced.increment();
+        return order;
+      } catch (PaymentDeclinedException e) {
+        ordersFailedPayment.increment();
+        throw e;
+      }
+    });
+  }
+}
+
+# Micrometer → Cloud Monitoring config
+management:
+  metrics:
+    export:
+      stackdriver:
+        project-id: ${GCP_PROJECT_ID}
+        enabled: true</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="mon-q2">
+        <div class="test-case-header"><span class="badge badge-blue">TRACING</span><h4>Distributed tracing with Micrometer Tracing (Boot 3)</h4></div>
+        <div class="test-case-body">
+<pre><code># pom.xml — Boot 3 tracing stack
+&lt;dependency&gt;
+  &lt;groupId&gt;io.micrometer&lt;/groupId&gt;
+  &lt;artifactId&gt;micrometer-tracing-bridge-brave&lt;/artifactId&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+  &lt;groupId&gt;com.google.cloud&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-cloud-gcp-starter-trace&lt;/artifactId&gt;
+&lt;/dependency&gt;
+
+// Custom span for Spanner query observability
+@Service
+public class ProductService {
+  private final Tracer tracer;
+
+  public List&lt;Product&gt; searchProducts(String query) {
+    Span span = tracer.nextSpan()
+      .name("spanner.product.search")
+      .tag("query.terms", query)
+      .start();
+
+    try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
+      return spannerClient.executeQuery(...);
+    } catch (Exception e) {
+      span.error(e);
+      throw e;
+    } finally {
+      span.end(); // trace visible in Cloud Trace with latency breakdown
+    }
+  }
+}
+
+// W3C trace context propagated automatically by Spring
+// Trace-ID correlates logs across services — add to log context:
+// logging.pattern.console: %d [%X{traceId}/%X{spanId}] %-5p %m%n</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="mon-q3">
+        <div class="test-case-header"><span class="badge badge-gold">ALERTING</span><h4>SLO-based alerting in Cloud Monitoring</h4></div>
+        <div class="test-case-body">
+<pre><code># Cloud Monitoring alert policy — error rate SLO
+# Alert fires when error rate > 0.1% for 5 consecutive minutes
+resource "google_monitoring_alert_policy" "error_rate_slo" {
+  display_name = "Order API Error Rate > SLO"
+  conditions {
+    display_name = "5xx error rate"
+    condition_threshold {
+      filter = <<-EOT
+        resource.type="cloud_run_revision"
+        AND metric.type="run.googleapis.com/request_count"
+        AND metric.labels.response_code_class="5xx"
+      EOT
+      aggregations {
+        alignment_period   = "300s"   # 5-minute windows
+        per_series_aligner = "ALIGN_RATE"
+        cross_series_reducer = "REDUCE_SUM"
+      }
+      threshold_value = 0.001  # 0.1% error budget
+      duration        = "300s" # must persist for 5 min (avoid flapping)
+      comparison      = "COMPARISON_GT"
+    }
+  }
+  notification_channels = [pagerduty_channel_id]
+  alert_strategy {
+    auto_close = "3600s"  # auto-resolve after 1h if condition clears
+  }
+}</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h3>Questions You May Be Asked</h3>
+      <div class="question-list">
+        <div class="question-item">
+          <div class="q-text">How do you approach setting up monitoring for a new Spring Boot service on GCP?</div>
+          <div class="q-expect"><strong>Expected:</strong> Start with the four golden signals. Add Micrometer + Stackdriver exporter. Instrument business metrics early (orders/min). Set up structured logging with trace ID correlation. Configure /health/liveness and /health/readiness for K8s/Cloud Run. SLO definition before go-live, not after. Error budget policy.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">What's the difference between alerting on metrics vs logs, and when would you use each?</div>
+          <div class="q-expect"><strong>Expected:</strong> Metrics: low-cost, high cardinality, time-series — best for threshold alerts and trends. Logs: expensive, verbose, detailed — best for detecting specific error messages or patterns (log-based metrics in Cloud Monitoring). Traces: not for alerting but essential for debugging latency issues. Alert on metrics; investigate with logs and traces.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">Walk me through diagnosing a production latency spike using your observability stack.</div>
+          <div class="q-expect"><strong>Expected:</strong> Check dashboards for p99 latency. Isolate: all endpoints or one? Filter traces for slow requests. Identify which span took time — application, Spanner query, external API. Check Spanner Key Visualizer for hotspot. Check Cloud Monitoring for CPU/memory saturation. Check for slow queries in Spanner Query Insights. Correlate with deployments timeline.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-icon">⚡</div>
+        <div class="callout-body">
+          <strong>Staff Signal for Monitoring</strong>
+          Mention that you track business metrics, not just technical metrics. "Our SLO is 99.9% of payment transactions succeed in under 500ms — not just HTTP 200 rate." This shows you tie observability to user impact. Also mention runbooks: every alert should have a runbook link in its description.
+        </div>
+      </div>
+    </div>
+    <div class="chapter-nav">
+      <button class="nav-btn nav-prev" onclick="show(7)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Security: PII &amp; Passwords</span></span></button>
+      <button class="nav-btn nav-next" onclick="show(9)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Testing Best Practices</span></span><span class="nav-arrow">→</span></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SECTION 9 — TESTING BP -->
+  <div class="section" id="s9">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="chapter-label">Best Practices · Chapter 09</div>
+        <h2>Testing Best Practices</h2>
+        <p class="subtitle">The testing pyramid, test coverage philosophy, integration testing strategies, and the opinionated practices that distinguish production-grade test suites.</p>
+      </div>
+    </div>
+    <div class="pills" style="max-width:var(--max-content-w);margin:20px auto 0;">
+      <span class="pill">Testing Pyramid</span><span class="pill">Contract Testing</span>
+      <span class="pill">@SpringBootTest</span><span class="pill">Testcontainers</span>
+      <span class="pill">Mutation Testing</span><span class="pill">Test Coverage</span>
+      <span class="pill">Property-Based Testing</span>
+    </div>
+    <div class="content">
+      <p class="lead">A test suite is a production system. It has maintenance cost, performance characteristics, false positive rates, and architectural debt. Staff engineers think about the ROI of tests, not just coverage numbers.</p>
+
+      <h3>The Testing Pyramid — and Why It's a Guideline, Not a Law</h3>
+      <p>The classic pyramid: many unit tests at the base, fewer integration tests in the middle, few E2E tests at the top. The reasoning: unit tests are fast, cheap, and isolated; E2E tests are slow, expensive, and brittle. But the right distribution depends on your system:</p>
+      <ul>
+        <li><strong>Unit tests (70%):</strong> Business logic, domain rules, edge cases, error handling. No I/O. Fast.</li>
+        <li><strong>Integration tests (20%):</strong> Controller + service + repository layer. Spanner via Testcontainers emulator, or Spring Data JPA with H2. Slower but tests real wiring.</li>
+        <li><strong>E2E / Contract tests (10%):</strong> Critical user journeys (checkout, auth), API contract validation with Pact. Don't test every flow E2E.</li>
+      </ul>
+
+      <h3>Spring Boot Integration Testing Strategies</h3>
+      <table class="compare-table">
+        <thead><tr><th>Annotation</th><th>What It Loads</th><th>Use For</th></tr></thead>
+        <tbody>
+          <tr><td><code>@SpringBootTest</code></td><td>Full application context</td><td>Integration tests, smoke tests. Slow — use sparingly.</td></tr>
+          <tr><td><code>@WebMvcTest</code></td><td>MVC layer only (controllers, filters, security)</td><td>Controller-layer tests with mocked services</td></tr>
+          <tr><td><code>@DataJpaTest</code></td><td>JPA repositories + in-memory DB</td><td>Repository query tests, entity mapping tests</td></tr>
+          <tr><td><code>@JsonTest</code></td><td>Jackson context only</td><td>Serialization/deserialization tests</td></tr>
+          <tr><td><code>@MockitoExtension</code></td><td>No Spring context (pure Mockito)</td><td>Unit tests — fastest, no context startup cost</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Test Coverage — The Right Philosophy</h3>
+      <p>Line coverage is a vanity metric. <strong>Branch coverage</strong> is more meaningful. <strong>Mutation testing</strong> (Pitest) is the most rigorous: it mutates your code (e.g., flips a condition) and checks if any test fails. If no test catches the mutation — your tests are not actually verifying that logic.</p>
+      <p><strong>Coverage targets:</strong> Don't mandate 80% line coverage. Instead mandate: all business rules have tests, all exception paths have tests, all public API contracts have tests. Let coverage reports guide where tests are missing — not as a compliance checkbox.</p>
+
+      <h3>Contract Testing with Pact</h3>
+      <p>In a microservices architecture with GraphQL, contract tests verify that the provider (Spring Boot API) still satisfies the consumer's (React app) expectations after code changes. Pact generates a contract file from consumer tests and verifies it against the provider — catching breaking schema changes before deployment.</p>
+
+      <h3>Testcontainers for Real Infrastructure</h3>
+      <p>For testing Spanner interactions, use the <strong>Spanner emulator</strong> via Testcontainers. This gives you a real Spanner-compatible interface in CI without connecting to GCP. Also useful for Pub/Sub emulator, Redis, Kafka — test real integration points without mocking.</p>
+    </div>
+
+    <nav class="scenario-nav">
+      <a class="scenario-chip chip-green" href="#tbp-q1"><span class="chip-num">01</span> WebMvcTest Slice</a>
+      <a class="scenario-chip chip-blue"  href="#tbp-q2"><span class="chip-num">02</span> Testcontainers Spanner</a>
+      <a class="scenario-chip chip-gold"  href="#tbp-q3"><span class="chip-num">03</span> Parameterized Tests</a>
+    </nav>
+
+    <div class="example-section">
+      <div class="test-case" id="tbp-q1">
+        <div class="test-case-header"><span class="badge badge-green">INTEGRATION</span><h4>Controller slice test with @WebMvcTest</h4></div>
+        <div class="test-case-body">
+<pre><code>@WebMvcTest(OrderController.class)
+@WithMockUser(roles = "USER")
+class OrderControllerTest {
+  @Autowired private MockMvc mockMvc;
+  @MockBean  private OrderService orderService;
+
+  @Test
+  void createOrder_validInput_returns201() throws Exception {
+    var request = """
+      { "items": [{"productId": "p1", "quantity": 2}] }
+    """;
+    when(orderService.placeOrder(any())).thenReturn(sampleOrder());
+
+    mockMvc.perform(post("/api/orders")
+        .contentType(APPLICATION_JSON)
+        .content(request))
+      .andExpect(status().isCreated())
+      .andExpect(jsonPath("$.orderId").exists())
+      .andExpect(jsonPath("$.status").value("PENDING"));
+  }
+
+  @Test
+  void createOrder_emptyItems_returns400() throws Exception {
+    mockMvc.perform(post("/api/orders")
+        .contentType(APPLICATION_JSON)
+        .content("{ \"items\": [] }"))
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.message").value("Items cannot be empty"));
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="tbp-q2">
+        <div class="test-case-header"><span class="badge badge-blue">INFRA</span><h4>Testcontainers with Spanner emulator</h4></div>
+        <div class="test-case-body">
+<pre><code>@SpringBootTest
+@Testcontainers
+class OrderRepositoryIntegrationTest {
+
+  @Container
+  static GenericContainer&lt;?&gt; spannerEmulator =
+    new GenericContainer&lt;&gt;("gcr.io/cloud-spanner-emulator/emulator")
+      .withExposedPorts(9010, 9020)
+      .withStartupTimeout(Duration.ofSeconds(30));
+
+  @DynamicPropertySource
+  static void configureSpanner(DynamicPropertyRegistry registry) {
+    registry.add("spring.cloud.gcp.spanner.emulator.enabled", () -> true);
+    registry.add("spring.cloud.gcp.spanner.emulator.host",
+      () -> "localhost:" + spannerEmulator.getMappedPort(9010));
+    registry.add("spring.cloud.gcp.spanner.project-id", () -> "test-project");
+    registry.add("spring.cloud.gcp.spanner.instance-id", () -> "test-instance");
+    registry.add("spring.cloud.gcp.spanner.database", () -> "test-db");
+  }
+
+  @Autowired private OrderRepository orderRepository;
+
+  @Test
+  void saveAndFindOrder_roundTrip_preservesAllFields() {
+    var order = new Order(UUID.randomUUID().toString(), "user-1", PENDING);
+    orderRepository.save(order);
+
+    var found = orderRepository.findById(order.getOrderId());
+    assertThat(found).isPresent()
+      .get().extracting(Order::getStatus).isEqualTo(PENDING);
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="tbp-q3">
+        <div class="test-case-header"><span class="badge badge-gold">PATTERN</span><h4>Parameterized test for boundary conditions</h4></div>
+        <div class="test-case-body">
+<pre><code>@ParameterizedTest
+@MethodSource("pricingScenarios")
+void calculateTotal_allScenarios(
+    List&lt;OrderItem&gt; items, BigDecimal discount,
+    BigDecimal expectedTotal, String description) {
+
+  BigDecimal actual = pricingService.calculateTotal(items, discount);
+  assertThat(actual)
+    .as(description)
+    .isEqualByComparingTo(expectedTotal);
+}
+
+static Stream&lt;Arguments&gt; pricingScenarios() {
+  return Stream.of(
+    Arguments.of(items(10.00, 20.00), ZERO, bd("30.00"),
+      "No discount"),
+    Arguments.of(items(10.00, 20.00), bd("0.10"), bd("27.00"),
+      "10% discount"),
+    Arguments.of(items(0.01), ZERO, bd("0.01"),
+      "Minimum order"),
+    Arguments.of(emptyList(), ZERO, ZERO,
+      "Empty cart → zero total"),
+    Arguments.of(items(999999.99), ZERO, bd("999999.99"),
+      "Large order — no overflow")
+  );
+}</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h3>Questions You May Be Asked</h3>
+      <div class="question-list">
+        <div class="question-item">
+          <div class="q-text">How do you approach testing in a team where tests are slow and nobody runs them locally?</div>
+          <div class="q-expect"><strong>Expected:</strong> Diagnose first — which tests are slow and why? Typical culprits: overuse of @SpringBootTest, real DB calls, missing @MockBean. Solutions: test slices, Testcontainers with shared lifecycle (start once, reuse), parallel test execution. Add pre-commit hook that runs fast unit tests only. Make slow tests a CI-only category. Track test suite execution time as a metric.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">What's your view on test coverage targets (e.g. "minimum 80% line coverage")?</div>
+          <div class="q-expect"><strong>Expected:</strong> Line coverage is a floor, not a goal. 80% coverage with tests that just invoke code without asserting anything is worse than useless. Use mutation testing (Pitest) to verify test quality. Coverage targets should be per-module, risk-based. 95% for payment/security code; 60% for generated/config code. The goal is confidence, not the number.</div>
+        </div>
+      </div>
+    </div>
+    <div class="chapter-nav">
+      <button class="nav-btn nav-prev" onclick="show(8)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Production Monitoring</span></span></button>
+      <button class="nav-btn nav-next" onclick="show(10)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Java &amp; Spring Boot Best Practices</span></span><span class="nav-arrow">→</span></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SECTION 10 — JAVA + SB BP -->
+  <div class="section" id="s10">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="chapter-label">Best Practices · Chapter 10</div>
+        <h2>Java &amp; Spring Boot Best Practices</h2>
+        <p class="subtitle">Modern Java idioms, Spring Boot production patterns, and the opinionated choices that signal staff-level engineering judgment.</p>
+      </div>
+    </div>
+    <div class="pills" style="max-width:var(--max-content-w);margin:20px auto 0;">
+      <span class="pill">Records</span><span class="pill">Sealed Classes</span><span class="pill">Optional</span>
+      <span class="pill">Streams</span><span class="pill">Virtual Threads</span><span class="pill">Layered Architecture</span>
+      <span class="pill">Exception Handling</span><span class="pill">Configuration Properties</span>
+    </div>
+    <div class="content">
+      <p class="lead">Best practices are not rules to recite — they're trade-offs to justify. When asked about Java or Spring Boot practices, always explain the why, not just the what. That's what separates staff-level answers from senior-level answers.</p>
+
+      <h3>Modern Java (17–21) Idioms</h3>
+      <div class="cards two">
+        <div class="card"><div class="card-header"><h4>Records (Java 16+)</h4></div><div class="card-body">Immutable data carriers. Auto-generates constructor, getters, equals, hashCode, toString. Use for DTOs, value objects, response/request types. Cannot extend another class (but can implement interfaces). Compact canonical constructor for validation.</div></div>
+        <div class="card"><div class="card-header"><h4>Sealed Classes (Java 17+)</h4></div><div class="card-body">Restrict which classes can extend a class. Powerful with pattern matching switch. Use for domain result types: <code>sealed interface Result permits Success, Failure</code>. Enables exhaustive switch — compiler errors if a new subtype is added and switch isn't updated.</div></div>
+        <div class="card"><div class="card-header"><h4>Virtual Threads (Java 21)</h4></div><div class="card-body">Lightweight threads managed by JVM. Millions can exist simultaneously. Makes blocking I/O (Spanner calls, HTTP calls) viable at high throughput without reactive programming. Spring Boot 3.2+ supports virtual threads with one config line: <code>spring.threads.virtual.enabled=true</code>.</div></div>
+        <div class="card"><div class="card-header"><h4>Pattern Matching</h4></div><div class="card-body"><code>instanceof</code> with binding: <code>if (obj instanceof String s) { ... }</code> — no cast needed. Switch pattern matching (Java 21): exhaustive, type-safe switch over sealed hierarchies. Eliminates large if-instanceof chains.</div></div>
+      </div>
+
+      <h3>Optional — Correct Usage</h3>
+      <p><strong>Use <span class="inline-code">Optional</span> as a return type for methods that may return no value.</strong> Never use it for: fields, constructor parameters, collections (empty collection > Optional&lt;List&gt;), method parameters (use overloads instead). Never call <span class="inline-code">.get()</span> without <span class="inline-code">.isPresent()</span> — use <span class="inline-code">orElseThrow()</span> or <span class="inline-code">map()</span> instead.</p>
+
+      <h3>Exception Handling Strategy</h3>
+      <p>Follow a clear exception hierarchy. Checked exceptions should only be used when the caller has a realistic recovery path (rare). Use unchecked exceptions (RuntimeException) for programming errors and domain violations. Have a centralized <span class="inline-code">@ControllerAdvice</span> that maps domain exceptions to HTTP responses — don't scatter error-to-HTTP mapping across controllers.</p>
+
+      <h3>Configuration Best Practices</h3>
+      <p>Avoid <span class="inline-code">@Value</span> on individual fields for complex configs — use <span class="inline-code">@ConfigurationProperties</span> with a bound POJO. This enables: validation (<span class="inline-code">@Validated</span>), autocomplete in IDEs, documentation, and refactoring safety. Group config by concern — never have 50 individual <span class="inline-code">@Value</span> annotations in a service.</p>
+
+      <h3>Layered Architecture</h3>
+      <p>Strict layering with clear dependency direction: <strong>Controller → Service → Repository</strong>. Never call a Repository directly from a Controller. Never have business logic in a Controller. Services should return domain objects, not JPA entities (use mappers). This ensures: testability, separation of HTTP concerns from business logic, database abstraction.</p>
+
+    </div>
+
+    <nav class="scenario-nav">
+      <a class="scenario-chip chip-green" href="#jbp-q1"><span class="chip-num">01</span> Records + Sealed Classes</a>
+      <a class="scenario-chip chip-blue"  href="#jbp-q2"><span class="chip-num">02</span> ConfigurationProperties</a>
+      <a class="scenario-chip chip-gold"  href="#jbp-q3"><span class="chip-num">03</span> Global Exception Handling</a>
+      <a class="scenario-chip chip-purple" href="#jbp-q4"><span class="chip-num">04</span> Virtual Threads</a>
+    </nav>
+
+    <div class="example-section">
+      <div class="test-case" id="jbp-q1">
+        <div class="test-case-header"><span class="badge badge-green">MODERN JAVA</span><h4>Domain modeling with Records and Sealed Classes</h4></div>
+        <div class="test-case-body">
+<pre><code>// Record: immutable DTO with built-in validation
+public record OrderRequest(
+  @NotBlank String userId,
+  @NotEmpty @Size(max = 50) List&lt;@Valid OrderItemRequest&gt; items
+) {
+  // Compact canonical constructor for domain validation
+  public OrderRequest {
+    if (items.size() > 50) throw new IllegalArgumentException(
+      "Order cannot exceed 50 line items");
+  }
+}
+
+// Sealed class hierarchy for operation results
+public sealed interface PaymentResult
+    permits PaymentResult.Success, PaymentResult.Declined,
+            PaymentResult.Error {
+
+  record Success(String transactionId, BigDecimal amount)
+    implements PaymentResult {}
+
+  record Declined(String reason, String code)
+    implements PaymentResult {}
+
+  record Error(String message, Throwable cause)
+    implements PaymentResult {}
+}
+
+// Exhaustive pattern matching — compiler fails if new type added
+public String handlePaymentResult(PaymentResult result) {
+  return switch (result) {
+    case PaymentResult.Success s ->
+      "Transaction " + s.transactionId() + " completed";
+    case PaymentResult.Declined d ->
+      "Payment declined: " + d.reason();
+    case PaymentResult.Error e ->
+      "Payment system error: " + e.message();
+  };
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="jbp-q2">
+        <div class="test-case-header"><span class="badge badge-blue">CONFIG</span><h4>Type-safe @ConfigurationProperties</h4></div>
+        <div class="test-case-body">
+<pre><code>@ConfigurationProperties(prefix = "app.payment")
+@Validated
+public record PaymentConfig(
+  @NotBlank String gatewayUrl,
+  @Min(1) @Max(5) int maxRetries,
+  @NotNull Duration timeout,
+  @NotEmpty List&lt;String&gt; supportedCurrencies,
+  @Valid RetryConfig retry
+) {
+  public record RetryConfig(
+    @Min(100) int initialDelayMs,
+    double backoffMultiplier
+  ) {}
+}
+
+// application.yml
+app:
+  payment:
+    gateway-url: https://payment.api.example.com
+    max-retries: 3
+    timeout: 5s
+    supported-currencies: [USD, EUR, GBP]
+    retry:
+      initial-delay-ms: 200
+      backoff-multiplier: 2.0
+
+// Usage — injected as a proper type, not raw strings
+@Service
+public class PaymentService {
+  private final PaymentConfig config;
+  // Fails at startup if config is missing/invalid — fast fail principle
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="jbp-q3">
+        <div class="test-case-header"><span class="badge badge-gold">ERRORS</span><h4>Centralized exception handling with @ControllerAdvice</h4></div>
+        <div class="test-case-body">
+<pre><code>@ControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
+
+  @ExceptionHandler(NotFoundException.class)
+  public ResponseEntity&lt;ErrorResponse&gt; handleNotFound(
+      NotFoundException ex, HttpServletRequest req) {
+    return ResponseEntity.status(404)
+      .body(new ErrorResponse("NOT_FOUND", ex.getMessage(),
+        req.getRequestURI(), Instant.now()));
+  }
+
+  @ExceptionHandler(PaymentDeclinedException.class)
+  public ResponseEntity&lt;ErrorResponse&gt; handlePaymentDeclined(
+      PaymentDeclinedException ex) {
+    log.warn("Payment declined for user {}: {}", ex.getUserId(), ex.getReason());
+    return ResponseEntity.status(422)
+      .body(new ErrorResponse("PAYMENT_DECLINED", ex.getReason(), null, Instant.now()));
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity&lt;ValidationErrorResponse&gt; handleValidation(
+      MethodArgumentNotValidException ex) {
+    var errors = ex.getBindingResult().getFieldErrors().stream()
+      .map(fe -> new FieldError(fe.getField(), fe.getDefaultMessage()))
+      .toList();
+    return ResponseEntity.badRequest()
+      .body(new ValidationErrorResponse("VALIDATION_FAILED", errors));
+  }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity&lt;ErrorResponse&gt; handleUnexpected(Exception ex) {
+    log.error("Unhandled exception", ex);  // never expose stack trace to client
+    return ResponseEntity.internalServerError()
+      .body(new ErrorResponse("INTERNAL_ERROR",
+        "An unexpected error occurred", null, Instant.now()));
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="test-case" id="jbp-q4">
+        <div class="test-case-header"><span class="badge badge-purple">JAVA 21</span><h4>Virtual threads for high-throughput I/O</h4></div>
+        <div class="test-case-body">
+<pre><code># Spring Boot 3.2+ — enable virtual threads globally
+spring:
+  threads:
+    virtual:
+      enabled: true  # Tomcat uses virtual threads; @Async uses virtual threads
+
+# What this means for Spanner calls:
+# Old: 200 platform threads → 200 max concurrent Spanner calls
+# New: Virtual threads → 100,000+ concurrent Spanner calls
+# Blocking is cheap again — no need for reactive for I/O-bound workloads
+
+# Before virtual threads: reactive was the answer for high concurrency
+@GetMapping("/orders/{id}")
+public Mono&lt;Order&gt; getOrder(@PathVariable String id) {
+  return orderService.findByIdReactive(id); // Project Reactor
+}
+
+# With virtual threads: block freely, same throughput
+@GetMapping("/orders/{id}")
+public Order getOrder(@PathVariable String id) {
+  return orderService.findById(id); // Blocking — virtual thread yields while waiting
+  // Simpler, more readable, easier to test
+}</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <h3>Questions You May Be Asked</h3>
+      <div class="question-list">
+        <div class="question-item">
+          <div class="q-text">What are the most impactful Java best practices you enforce in code reviews?</div>
+          <div class="q-expect"><strong>Expected:</strong> (1) Immutability by default — Records for DTOs, final fields. (2) Fail fast — validate at boundaries with @Validated. (3) Meaningful exceptions — never catch Exception and swallow. (4) No logic in controllers — they should just parse, delegate, respond. (5) Test-first refactoring — change the test for new behavior before the code. (6) ConfigurationProperties over @Value scattering.</div>
+        </div>
+        <div class="question-item">
+          <div class="q-text">When would you choose reactive (WebFlux) over blocking (MVC) in a new Spring Boot service?</div>
+          <div class="q-expect"><strong>Expected:</strong> With Java 21 virtual threads, the performance argument for WebFlux is weaker than it was. WebFlux still makes sense for: streaming large payloads (SSE, WebSocket), when the whole call chain is reactive (existing reactive libraries), or event-driven architectures. For most backend CRUD APIs talking to Spanner: Spring MVC + virtual threads is simpler, equally performant, and much easier to debug.</div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-icon">⚡</div>
+        <div class="callout-body">
+          <strong>Staff Signal for Java</strong>
+          Mention Java 21 virtual threads unprompted when discussing concurrency or high-throughput. It shows currency with the platform. Also mention that you treat your exception hierarchy as a first-class domain design artifact — not an afterthought.
+        </div>
+      </div>
+    </div>
+    <div class="chapter-nav">
+      <button class="nav-btn nav-prev" onclick="show(9)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Testing Best Practices</span></span></button>
+      <button class="nav-btn nav-next" onclick="show(11)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Concepts &amp; Tools Reference</span></span><span class="nav-arrow">→</span></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SECTION 11 — GLOSSARY -->
+  <div class="section" id="s11">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="chapter-label">Reference · Chapter 11</div>
+        <h2>Concepts &amp; Tools Reference</h2>
+        <p class="subtitle">Quick-reference definitions for every tool, pattern, and concept mentioned in this guide.</p>
+      </div>
+    </div>
+    <div class="content">
+      <p class="lead">A glossary to confirm vocabulary and review quick definitions before the interview. Concepts are listed alphabetically by category.</p>
+
+      <h3>Spring Ecosystem</h3>
+      <div class="glossary-entry"><span class="glossary-term">Autoconfiguration</span><span class="glossary-def">Spring Boot mechanism that automatically creates beans based on classpath contents and existing bean definitions. Controlled via <code>@ConditionalOn*</code> annotations. Readable from imports file at META-INF/spring.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">@Transactional</span><span class="glossary-def">AOP-based proxy that wraps method execution in a database transaction. Self-invocation bypasses the proxy. Rollback defaults to unchecked exceptions only.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">@ConfigurationProperties</span><span class="glossary-def">Binds a prefix of properties file entries to a typed POJO. Supports validation. Preferred over @Value for complex configuration.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Actuator</span><span class="glossary-def">Spring Boot module exposing operational endpoints: health, metrics, env, threaddump. Integrates with Micrometer for metric export.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Micrometer</span><span class="glossary-def">Vendor-neutral metrics facade for JVM applications. Backends: Cloud Monitoring (Stackdriver), Prometheus, Datadog. Analogous to SLF4J for metrics.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Spring Security Filter Chain</span><span class="glossary-def">Ordered chain of servlet filters that handle authentication and authorization. Custom filters added via SecurityFilterChain @Bean configuration.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Virtual Threads (Java 21)</span><span class="glossary-def">Lightweight JVM-managed threads that yield on blocking I/O. Enables high-concurrency blocking code without reactive programming overhead. Enabled in Spring Boot 3.2+ with a single config property.</span></div>
+
+      <h3>GraphQL</h3>
+      <div class="glossary-entry"><span class="glossary-term">DataLoader</span><span class="glossary-def">Batching and caching utility that collects individual load requests within a single request tick and fires one batched query. Solves the N+1 problem in GraphQL resolvers.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">N+1 Problem</span><span class="glossary-def">Performance antipattern where fetching N parent items triggers N additional queries for child items. Result: 1+N DB queries instead of 2.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Federation</span><span class="glossary-def">Architecture pattern where multiple GraphQL services each own a subgraph. A gateway stitches them into a unified schema. Apollo Federation is the most common implementation.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Persisted Queries</span><span class="glossary-def">Technique where client pre-registers queries by hash with the server. Only registered query hashes are accepted in production — prevents arbitrary query execution and introspection-based attacks.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Query Complexity</span><span class="glossary-def">Numeric cost assigned to a query based on its structure and field costs. Queries exceeding a threshold are rejected before execution. Prevents DoS via deeply nested or expensive queries.</span></div>
+
+      <h3>Cloud Spanner</h3>
+      <div class="glossary-entry"><span class="glossary-term">TrueTime</span><span class="glossary-def">Google's globally distributed atomic clock system. Provides bounded uncertainty intervals for wall-clock time. Used by Spanner to assign globally ordered commit timestamps for external consistency.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Interleaving</span><span class="glossary-def">Physical co-location of child rows with parent rows in Spanner. Eliminates cross-split joins for hierarchical data. Defined via INTERLEAVE IN PARENT clause in DDL.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Hotspot</span><span class="glossary-def">Condition where sequential primary keys cause all writes to land on a single split boundary, exhausting that split's capacity. Avoided with UUID or hash-distributed keys.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Stale Reads</span><span class="glossary-def">Spanner reads at a past timestamp (e.g., 15 seconds ago). No quorum coordination needed — lower latency. Safe for non-critical reads. Configured via TimestampBound.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Mutations vs DML</span><span class="glossary-def">Mutations: buffer changes and apply atomically at commit. Faster, no query planning. DML: standard SQL INSERT/UPDATE, readable within transaction. Use DML when you need to read back changes in the same transaction.</span></div>
+
+      <h3>Architecture Patterns</h3>
+      <div class="glossary-entry"><span class="glossary-term">Outbox Pattern</span><span class="glossary-def">Reliability pattern: write event to outbox table in same transaction as business data. Background poller publishes to message broker. Prevents dual-write inconsistency.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Idempotency Key</span><span class="glossary-def">Client-generated UUID attached to a mutating API request. Server caches response by key. Duplicate requests return cached response without re-executing. Critical for safe retries in distributed systems.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Optimistic Locking</span><span class="glossary-def">Concurrency control via version column. Update includes WHERE version = current — fails if concurrent update occurred. Caller retries. Best for low-contention scenarios.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">CQRS</span><span class="glossary-def">Command Query Responsibility Segregation. Separate models for reads (queries) and writes (commands). Read models can be denormalized for performance. Commands go through domain logic and emit events.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Saga Pattern</span><span class="glossary-def">Manages distributed transactions across microservices without 2PC. Choreography (events) or Orchestration (coordinator). Each step has a compensating transaction for rollback.</span></div>
+
+      <h3>Security</h3>
+      <div class="glossary-entry"><span class="glossary-term">Argon2id</span><span class="glossary-def">OWASP-recommended password hashing algorithm. Memory-hard (resists GPU/FPGA attacks). Three tuning parameters: time cost, memory, parallelism. Winner of Password Hashing Competition 2015.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">bcrypt</span><span class="glossary-def">Adaptive password hashing with adjustable cost factor. Industry standard since 1999. Auto-generates salt. Cost factor 12 ≈ 250ms on modern hardware. Spring Security's BCryptPasswordEncoder.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Crypto-Erase</span><span class="glossary-def">GDPR compliance technique. Replace PII with a UUID key; encrypt mapping in a separate table. Delete the key to make all references unresolvable. More practical than finding and deleting all PII copies.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">CMEK</span><span class="glossary-def">Customer-Managed Encryption Keys. GCP feature that lets you control encryption keys for Spanner, GCS, and other services via Cloud KMS. Required for compliance in some regulated industries.</span></div>
+
+      <h3>Observability</h3>
+      <div class="glossary-entry"><span class="glossary-term">SLI / SLO / SLA</span><span class="glossary-def">SLI: measured metric (e.g., success rate). SLO: internal target (99.9%). SLA: external contract with consequences. Error budget = 100% - SLO. Drives reliability prioritisation decisions.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Four Golden Signals</span><span class="glossary-def">Google SRE's core monitoring signals: Latency (response time), Traffic (req/s), Errors (failure rate), Saturation (resource utilization). Cover these before adding domain-specific metrics.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Distributed Tracing</span><span class="glossary-def">Propagates a trace ID across service calls. Each operation creates a span with timing and metadata. Reconstructed as a trace tree in tools like Cloud Trace. Critical for diagnosing latency in microservices.</span></div>
+      <div class="glossary-entry"><span class="glossary-term">Testcontainers</span><span class="glossary-def">Java library that starts real Docker containers for integration tests. Eliminates need to mock infrastructure. Supports Spanner emulator, Pub/Sub emulator, PostgreSQL, Redis, Kafka, and more.</span></div>
+    </div>
+    <div class="chapter-nav">
+      <button class="nav-btn nav-prev" onclick="show(10)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Java &amp; Spring Boot Best Practices</span></span></button>
+      <button class="nav-btn nav-next" onclick="show(12)"><span class="nav-label"><span class="nav-hint">Next</span><span class="nav-title">Interview Prep — All Questions</span></span><span class="nav-arrow">→</span></button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ SECTION 12 — INTERVIEW PREP -->
+  <div class="section" id="s12">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="chapter-label">Reference · Chapter 12</div>
+        <h2>Interview Prep — Full Question Bank</h2>
+        <p class="subtitle">All questions from every chapter, consolidated for the night-before review. Each question includes expected depth and the chapter to revisit.</p>
+      </div>
+    </div>
+    <div class="content">
+      <p class="lead">Use this chapter for your final review. For each question, mentally answer it for 60 seconds before reading the expected depth. If you can't hit all the key points — revisit the chapter before the interview.</p>
+
+      <h3>🏗 Spring Boot</h3>
+      <div class="question-list">
+        <div class="question-item"><div class="q-text">How does Spring Boot autoconfiguration differ from traditional Spring config?</div><div class="q-expect">Conditional beans via <code>@ConditionalOnClass</code> / <code>@ConditionalOnMissingBean</code>. Imports file. Override with your own bean. Debug with <code>--debug</code> flag.</div></div>
+        <div class="question-item"><div class="q-text">All the ways @Transactional can silently fail.</div><div class="q-expect">Self-invocation (proxy bypass). Checked exception not triggering rollback. Wrong propagation. Wrong transaction manager with multiple DataSources.</div></div>
+        <div class="question-item"><div class="q-text">Thread pool / async model configuration at 5000 req/s.</div><div class="q-expect">Blocking MVC vs WebFlux event loop. Java 21 virtual threads. Tomcat thread tuning. Where Spanner calls block. Java 21 makes blocking viable again.</div></div>
+        <div class="question-item"><div class="q-text">Spring Security filter chain — add custom auth mechanism.</div><div class="q-expect">Filter ordering. OncePerRequestFilter. addFilterBefore. Populate SecurityContext. Stateless JWT setup.</div></div>
+      </div>
+
+      <h3>🔗 GraphQL</h3>
+      <div class="question-list">
+        <div class="question-item"><div class="q-text">Explain N+1 and how DataLoader solves it.</div><div class="q-expect">Concrete example. Event loop tick batching. Per-request cache. BatchLoaderRegistry in Spring for GraphQL.</div></div>
+        <div class="question-item"><div class="q-text">GraphQL vs REST — when to choose each.</div><div class="q-expect">GraphQL: BFF, mobile, complex domain. REST: public APIs, CDN caching, file uploads, simple CRUD. Never be dogmatic.</div></div>
+        <div class="question-item"><div class="q-text">Field-level authorization in GraphQL.</div><div class="q-expect">@PreAuthorize on resolvers. Directive-based. Schema masking per role. Filtering vs null (cascade risk).</div></div>
+        <div class="question-item"><div class="q-text">GraphQL error handling vs REST.</div><div class="q-expect">Always 200. Errors array. Partial success. Monitoring must parse body. Logging middleware must inspect response body.</div></div>
+      </div>
+
+      <h3>🗄 Cloud Spanner &amp; GCP</h3>
+      <div class="question-list">
+        <div class="question-item"><div class="q-text">How does Spanner achieve external consistency across regions?</div><div class="q-expect">TrueTime atomic clocks + GPS. Bounded uncertainty interval. Commit-wait ensures timestamp is in the past globally. Linearizability without distributed coordination penalty.</div></div>
+        <div class="question-item"><div class="q-text">Schema design for a high-write event stream in Spanner.</div><div class="q-expect">UUID PKs. Shard prefix for range queries. allow_commit_timestamp. Partitioned DML. TTL. Split boundary auto-management.</div></div>
+        <div class="question-item"><div class="q-text">Pub/Sub vs direct Spanner writes for event sourcing.</div><div class="q-expect">Pub/Sub for decoupling, fan-out, burst buffering. Outbox pattern for transactional consistency. Dual-write risk without outbox.</div></div>
+      </div>
+
+      <h3>⚛️ React</h3>
+      <div class="question-list">
+        <div class="question-item"><div class="q-text">Architecture for React frontend state with GraphQL backend.</div><div class="q-expect">Apollo for all server state. useState/useReducer for local. Zustand for cross-cutting client state. Don't double-store server data. Apollo normalized cache = source of truth.</div></div>
+        <div class="question-item"><div class="q-text">Preventing performance regressions in large React codebase.</div><div class="q-expect">React DevTools Profiler. Lighthouse CI. Bundle analysis. Web Vitals. Route-level code splitting. Premature memoization is a smell too.</div></div>
+      </div>
+
+      <h3>🧪 Testing</h3>
+      <div class="question-list">
+        <div class="question-item"><div class="q-text">What makes a unit test valuable vs brittle?</div><div class="q-expect">Tests behaviour not implementation. Survives refactoring. Over-mocking = brittle. "If I refactor internals, does this still pass?"</div></div>
+        <div class="question-item"><div class="q-text">When is inheritance appropriate vs composition?</div><div class="q-expect">Inheritance: true IS-A, LSP holds, shallow hierarchy. Composition: default. Fragile base class problem. Strategy pattern.</div></div>
+        <div class="question-item"><div class="q-text">Testing code dependent on current time.</div><div class="q-expect">Inject <code>java.time.Clock</code>. Tests use <code>Clock.fixed()</code>. Never call <code>LocalDateTime.now()</code> directly.</div></div>
+        <div class="question-item"><div class="q-text">Slow test suite — how do you fix it?</div><div class="q-expect">Diagnose first. Test slices instead of @SpringBootTest. Shared Testcontainer lifecycle. Parallel execution. Pre-commit fast unit tests only. Track suite time as a metric.</div></div>
+        <div class="question-item"><div class="q-text">Your view on 80% coverage mandates.</div><div class="q-expect">Vanity metric. Mutation testing (Pitest) is more meaningful. Risk-based coverage targets. Goal is confidence, not the number.</div></div>
+      </div>
+
+      <h3>🔒 Security</h3>
+      <div class="question-list">
+        <div class="question-item"><div class="q-text">Why SHA-256 is not suitable for passwords.</div><div class="q-expect">Speed is a liability. GPU brute force (billions/sec). bcrypt/Argon2id are slow and memory-hard. Salting prevents rainbow tables. Spring Security handles it correctly.</div></div>
+        <div class="question-item"><div class="q-text">GDPR right-to-erasure system design.</div><div class="q-expect">Pseudonymization + crypto-erase. Audit all storage locations (Spanner, events, logs, backups). Backups = hardest problem. Event sourcing + crypto-erase.</div></div>
+        <div class="question-item"><div class="q-text">Security implications of logging in distributed systems.</div><div class="q-expect">PII leakage. Structured logging + field masking. Separate access controls for PII logs. Retention = legal requirement. Access patterns can be sensitive too.</div></div>
+      </div>
+
+      <h3>📊 Production Monitoring</h3>
+      <div class="question-list">
+        <div class="question-item"><div class="q-text">Setting up monitoring for a new Spring Boot service on GCP.</div><div class="q-expect">Four golden signals first. Micrometer + Stackdriver. Business metrics (orders/min). Structured logging with trace IDs. Liveness/readiness probes. SLO defined before go-live.</div></div>
+        <div class="question-item"><div class="q-text">Metrics vs logs alerting — when to use each.</div><div class="q-expect">Metrics: threshold alerts, trends, low cost. Logs: specific error patterns, log-based metrics. Traces: latency diagnosis, not alerting. Alert on symptoms (user experience), not causes (CPU).</div></div>
+        <div class="question-item"><div class="q-text">Diagnosing a production latency spike.</div><div class="q-expect">Dashboard → isolate endpoint → traces for slow spans → Spanner Key Visualizer → Cloud Monitoring for saturation → Query Insights → correlate with deployment timeline.</div></div>
+      </div>
+
+      <h3>☕ Java &amp; Spring Boot</h3>
+      <div class="question-list">
+        <div class="question-item"><div class="q-text">Most impactful Java best practices you enforce in code reviews.</div><div class="q-expect">Immutability (Records). Fail fast (@Validated). Meaningful exceptions. No logic in controllers. ConfigurationProperties over @Value. Test-first refactoring.</div></div>
+        <div class="question-item"><div class="q-text">WebFlux vs blocking MVC for a new service.</div><div class="q-expect">Java 21 virtual threads weaken WebFlux's performance argument. WebFlux still for: streaming, existing reactive chains, event-driven. Standard MVC + virtual threads for most CRUD APIs. Simpler, same throughput, easier to debug.</div></div>
+      </div>
+
+      <div class="callout">
+        <div class="callout-icon">🎯</div>
+        <div class="callout-body">
+          <strong>Final Reminder: Staff-Level Signals</strong>
+          In every answer: (1) Name the trade-off, not just the solution. (2) Bring up what can go wrong / failure modes. (3) Anchor to production context ("in our Spanner-backed service, we chose X because..."). (4) Offer alternatives and say why you didn't pick them. These signals separate a senior answer from a staff answer.
+        </div>
+      </div>
+    </div>
+    <div class="chapter-nav">
+      <button class="nav-btn nav-prev" onclick="show(11)"><span class="nav-arrow">←</span><span class="nav-label"><span class="nav-hint">Previous</span><span class="nav-title">Concepts &amp; Tools Reference</span></span></button>
+      <div></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+(function() {
+  var TOTAL = 13;
+  var current = 0;
+  var navLinks = document.querySelectorAll('.nav-link');
+  var sectionEls = document.querySelectorAll('.section');
+
+  window.show = function(n) {
+    sectionEls[current].classList.remove('active');
+    navLinks[current].classList.remove('active');
+    current = n;
+    sectionEls[current].classList.add('active');
+    navLinks[current].classList.add('active');
+    var prog = document.getElementById('prog');
+    if (prog) prog.style.width = (((current + 1) / TOTAL) * 100) + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.closeSidebar();
+  };
+
+  window.toggleSidebar = function() {
+    var sb = document.getElementById('sidebar');
+    var ov = document.getElementById('overlay');
+    if (sb) sb.classList.toggle('mobile-open');
+    if (ov) ov.classList.toggle('open');
+  };
+
+  window.closeSidebar = function() {
+    var sb = document.getElementById('sidebar');
+    var ov = document.getElementById('overlay');
+    if (sb) sb.classList.remove('mobile-open');
+    if (ov) ov.classList.remove('open');
+  };
+
+  // Init progress bar
+  var prog = document.getElementById('prog');
+  if (prog) prog.style.width = ((1 / TOTAL) * 100) + '%';
+})();
+</script>
+</body>
+</html>

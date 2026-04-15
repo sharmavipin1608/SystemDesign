@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Behavioral Story Matrix — Vipin Sharma</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0a0f;
+    color: #e8e6f0;
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    padding: 24px;
+    overflow-x: hidden;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #6c63ff;
+    margin-bottom: 6px;
+  }
+
+  .subtitle { font-size: 10px; color: #555; letter-spacing: 0.1em; margin-bottom: 24px; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    gap: 0;
+    align-items: start;
+    position: relative;
+  }
+
+  .buckets-col { display: flex; flex-direction: column; gap: 8px; }
+  .stories-col { display: flex; flex-direction: column; gap: 8px; }
+
+  .bucket-card {
+    background: #12121a;
+    border: 1px solid #1e1e2e;
+    border-left: 3px solid #6c63ff;
+    border-radius: 6px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .bucket-card:hover, .bucket-card.active {
+    border-left-color: #a78bfa;
+    background: #17172a;
+    box-shadow: 0 0 20px rgba(108,99,255,0.15);
+    transform: translateX(-2px);
+  }
+  .bucket-card.dimmed { opacity: 0.25; }
+  .bucket-num { font-size: 9px; color: #6c63ff; letter-spacing: 0.15em; margin-bottom: 2px; }
+  .bucket-title { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 600; color: #c4c0e8; line-height: 1.3; }
+  .bucket-coverage { font-size: 9px; color: #444; margin-top: 3px; }
+
+  .story-card {
+    background: #12121a;
+    border: 1px solid #1e1e2e;
+    border-right: 3px solid #22c55e;
+    border-radius: 6px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .story-card.new-story { border-right-color: #f59e0b; animation: pulseNew 2s ease 0.5s 2; }
+  .story-card:hover, .story-card.active {
+    border-right-color: #4ade80;
+    background: #121a17;
+    box-shadow: 0 0 20px rgba(34,197,94,0.15);
+    transform: translateX(2px);
+  }
+  .story-card.new-story:hover, .story-card.new-story.active {
+    border-right-color: #fbbf24;
+    background: #1a1710;
+    box-shadow: 0 0 20px rgba(245,158,11,0.15);
+  }
+  .story-card.dimmed { opacity: 0.25; }
+
+  @keyframes pulseNew {
+    0% { box-shadow: 0 0 0 0 rgba(245,158,11,0.4); }
+    50% { box-shadow: 0 0 16px 4px rgba(245,158,11,0.2); }
+    100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+  }
+
+  .story-num { font-size: 9px; color: #22c55e; letter-spacing: 0.15em; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+  .new-story .story-num { color: #f59e0b; }
+  .new-badge { font-size: 8px; padding: 1px 5px; background: #2a1f0a; color: #f59e0b; border: 1px solid #3a2a0a; border-radius: 10px; letter-spacing: 0.08em; }
+  .story-title { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 600; color: #c0e8c8; line-height: 1.3; }
+  .new-story .story-title { color: #fef3c7; }
+  .story-buckets { font-size: 9px; color: #444; margin-top: 4px; }
+
+  .svg-col { position: relative; }
+  #connection-svg { position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; overflow: visible; }
+
+  .detail-panel {
+    margin-top: 24px;
+    background: #12121a;
+    border: 1px solid #2a2a3e;
+    border-radius: 8px;
+    padding: 20px;
+    display: none;
+    animation: fadeIn 0.2s ease;
+  }
+  .detail-panel.visible { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .detail-header { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: #a78bfa; margin-bottom: 10px; }
+  .detail-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .tag { font-size: 9px; padding: 3px 8px; border-radius: 20px; background: #1e1e3a; color: #6c63ff; border: 1px solid #2a2a4a; letter-spacing: 0.1em; }
+  .tag.green { background: #0f2a1a; color: #4ade80; border-color: #1a3a28; }
+  .tag.amber { background: #2a1f0a; color: #f59e0b; border-color: #3a2a0a; }
+
+  .questions-section { margin-bottom: 16px; }
+  .section-label {
+    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: #6c63ff; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: #1e1e2e; }
+  .question-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .question-list li { font-size: 10px; color: #7a7a9a; padding-left: 14px; position: relative; line-height: 1.5; }
+  .question-list li::before { content: '?'; position: absolute; left: 0; color: #3a3a5a; font-size: 9px; }
+
+  .detail-star { font-size: 11px; color: #888; line-height: 1.9; }
+  .detail-star strong { color: #c4c0e8; font-weight: 500; }
+  .panel-divider { height: 1px; background: #1e1e2e; margin: 16px 0; }
+
+  .full-story-toggle {
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer; user-select: none;
+  }
+  .full-story-toggle .section-label { margin-bottom: 0; color: #3a7a4a; cursor: pointer; }
+  .full-story-toggle .section-label::after { background: #1a2e1a; }
+  .toggle-arrow { font-size: 9px; color: #3a7a4a; transition: transform 0.2s ease; margin-left: auto; padding-right: 2px; }
+  .toggle-arrow.open { transform: rotate(180deg); }
+  .new-story-detail .full-story-toggle .section-label { color: #7a5a1a; }
+  .new-story-detail .full-story-toggle .section-label::after { background: #2a2010; }
+  .new-story-detail .toggle-arrow { color: #7a5a1a; }
+
+  .full-story-body { display: none; margin-top: 12px; font-size: 11px; color: #7a9a7a; line-height: 1.9; }
+  .full-story-body.open { display: block; animation: fadeIn 0.2s ease; }
+  .full-story-body p { margin-bottom: 10px; }
+  .full-story-body p:last-child { margin-bottom: 0; }
+  .full-story-body strong { color: #c4c0e8; font-weight: 500; font-size: 10px; letter-spacing: 0.08em; }
+  .new-story-detail .full-story-body { color: #9a8a5a; }
+
+  .hint { font-size: 9px; color: #333; text-align: center; margin-top: 10px; letter-spacing: 0.1em; }
+  .reset-btn {
+    font-family: 'DM Mono', monospace; font-size: 9px; padding: 4px 12px;
+    background: transparent; border: 1px solid #2a2a3e; color: #555;
+    border-radius: 4px; cursor: pointer; letter-spacing: 0.1em;
+    transition: all 0.2s; margin-bottom: 16px;
+  }
+  .reset-btn:hover { color: #a78bfa; border-color: #4a4a6e; }
+  .col-label { font-size: 9px; color: #333; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<h1>Behavioral Story Matrix</h1>
+<p class="subtitle">Click any bucket or story to illuminate connections — one story, multiple angles.</p>
+<button class="reset-btn" onclick="resetAll()">↺ RESET</button>
+
+<div style="display:grid;grid-template-columns:1fr 60px 1fr;gap:0;margin-bottom:6px;">
+  <div class="col-label">◀ Buckets (9)</div>
+  <div></div>
+  <div class="col-label" style="text-align:right;">Stories (9) ▶</div>
+</div>
+
+<div class="layout">
+  <div class="buckets-col" id="buckets-col"></div>
+  <div class="svg-col" id="svg-col"><svg id="connection-svg"></svg></div>
+  <div class="stories-col" id="stories-col"></div>
+</div>
+
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-header" id="detail-header"></div>
+  <div class="detail-tags" id="detail-tags"></div>
+  <div id="detail-body"></div>
+</div>
+
+<p class="hint">↑ click any card to see connections, questions & full STAR breakdown below</p>
+
+<script>
+const buckets = [
+  { id: 'b1', num: 'B1', title: 'Leadership & Influence Without Authority',
+    questions: ['Tell me about a time you led a project without formal authority.','How do you influence engineers or stakeholders who don\'t report to you?','Describe a time you drove alignment across multiple teams.','Tell me about a time you mentored a junior engineer and the impact it had.','How do you get buy-in for a technical decision others resist?']
+  },
+  { id: 'b2', num: 'B2', title: 'Conflict & Disagreement',
+    questions: ['Tell me about a time you disagreed with your manager or a peer.','Describe a conflict within your team and how you resolved it.','Have you ever pushed back on a product requirement? What happened?','Tell me about a time you had to deliver tough feedback.','How do you handle it when someone challenges your technical approach?']
+  },
+  { id: 'b3', num: 'B3', title: 'Ambiguity & Problem Solving Under Uncertainty',
+    questions: ['Tell me about a time you had to work with incomplete requirements.','How do you handle a problem where the right solution isn\'t clear?','Describe a situation where you had to make a decision with limited data.','Tell me about a time you identified a problem no one else had noticed.','How do you prioritize when everything feels urgent?']
+  },
+  { id: 'b4', num: 'B4', title: 'Failure & Learning',
+    questions: ['Tell me about a project that failed. What did you learn?','Describe a time you made a significant mistake. How did you handle it?','Tell me about a time you missed a deadline. What happened?','Have you ever shipped something that caused a production incident?','What\'s your biggest professional regret and what would you do differently?']
+  },
+  { id: 'b5', num: 'B5', title: 'Delivering Under Pressure / High-Stakes Execution',
+    questions: ['Tell me about a time you delivered a project under extreme time pressure.','Describe a high-stakes situation where you had to perform without room for error.','Tell me about a time you had to juggle multiple competing priorities.','How do you keep a team motivated when a project is going sideways?','Tell me about a time you had to make trade-offs to ship on time.']
+  },
+  { id: 'b6', num: 'B6', title: 'Technical Depth & Architecture Decisions',
+    questions: ['Tell me about the most technically complex project you\'ve worked on.','How do you approach designing a system for scale?','Tell me about a time you had to choose between two competing technical approaches.','Describe a time your architecture decision had a significant business impact.','Tell me about a time you improved system performance or reliability.']
+  },
+  { id: 'b7', num: 'B7', title: 'Cross-Functional Collaboration',
+    questions: ['Tell me about a time you worked closely with a product manager to define scope.','How do you balance engineering quality with product velocity?','Describe a time when you influenced the product roadmap as an engineer.','Tell me about a time a business requirement required a creative technical solution.','How do you communicate technical complexity to non-technical stakeholders?']
+  },
+  { id: 'b8', num: 'B8', title: 'Growth, Curiosity & Staying Current',
+    questions: ['How do you stay current with new technologies?','Tell me about a time you learned something new and applied it on the job.','Describe a time you had to quickly ramp up on an unfamiliar technology.','What\'s a technical area you\'re actively developing, and why?']
+  },
+  { id: 'b9', num: 'B9', title: 'Ownership & Going Beyond the Role',
+    questions: ['Tell me about a time you went above and beyond your job description.','Describe a time you took ownership of a problem that wasn\'t yours to solve.','Tell me about a time you improved a process, not just the code.','Have you ever identified tech debt and driven its resolution?']
+  },
+];
+
+const stories = [
+  {
+    id: 's1', num: 'S1', isNew: false,
+    title: 'Bidding Algorithm Rewrite',
+    buckets: ['b6','b5','b9'], bucketLabels: ['B6','B5','B9'],
+    star: { S: 'Bidding ran every 4 hrs on stale data — campaigns over/underspending daily.', T: 'Redesign the entire bidding + budget pipeline, keeping production live.', A: 'Parallel report fetching, hourly delta feeds, intra-day pacing logic, shadow-run validation.', R: 'CPC ↓18%, overspend campaigns ↓30%, frequency: 4hr → 1hr.' },
+    fullStory: `<p><strong>SITUATION</strong><br>Matchcraft's bidding system ran every four hours and made decisions based on stale report data. Campaigns were frequently overspending or underspending their daily budgets, hurting both client ROI and our ability to retain accounts. The existing codebase pulled data from one channel at a time, making finer control impossible.</p><p><strong>TASK</strong><br>As engineering lead, I was responsible for redesigning the bidding and budgeting system end-to-end — including the data ingestion pipeline and the core algorithm logic — while keeping the production system live for the majority of our campaign base.</p><p><strong>ACTION</strong><br>I led a team of three engineers. We broke the work into three tracks: first, we rewrote the report-fetching layer to pull data from all ad engines in parallel, cutting fetch time from hours to under one hour. Second, we introduced hourly delta feeds from all channels into the algorithm so decisions reflected current-day spend reality. Third, we rewrote the bidding logic to account for intra-day pacing rather than just daily caps. I set up a shadow-run period where the new algorithm ran alongside the old one so we could validate outputs before cutover.</p><p><strong>RESULT</strong><br>Improved CPC by 18% across approximately 80% of campaigns. Reduced overspending campaigns by 30%. Increased algorithm frequency from every four hours to every hour, giving clients significantly better budget control.</p>`
+  },
+  {
+    id: 's2', num: 'S2', isNew: false,
+    title: 'Google Ads API Migration',
+    buckets: ['b1','b5','b9'], bucketLabels: ['B1','B5','B9'],
+    star: { S: 'Google deprecated AdWords API — full breaking change, platform deeply coupled.', T: 'Own full migration with zero client-facing impact, as an early API contributor.', A: 'Clean abstraction layer, parallel shadow-run, phased rollout, direct Google API team coordination.', R: 'Zero service interruption. Ahead of industry sunset deadline.' },
+    fullStory: `<p><strong>SITUATION</strong><br>Google deprecated its legacy AdWords API and introduced a completely redesigned Google Ads API with breaking changes to the entire communication contract. Matchcraft's platform was deeply coupled to the old API — every campaign operation, reporting call, and bid management flow depended on it. A failed migration would have caused immediate service disruption for all clients.</p><p><strong>TASK</strong><br>As engineering lead, I owned the migration end-to-end: rewriting the entire communication layer from scratch while ensuring zero client-facing impact. An added dimension — we were an early contributor, which meant we were giving Google feedback on the API while simultaneously building against it.</p><p><strong>ACTION</strong><br>I designed the new communication layer as a clean abstraction over the Google Ads API, decoupling it from our business logic so future API changes would require minimal rework. I coordinated with Google's API team directly as a beta partner, flagging issues early that would have otherwise blocked us mid-migration. I created a parallel-run strategy — old and new layers ran simultaneously in shadow mode — to validate parity before full cutover. The rollout was phased by feature area, starting with lower-risk reporting calls before moving to bid management.</p><p><strong>RESULT</strong><br>Migrated the entire codebase to the new API with zero end-client impact or service interruption. Being an early contributor meant we were ahead of the industry timeline with no emergency scramble when Google sunset the old API.</p>`
+  },
+  {
+    id: 's3', num: 'S3', isNew: false,
+    title: 'Task Processing Overhaul',
+    buckets: ['b3','b6','b9'], bucketLabels: ['B3','B6','B9'],
+    star: { S: 'Async tasks grew organically — resource contention, cascading delays, brittle to new ad engines.', T: 'Identify root cause and redesign architecture (self-directed, not a ticketed initiative).', A: 'Account-centric task architecture, incremental migration, coding templates for future tasks.', R: 'Regression errors ↓30%, new task time ↓80%, new engine integration time ↓65%.' },
+    fullStory: `<p><strong>SITUATION</strong><br>Matchcraft's platform ran dozens of asynchronous periodic tasks — pulling reports, managing campaigns, fetching disapprovals across ad engines. Over time these tasks had grown organically and were interfering with each other, competing for shared resources and creating cascading delays. Adding support for a new ad engine required touching code across multiple task modules, and each addition introduced regression risk.</p><p><strong>TASK</strong><br>I identified the systemic problem — the architecture wasn't designed to scale to multiple engines — and took ownership of redesigning it, even though this wasn't a ticketed initiative.</p><p><strong>ACTION</strong><br>I mapped out all existing tasks, identified the coupling points, and designed a new account-centric architecture where each account's data pipeline was self-contained. This eliminated resource contention and made the execution model easier to reason about. I rewrote the task framework layer and migrated tasks incrementally, validating behavior at each step. I also established coding conventions and templates so future tasks would automatically conform to the new architecture.</p><p><strong>RESULT</strong><br>Reduced regression errors by 30%. Cut time to write a new task by 80% and time to add a new ad engine by 65%. The next engine integration was the smoothest in the company's history.</p>`
+  },
+  {
+    id: 's4', num: 'S4', isNew: false,
+    title: 'AI Ad Planner (Vendasta SKU)',
+    buckets: ['b7','b8','b6'], bucketLabels: ['B7','B8','B6'],
+    star: { S: 'SMB clients couldn\'t self-serve campaign creation — knowledge barrier to adoption.', T: 'Architect an AI-powered campaign generator from website URL → production-ready ads.', A: 'Modular Vue/Java app, OpenAI integration for keywords + RSAs, AI-assisted dev workflows for team.', R: 'Launched new SKU targeting $77K MRR. Modular arch enabled fast team onboarding.' },
+    fullStory: `<p><strong>SITUATION</strong><br>Matchcraft was expanding into the Vendasta platform to reach SMB clients who lacked the expertise to set up effective ad campaigns. Traditional campaign setup required deep knowledge of keywords, ad copy, and campaign structure — a major barrier for small businesses.</p><p><strong>TASK</strong><br>I architected and led development of the AI Ad Planner — a standalone application combining Matchcraft's advertising expertise with AI to automate campaign creation from a business's website URL.</p><p><strong>ACTION</strong><br>I designed the frontend (Vue, Vite, Tailwind, PrimeVue) and backend (Java) architecture to be modular — so new campaign types and ad engines could be added independently. I integrated OpenAI APIs to build a content generation engine that scraped a business's website and produced keywords, RSAs, and structured snippets automatically. I also introduced AI-driven dev workflows — Gemini Gems for rapid prototyping and Cursor-based templates to keep coding standards consistent across the team.</p><p><strong>RESULT</strong><br>Launched the AI Ad Planner SKU, targeting $77,760 in monthly recurring revenue. The modular architecture made onboarding additional engineers straightforward, and AI-generated campaigns significantly reduced manual setup time for SMB partners.</p>`
+  },
+  {
+    id: 's5', num: 'S5', isNew: false,
+    title: 'Bing Import & Sync Feature',
+    buckets: ['b2','b7','b5'], bucketLabels: ['B2','B7','B5'],
+    star: { S: 'Clients duplicating Google campaigns on Bing manually — huge operational overhead.', T: 'Build seamless import + ongoing sync between Google Ads and Bing Ads data models.', A: 'Translation layer for API differences, sync (not one-time import), early edge-case scoping with PM.', R: 'Adopted by 80% of Bing clients. Revenue ↑22%, CPC ↓30%, CTR ↑20%.' },
+    fullStory: `<p><strong>SITUATION</strong><br>Matchcraft clients advertising on Google had no efficient path to extend their campaigns to Bing. Every update to a Google campaign had to be manually replicated on Bing, creating operational overhead for both clients and internal teams.</p><p><strong>TASK</strong><br>I was responsible for designing and delivering a Bing Import feature that would let clients seamlessly replicate and synchronize their Google campaigns on Bing, without manual intervention.</p><p><strong>ACTION</strong><br>I built a translation layer between Google Ads and Bing Ads data models, handling structural differences between the two APIs. I designed it as an ongoing sync — not just a one-time import — so changes in Google campaigns could propagate to Bing automatically. I worked closely with the product team to scope edge cases early — campaign types not supported by Bing, budget mapping differences — avoiding mid-development surprises.</p><p><strong>RESULT</strong><br>Adopted by 80% of Bing-advertising clients. Revenue from enrolled clients grew by 22%. Imported campaigns saw a 30% drop in CPC and a 20% improvement in CTR. The sync approach cut ongoing Bing maintenance development time by over 40%.</p>`
+  },
+  {
+    id: 's6', num: 'S6', isNew: false,
+    title: 'Category Subscription Product',
+    buckets: ['b1','b3','b7'], bucketLabels: ['B1','B3','B7'],
+    star: { S: 'Client onboarding was slow — every campaign needed custom keyword/ad copy work.', T: 'Build pre-built multilingual campaign packages by industry vertical with auto-update mechanism.', A: 'Taxonomy design with product+content teams, decoupled content/structure model, multilingual from day 1.', R: 'Setup time ↓40%. Projected 3% revenue increase via new recurring subscription stream.' },
+    fullStory: `<p><strong>SITUATION</strong><br>Client onboarding for new ad campaigns was slow and inconsistent. Each account required custom keyword and ad copy creation, which didn't scale as Matchcraft grew its client base. The opportunity was pre-built, reusable campaign packages by industry vertical.</p><p><strong>TASK</strong><br>I spearheaded development of the Category Subscription system — pre-built, multilingual ad copy and keyword packages tailored to specific client segments, with built-in mechanisms for regular content updates.</p><p><strong>ACTION</strong><br>I worked with the product and content teams to define the taxonomy of categories and relevance-over-time criteria. On the technical side, I designed the system to decouple package content from campaign structure — so updates to a category package would automatically propagate to all subscribed clients. I built multilingual support into the data model from day one.</p><p><strong>RESULT</strong><br>Reduced campaign setup time by 40% for subscribed clients. Projected to generate a 3% revenue increase in year one via a new recurring subscription revenue stream.</p>`
+  },
+  {
+    id: 's7', num: 'S7', isNew: true,
+    title: 'Mentorship Failure & the 90-Day Framework',
+    buckets: ['b4','b1','b9'], bucketLabels: ['B4','B1','B9'],
+    star: { S: 'Assigned a junior engineer to mentor during the Task Processing Overhaul. Task was deliberately approachable — rewrite one task with a fully defined design, inputs, outputs, and working examples already in production.', T: 'Ramp him up to independent ownership within 2 weeks via daily 15-min check-ins.', A: 'After 2 months of covering the same ground with no progress, escalated to the software architect. Engineer eventually let go for performance. My failure: entirely informal mentorship — no written goals, no documented checkpoints, nothing to show HR. Process took 6 months instead of weeks.', R: 'Worked with HR post-incident to build a formal 90-day onboarding framework with bilateral 30/60/90 check-ins. Adopted org-wide.' },
+    fullStory: `<p><strong>SITUATION</strong><br>During the Task Processing Overhaul project, I was assigned a junior engineer to mentor. The task I gave him was deliberately approachable: rewrite a single existing task to conform to the new account-centric architecture. The design was already in production, there were multiple working examples to reference, and the inputs, outputs, and transformation logic were all defined.</p><p><strong>TASK</strong><br>My job was to ramp him up successfully within two weeks and then hand him increasing ownership of the migration work. I set up a 15-minute daily check-in so he'd never be stuck for long.</p><p><strong>ACTION — AND WHERE I FAILED</strong><br>After two months of covering the same ground with no meaningful progress, I escalated to our software architect. The assessment was clear: the engineer wasn't able to internalize feedback or apply corrections — and was resistant to acknowledging the gaps. The escalation eventually led to a performance process and, after six months, termination.<br><br>Here's what I got wrong: my entire mentorship approach had been informal. Daily check-ins, verbal guidance, repeated walkthroughs — none of it was documented. When the situation needed to escalate to HR, I had no paper trail. No written goals, no recorded checkpoints, no formal assessment of progress or blockers. That six-month drag was partly a failure of my own process design.</p><p><strong>RESULT</strong><br>After the engineer was let go, I worked directly with HR to redesign the mentorship framework. We introduced a mandatory 90-day structured plan with formal 30-60-90 day check-ins documented and shared with HR. Critically, these check-ins were bilateral — the mentee also had a formal channel to flag if they weren't getting adequate support from the mentor. The new process was adopted across the engineering org as the default for all new hire mentorships.</p>`
+  },
+  {
+    id: 's8', num: 'S8', isNew: true,
+    title: 'AppNexus Integration: The $0 Lesson',
+    buckets: ['b4','b3','b7'], bucketLabels: ['B4','B3','B7'],
+    star: { S: 'Decision made to integrate AppNexus to expand display ad reach beyond Google into programmatic inventory — strategically sound on paper.', T: 'Build full engine integration: campaign management, bidding, and reporting.', A: 'Built the entire integration over 6 months before a single client was shown it. No MVP, no pilot, no demand validation. AppNexus API also unstable — performance at scale couldn\'t be guaranteed.', R: '$0 revenue earned. Project shelved. Pivoted: (1) MVP-first always, (2) MVP time-capped at 2 months, (3) iterative delivery — ship incomplete but usable, let client feedback drive next steps.' },
+    fullStory: `<p><strong>SITUATION</strong><br>Matchcraft wanted to expand its display advertising footprint beyond Google into programmatic channels. The decision was made to integrate AppNexus — a demand-side platform that would let us serve display ads in non-Google inventory spaces. It was strategically sound on paper.</p><p><strong>TASK</strong><br>The engineering team, myself included, took on the full integration — campaign management, bidding, and reporting — consistent with how we'd integrated other ad engines.</p><p><strong>ACTION — AND WHERE WE WENT WRONG</strong><br>We built the entire thing before putting it in front of a single client. No pilot, no early access program, no commitment from even one account. Six months and significant engineering resources later, we had a complete integration — and zero client traction.<br><br>Two things compounded the problem. First, the AppNexus API was unstable and buggy — guaranteeing reliable performance at scale was genuinely difficult. Second, we had no forcing function to stop and validate demand at any point. We kept building because the feature wasn't "done" yet, and "done" was always the goal.</p><p><strong>RESULT</strong><br>Zero revenue earned. Project shelved. It fundamentally changed how we approached new engine integrations. We established three principles: MVP-first always — no new engine built end-to-end before client validation. Time-boxed MVPs — capped at two months maximum to prevent resource bleed. Iterative delivery — ship incrementally and let client feedback shape what gets built next. These principles were applied to all subsequent engine integrations.</p>`
+  },
+  {
+    id: 's9', num: 'S9', isNew: true,
+    title: 'Connect Platform: Search & Sync Index',
+    buckets: ['b3','b6','b9','b7'], bucketLabels: ['B3','B6','B9','B7'],
+    star: { S: 'Connect product fetched all data live from Google — closing the legacy bulk-ad-management API endpoint that clients had quietly built their entire update/delete workflows around.', T: 'Restore bulk ad search/update capability without introducing unscalable cascading Google API calls. Justify the storage cost to the team.', A: 'Designed weekly batch snapshot of all ad content across all managed campaigns with full-text index. Justified cost by extracting three compounding value streams from the same dataset: bulk search UI, degraded-state fallback cache, automated data integrity checks.', R: 'Bulk search UI restored lost client workflow. Fallback cache improved reliability at no extra infra cost. Integrity checks surfaced config drift proactively — issues caught before clients reported them.' },
+    fullStory: `<p><strong>SITUATION</strong><br>Matchcraft ran two products. The legacy product held a master copy of all ad data on Matchcraft's own infrastructure. The newer Connect product was architected differently — minimal state on our side, with campaign data fetched live from Google via synchronous API calls on demand.<br><br>What we hadn't anticipated was how clients actually used the legacy system. Because Matchcraft owned the data, there was an API endpoint that let clients dump all ads for a given account. They used this for bulk operations — identifying every ad tied to a Christmas promotion and mass-updating or deleting them come January. Nobody had explicitly designed for this, but clients had quietly built their entire campaign management process around it. When Connect launched, that endpoint was closed. Replicating it would have meant dozens of synchronous calls to Google per request — completely unscalable.</p><p><strong>TASK</strong><br>I needed to restore bulk ad management capability in Connect without a cascade of expensive real-time API calls — and justify the infrastructure cost to a skeptical team.</p><p><strong>ACTION</strong><br>I proposed and built a weekly batch job that queried Google to fetch a full snapshot of all ad content across every managed campaign, persisted with a full-text index. This gave us a queryable, structured copy of ad inventory without any real-time API dependency.<br><br>The storage cost was real. So I came to the team with three concrete ways to extract value from the same dataset — reframing the cost as an investment:<br><br>One: a Bulk Content Search UI — users could search all their ads by keyword, select, and update or delete in bulk. The exact workflow they'd lost, now fast and cheap against our index.<br><br>Two: a degraded-state fallback cache. When live Google API connections timed out, instead of blank screens we'd surface the last known state from our snapshot. Not real-time, but far better than nothing.<br><br>Three: automated data integrity checks. With a full local snapshot, we could run reconciliation jobs to detect missing objects or orphaned ones — catching configuration drift before it became a client-visible problem.</p><p><strong>RESULT</strong><br>The bulk search UI restored the workflow clients depended on in the legacy system, removing a meaningful blocker to Connect adoption. The fallback cache improved platform resilience with no additional infrastructure. The integrity checks created a proactive data quality layer that had never existed before — surfacing issues the team previously discovered only when clients complained. One dataset, three compounding returns.</p>`
+  },
+];
+
+const bucketToStories = {};
+buckets.forEach(b => { bucketToStories[b.id] = []; });
+stories.forEach(s => { s.buckets.forEach(b => bucketToStories[b].push(s.id)); });
+
+let activeEl = null, activeType = null;
+
+function renderBuckets() {
+  const col = document.getElementById('buckets-col');
+  buckets.forEach(b => {
+    const count = bucketToStories[b.id].length;
+    const card = document.createElement('div');
+    card.className = 'bucket-card'; card.id = 'card-' + b.id;
+    card.innerHTML = `<div class="bucket-num">${b.num}</div><div class="bucket-title">${b.title}</div><div class="bucket-coverage">${count} stor${count===1?'y':'ies'}</div>`;
+    card.addEventListener('click', () => onBucketClick(b.id));
+    col.appendChild(card);
+  });
+}
+
+function renderStories() {
+  const col = document.getElementById('stories-col');
+  stories.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'story-card' + (s.isNew ? ' new-story' : ''); card.id = 'card-' + s.id;
+    card.innerHTML = `<div class="story-num">${s.num}${s.isNew?'<span class="new-badge">NEW</span>':''}</div><div class="story-title">${s.title}</div><div class="story-buckets">${s.bucketLabels.join(' · ')}</div>`;
+    card.addEventListener('click', () => onStoryClick(s.id));
+    col.appendChild(card);
+  });
+}
+
+function onBucketClick(bid) {
+  if (activeEl === bid && activeType === 'bucket') { resetAll(); return; }
+  activeEl = bid; activeType = 'bucket';
+  applyHighlight(bucketToStories[bid], [bid]);
+  drawLines(bid, bucketToStories[bid]);
+  showBucketDetail(bid);
+}
+
+function onStoryClick(sid) {
+  if (activeEl === sid && activeType === 'story') { resetAll(); return; }
+  activeEl = sid; activeType = 'story';
+  const story = stories.find(s => s.id === sid);
+  applyHighlight([sid], story.buckets);
+  drawLinesFromStory(sid, story.buckets);
+  showStoryDetail(sid);
+}
+
+function applyHighlight(activeStories, activeBuckets) {
+  buckets.forEach(b => {
+    const c = document.getElementById('card-'+b.id); c.classList.remove('active','dimmed');
+    activeBuckets.includes(b.id) ? c.classList.add('active') : c.classList.add('dimmed');
+  });
+  stories.forEach(s => {
+    const c = document.getElementById('card-'+s.id); c.classList.remove('active','dimmed');
+    activeStories.includes(s.id) ? c.classList.add('active') : c.classList.add('dimmed');
+  });
+}
+
+function resetAll() {
+  activeEl = null; activeType = null;
+  [...document.querySelectorAll('.bucket-card,.story-card')].forEach(c => c.classList.remove('active','dimmed'));
+  clearLines();
+  document.getElementById('detail-panel').classList.remove('visible');
+}
+
+function getCardCenter(id) {
+  const card = document.getElementById('card-'+id);
+  const svgRect = document.getElementById('svg-col').getBoundingClientRect();
+  const cardRect = card.getBoundingClientRect();
+  return { y: cardRect.top + cardRect.height / 2 - svgRect.top };
+}
+
+function drawLines(bid, storyIds) {
+  clearLines();
+  const svg = document.getElementById('connection-svg');
+  const h = Math.max(document.getElementById('svg-col').offsetHeight, 900);
+  svg.setAttribute('height', h); svg.setAttribute('width', '60');
+  storyIds.forEach(sid => {
+    const isNew = stories.find(s => s.id === sid)?.isNew;
+    addPath(svg, getCardCenter(bid).y, getCardCenter(sid).y, isNew ? '#f59e0b' : '#6c63ff');
+  });
+}
+
+function drawLinesFromStory(sid, bucketIds) {
+  clearLines();
+  const svg = document.getElementById('connection-svg');
+  const h = Math.max(document.getElementById('svg-col').offsetHeight, 900);
+  svg.setAttribute('height', h); svg.setAttribute('width', '60');
+  const isNew = stories.find(s => s.id === sid)?.isNew;
+  bucketIds.forEach(bid => addPath(svg, getCardCenter(bid).y, getCardCenter(sid).y, isNew ? '#f59e0b' : '#22c55e'));
+}
+
+function addPath(svg, by, sy, color) {
+  const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('d', `M 0 ${by} C 30 ${by}, 30 ${sy}, 60 ${sy}`);
+  path.setAttribute('stroke', color); path.setAttribute('stroke-width', '1.5');
+  path.setAttribute('fill', 'none'); path.setAttribute('opacity', '0.8');
+  const len = path.getTotalLength ? path.getTotalLength() : 100;
+  path.style.strokeDasharray = len; path.style.strokeDashoffset = len;
+  path.style.transition = 'stroke-dashoffset 0.4s ease';
+  svg.appendChild(path);
+  setTimeout(() => { path.style.strokeDashoffset = 0; }, 10);
+}
+
+function clearLines() {
+  const svg = document.getElementById('connection-svg');
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+}
+
+function showBucketDetail(bid) {
+  const bucket = buckets.find(b => b.id === bid);
+  document.getElementById('detail-header').textContent = bucket.title;
+  document.getElementById('detail-tags').innerHTML = bucketToStories[bid].map(sid => {
+    const s = stories.find(x => x.id === sid);
+    return `<span class="tag ${s.isNew?'amber':'green'}">${s.num}: ${s.title}</span>`;
+  }).join('');
+  document.getElementById('detail-body').innerHTML = `
+    <div class="questions-section">
+      <div class="section-label">Sample Interview Questions</div>
+      <ul class="question-list">${bucket.questions.map(q=>`<li>${q}</li>`).join('')}</ul>
+    </div>`;
+  document.getElementById('detail-panel').classList.add('visible');
+}
+
+function showStoryDetail(sid) {
+  const story = stories.find(s => s.id === sid);
+  const isNew = story.isNew;
+  document.getElementById('detail-header').textContent = story.title;
+  document.getElementById('detail-tags').innerHTML = story.buckets.map((bid,i) => {
+    const b = buckets.find(x => x.id === bid);
+    return `<span class="tag">${story.bucketLabels[i]}: ${b.title}</span>`;
+  }).join('');
+  document.getElementById('detail-body').innerHTML = `
+    <div class="star-section ${isNew?'new-story-detail':''}">
+      <div class="section-label">STAR Snapshot</div>
+      <div class="detail-star">
+        <strong>S —</strong> ${story.star.S}<br>
+        <strong>T —</strong> ${story.star.T}<br>
+        <strong>A —</strong> ${story.star.A}<br>
+        <strong>R —</strong> ${story.star.R}
+      </div>
+    </div>
+    <div class="panel-divider"></div>
+    <div class="${isNew?'new-story-detail':''}">
+      <div class="full-story-toggle" onclick="toggleFullStory('fsbody-${sid}','fsarrow-${sid}')">
+        <div class="section-label">Full Story</div>
+        <span class="toggle-arrow" id="fsarrow-${sid}">▼</span>
+      </div>
+      <div class="full-story-body" id="fsbody-${sid}">${story.fullStory}</div>
+    </div>`;
+  document.getElementById('detail-panel').classList.add('visible');
+}
+
+function toggleFullStory(bodyId, arrowId) {
+  const body = document.getElementById(bodyId), arrow = document.getElementById(arrowId);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  arrow.classList.toggle('open', !isOpen);
+}
+
+renderBuckets();
+renderStories();
+window.resetAll = resetAll;
+window.toggleFullStory = toggleFullStory;
+</script>
+</body>
+</html>
