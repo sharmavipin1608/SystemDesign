@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Ad Planner — Interview Deep Dive</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'IBM Plex Mono', 'Menlo', monospace;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .header-bar {
+    padding: 20px 28px 16px;
+    border-bottom: 1px solid #2a2a4a;
+  }
+  .header-bar h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+  }
+  .header-bar .subtitle {
+    font-size: 11px;
+    color: #666688;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .cat-bar {
+    display: flex;
+    gap: 8px;
+    padding: 14px 28px;
+    overflow-x: auto;
+    border-bottom: 1px solid #2a2a4a;
+    flex-shrink: 0;
+  }
+  .cat-pill {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1.5px solid #2a2a4a;
+    background: #16213e;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: #8888aa;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  .cat-pill:hover { border-color: #4a4a7a; color: #c0c0d0; }
+  .cat-pill.active {
+    background: #1a1a3e;
+    color: #fff;
+  }
+
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .left-col {
+    width: 340px;
+    min-width: 280px;
+    padding: 16px 12px 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    border-right: 1px solid #2a2a4a;
+  }
+  .q-card {
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: 1.5px solid #2a2a4a;
+    background: #16213e;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: #9999bb;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .q-card:hover { border-color: #4a4a7a; color: #d0d0e0; transform: translateX(3px); }
+  .q-card.active {
+    background: #1a1a3e;
+    color: #fff;
+  }
+  .q-card .idx {
+    font-size: 10px;
+    font-weight: 700;
+    opacity: 0.7;
+    min-width: 20px;
+    padding-top: 2px;
+  }
+  .q-card.active .idx { opacity: 1; }
+
+  .right-col {
+    flex: 1;
+    padding: 16px 24px 16px 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .answer-category {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .answer-question {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 16px;
+    font-family: 'Space Mono', monospace;
+    line-height: 1.4;
+  }
+  .answer-panel {
+    background: #16213e;
+    border: 1.5px solid #2a2a4a;
+    border-radius: 10px;
+    padding: 28px;
+    white-space: pre-wrap;
+    line-height: 1.75;
+    font-size: 13.5px;
+    color: #c8c8e0;
+    flex: 1;
+    overflow-y: auto;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .footer-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 28px;
+    border-top: 1px solid #2a2a4a;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .footer-nav .page-info { color: #555577; }
+
+  /* Scrollbar */
+  .left-col::-webkit-scrollbar, .answer-panel::-webkit-scrollbar { width: 5px; }
+  .left-col::-webkit-scrollbar-track, .answer-panel::-webkit-scrollbar-track { background: transparent; }
+  .left-col::-webkit-scrollbar-thumb, .answer-panel::-webkit-scrollbar-thumb { background: #3a3a5a; border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<div class="header-bar">
+  <h1>AI Ad Planner — Interview Deep Dive</h1>
+  <div class="subtitle" id="headerSubtitle"></div>
+</div>
+
+<div class="cat-bar" id="catBar"></div>
+
+<div class="main">
+  <div class="left-col" id="leftCol"></div>
+  <div class="right-col">
+    <div class="answer-category" id="answerCategory"></div>
+    <div class="answer-question" id="answerQuestion"></div>
+    <div class="answer-panel" id="answerPanel"></div>
+  </div>
+</div>
+
+<div class="footer-nav">
+  <button class="cat-pill" id="prevBtn" onclick="navigate(-1)">← Prev</button>
+  <span class="page-info" id="pageInfo"></span>
+  <button class="cat-pill" id="nextBtn" onclick="navigate(1)">Next →</button>
+</div>
+
+<script>
+const categories = [
+  {
+    name: "Project Overview & STAR Story",
+    icon: "◆",
+    color: "#E8A87C",
+    cards: [
+      {
+        q: "What is the AI Ad Planner?",
+        a: `An AI-native product at Matchcraft that automates digital ad campaign generation for SMB advertisers. It takes a business URL as input and produces a fully structured ad campaign — keywords, ad copy, budget allocation — using an LLM-powered multi-step pipeline.
+
+Previously, account managers spent 30–60 minutes manually configuring each campaign. Quality varied wildly across AMs. The AI Ad Planner standardized and accelerated this to minutes.`
+      },
+      {
+        q: "What problem does it solve?",
+        a: `Matchcraft serves thousands of SMB advertisers through reseller partners. The core bottleneck was manual campaign creation:
+
+• Slow: 30–60 min per campaign
+• Inconsistent: Quality depended on individual AM expertise
+• Unscalable: Adding more advertisers meant adding more AMs
+
+The AI Ad Planner eliminated this bottleneck by automating the entire workflow from URL → live campaign structure.`
+      },
+      {
+        q: "What was your role?",
+        a: `Software Engineering Team Lead. Owned the full technical direction:
+
+• Designed the end-to-end architecture
+• Led the engineering team through prototype → production
+• Made all key technology and design decisions
+• Hands-on with backend (Spring Boot), LLM integration (OpenAI APIs), and frontend (Vue/Vite/Tailwind)
+• Drove prompt engineering, error handling, and cost optimization`
+      },
+      {
+        q: "What was the impact / result?",
+        a: `• Campaign creation time dropped from 30–60 min to minutes
+• Quality became consistent across all account managers
+• Reseller partners could onboard SMBs significantly faster
+• Became a key product differentiator for Matchcraft
+• Enabled scale without linear headcount growth`
+      }
+    ]
+  },
+  {
+    name: "Architecture & Tech Stack",
+    icon: "⬡",
+    color: "#85CDCA",
+    cards: [
+      {
+        q: "Why Spring Boot for an AI product (not Python)?",
+        a: `The entire Matchcraft platform is Java/Spring Boot. Building in Python would mean:
+
+• A separate deployment pipeline
+• A separate team skill set to maintain
+• Separate monitoring and observability
+• A new operational surface to manage
+
+LLM calls are just HTTP requests — they're language-agnostic. Keeping it in Java meant faster path to production, shared infrastructure, and the team could own it without a skills gap.
+
+Key insight: The AI part is the API call. Everything around it — orchestration, retry, persistence, auth — benefits from the existing mature ecosystem.`
+      },
+      {
+        q: "Why Vue over React?",
+        a: `Matchcraft already had Vue adoption in the platform. Introducing React would mean:
+
+• Two frontend frameworks to maintain
+• Split team expertise
+• Duplicate tooling (build configs, linting, testing)
+
+Vue 3's Composition API provides React-like patterns (hooks, reactive state) without the ecosystem split. For a new product surface bolted onto an existing platform, consistency > trendiness.`
+      },
+      {
+        q: "Why PostgreSQL JSONB for LLM outputs?",
+        a: `LLM outputs evolve constantly as you iterate on prompts. Rigid relational columns would mean:
+
+• Constant schema migrations on every prompt change
+• Friction in experimentation
+• Mismatch between flexible AI output and rigid storage
+
+JSONB gives you:
+• Store the full LLM response as-is
+• Query into it with SQL (e.g., response->'keywords'->0)
+• Add structure gradually as patterns stabilize
+• No migration needed when prompt output format changes
+
+Best of both worlds — flexibility of NoSQL, queryability of SQL.`
+      },
+      {
+        q: "Why multi-step pipeline vs one big prompt?",
+        a: `A monolithic prompt has several problems:
+
+1. Unreliable output: One big prompt produces inconsistent structure. Miss one field and the entire response is unusable.
+2. No debuggability: If output is wrong, you can't tell which "part" of the reasoning failed.
+3. No partial recovery: If it fails, you lose everything.
+
+Multi-step pipeline (URL scraping → business understanding → keyword gen → ad copy → budget allocation):
+
+• Validate each step independently
+• Retry individual steps on failure
+• Tune prompts per step without side effects
+• Cache intermediate results
+• Observe where quality drops
+
+Think of it like microservices vs monolith — same reasoning applies to prompt design.`
+      },
+      {
+        q: "Why not fine-tune a model?",
+        a: `Cost-benefit analysis didn't justify it for v1:
+
+Fine-tuning requires:
+• Curated training dataset (thousands of examples)
+• Evaluation framework to measure quality
+• Training pipeline and infrastructure
+• Ongoing model management and versioning
+• Retraining as requirements change
+
+Prompt engineering with GPT-4 got 90%+ quality for our use case. The marginal quality gain from fine-tuning didn't justify the operational overhead.
+
+When to revisit: If prompt costs become prohibitive at scale, or quality plateaus on edge cases that prompt engineering can't solve.`
+      }
+    ]
+  },
+  {
+    name: "Rate Limiting",
+    icon: "⏱",
+    color: "#D4A5A5",
+    cards: [
+      {
+        q: "How did you implement tenant-level rate limiting?",
+        a: `Sliding window algorithm using an in-memory ConcurrentHashMap (single instance) or Redis sorted set (distributed).
+
+Each tenant gets a deque of request timestamps. On each request:
+1. Evict entries older than the window (e.g., 1 hour)
+2. Check count against max (e.g., 100/hour)
+3. If under limit → add timestamp, allow request
+4. If at limit → return 429 with Retry-After header
+
+Implemented as a Spring HandlerInterceptor so it runs before any controller logic.`
+      },
+      {
+        q: "What is the sliding window approach?",
+        a: `Two common approaches:
+
+Fixed window: Count resets at boundaries (e.g., every hour at :00). Problem — a tenant can fire 100 requests at 2:59 and 100 more at 3:00. Effectively 200 in 1 minute.
+
+Sliding window: Window moves with each request. "100 per hour" means 100 in any 60-minute span. No burst-at-boundary exploit.
+
+Implementation: Redis sorted set with timestamp as score. On each request, ZREMRANGEBYSCORE evicts old entries, ZCARD counts remaining, ZADD inserts current.`
+      },
+      {
+        q: "Why sorted set over INCR + EXPIRE?",
+        a: `INCR + EXPIRE gives you a fixed window — the counter resets when the key expires. This creates the boundary burst problem.
+
+Sorted set with timestamp-as-score gives a true sliding window:
+• ZREMRANGEBYSCORE key 0 (now - window) → evict old
+• ZCARD key → count current
+• ZADD key now requestId → add new
+
+Each entry's score is its timestamp, so you can precisely remove "older than 1 hour ago" at any moment. No artificial boundaries.
+
+Trade-off: Slightly more memory per key (stores all timestamps vs. a single counter). Worth it for accuracy.`
+      },
+      {
+        q: "How does it scale to multi-instance (Redis)?",
+        a: `In-memory ConcurrentHashMap works for a single JVM. With multiple app instances behind a load balancer, each instance has its own count — a tenant could get N × limit by hitting different instances.
+
+Solution: Move the state to Redis.
+• Sorted set per tenant for sliding window
+• All instances read/write the same Redis key
+• Redis is single-threaded — operations are atomic
+• Add TTL on the key so it self-cleans
+
+Code change is minimal — swap ConcurrentHashMap calls for RedisTemplate.opsForZSet() calls. Same algorithm, shared state.`
+      },
+      {
+        q: "What is Redisson and why use it over Jedis/Lettuce?",
+        a: `Redisson is a Java Redis client that provides distributed versions of java.util.concurrent structures — locks, semaphores, maps, queues, rate limiters.
+
+Jedis/Lettuce are low-level: you write raw Redis commands, Lua scripts, and handle distributed coordination yourself.
+
+Redisson gives you the same API you already know:
+• RSemaphore → works like java.util.concurrent.Semaphore
+• RLock → works like ReentrantLock
+• RMapCache → ConcurrentMap with per-entry TTL
+• RRateLimiter → built-in distributed token bucket
+
+Less custom code, fewer bugs in coordination logic. The team uses familiar java.util.concurrent patterns — Redisson makes them distributed transparently.`
+      },
+      {
+        q: "What is RRateLimiter?",
+        a: `Redisson's built-in distributed rate limiter. Token bucket algorithm, fully managed.
+
+Usage:
+  RRateLimiter limiter = redisson.getRateLimiter("tenant:" + tenantId);
+  limiter.trySetRate(RateType.OVERALL, 100, 1, RateIntervalUnit.HOURS);
+
+  if (limiter.tryAcquire(1, 5, TimeUnit.SECONDS)) {
+      // proceed
+  } else {
+      // 429
+  }
+
+This replaces the entire sorted set approach — fewer moving parts, battle-tested implementation. Handles multi-instance coordination automatically via Redis.
+
+Use it when you want a clean, production-ready rate limiter without writing your own sliding window logic.`
+      },
+      {
+        q: "[Code] Single-Instance: Tenant Rate Limiter (ConcurrentHashMap)",
+        a: `@Component
+public class TenantRateLimiter {
+
+    private final ConcurrentHashMap<String, Deque<Long>> requestLog
+        = new ConcurrentHashMap<>();
+    private static final int MAX_REQUESTS = 100;
+    private static final long WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+    public boolean allowRequest(String tenantId) {
+        long now = System.currentTimeMillis();
+        Deque<Long> timestamps = requestLog
+            .computeIfAbsent(tenantId, k -> new ConcurrentLinkedDeque<>());
+
+        // Evict expired entries
+        while (!timestamps.isEmpty()
+               && now - timestamps.peekFirst() > WINDOW_MS) {
+            timestamps.pollFirst();
+        }
+
+        if (timestamps.size() >= MAX_REQUESTS) {
+            return false; // 429
+        }
+
+        timestamps.addLast(now);
+        return true;
+    }
+}
+
+--- Spring Interceptor wiring ---
+
+@Component
+public class RateLimitInterceptor implements HandlerInterceptor {
+
+    @Autowired private TenantRateLimiter rateLimiter;
+
+    @Override
+    public boolean preHandle(HttpServletRequest request,
+            HttpServletResponse response, Object handler) {
+        String tenantId = request.getHeader("X-Tenant-Id");
+        if (!rateLimiter.allowRequest(tenantId)) {
+            response.setStatus(429);
+            response.setHeader("Retry-After", "60");
+            return false;
+        }
+        return true;
+    }
+}`
+      },
+      {
+        q: "[Code] Single-Instance: Global Concurrency (Semaphore)",
+        a: `@Service
+public class LLMClientService {
+
+    private static final int MAX_CONCURRENT_CALLS = 10;
+    private static final long ACQUIRE_TIMEOUT_MS = 5000;
+    private final Semaphore semaphore = new Semaphore(MAX_CONCURRENT_CALLS);
+
+    @Autowired private RestTemplate restTemplate;
+
+    public LLMResponse callOpenAI(LLMRequest request) {
+        boolean acquired = false;
+        try {
+            acquired = semaphore.tryAcquire(
+                ACQUIRE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+
+            if (!acquired) {
+                throw new ServiceUnavailableException(
+                    "LLM service at capacity, retry later");
+            }
+
+            return restTemplate.postForObject(
+                OPENAI_URL, request, LLMResponse.class);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ServiceUnavailableException("Request interrupted");
+        } finally {
+            if (acquired) semaphore.release();
+        }
+    }
+}
+
+--- Flow ---
+Request → Tenant rate limit check (sliding window)
+  → DENIED? 429 + Retry-After
+  → ALLOWED? → Semaphore.tryAcquire (global concurrency gate)
+      → NO PERMIT? 503 "at capacity"
+      → PERMIT? Call OpenAI → release semaphore`
+      },
+      {
+        q: "[Code] Distributed: Tenant Rate Limiter (Redis Sorted Set)",
+        a: `@Component
+public class RedisRateLimiter {
+
+    @Autowired private StringRedisTemplate redisTemplate;
+    private static final int MAX_REQUESTS = 100;
+    private static final long WINDOW_SECONDS = 3600;
+
+    public boolean allowRequest(String tenantId) {
+        String key = "rate_limit:" + tenantId;
+        long now = System.currentTimeMillis();
+
+        // Sorted set — score is timestamp, value is unique request id
+        // Remove everything older than the window
+        redisTemplate.opsForZSet()
+            .removeRangeByScore(key, 0, now - (WINDOW_SECONDS * 1000));
+
+        // Count remaining entries
+        Long count = redisTemplate.opsForZSet().zCard(key);
+
+        if (count != null && count >= MAX_REQUESTS) {
+            return false;
+        }
+
+        // Add current request — UUID ensures uniqueness
+        // even if two requests arrive at same millisecond
+        redisTemplate.opsForZSet()
+            .add(key, now + ":" + UUID.randomUUID(), now);
+        redisTemplate.expire(key, WINDOW_SECONDS, TimeUnit.SECONDS);
+        return true;
+    }
+}
+
+--- Why sorted set over INCR+EXPIRE? ---
+INCR+EXPIRE = fixed window (burst-at-boundary problem)
+Sorted set = true sliding window (no exploitable boundary)`
+      },
+      {
+        q: "[Code] Distributed: Global Concurrency (Redisson Semaphore)",
+        a: `@Service
+public class DistributedLLMClientService {
+
+    private static final int MAX_CONCURRENT = 10;
+    private final RSemaphore semaphore;
+
+    public DistributedLLMClientService(RedissonClient redisson) {
+        this.semaphore = redisson.getSemaphore("llm:global:semaphore");
+        // idempotent — only sets if not already exists
+        semaphore.trySetPermits(MAX_CONCURRENT);
+    }
+
+    public LLMResponse callOpenAI(LLMRequest request) {
+        boolean acquired = false;
+        try {
+            acquired = semaphore.tryAcquire(5, TimeUnit.SECONDS);
+
+            if (!acquired) {
+                throw new ServiceUnavailableException("LLM at capacity");
+            }
+
+            return restTemplate.postForObject(
+                OPENAI_URL, request, LLMResponse.class);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ServiceUnavailableException("Interrupted");
+        } finally {
+            if (acquired) semaphore.release();
+        }
+    }
+}
+
+--- Key point ---
+Code is nearly identical to the in-memory Semaphore version.
+That's Redisson's value: same java.util.concurrent API,
+distributed under the hood via Redis.
+
+--- Dependency ---
+<dependency>
+    <groupId>org.redisson</groupId>
+    <artifactId>redisson-spring-boot-starter</artifactId>
+    <version>3.27.0</version>
+</dependency>`
+      }
+    ]
+  },
+  {
+    name: "Fault Tolerance",
+    icon: "🛡",
+    color: "#95B8D1",
+    cards: [
+      {
+        q: "How did you handle LLM failures?",
+        a: `Three patterns stacked together:
+
+1. Retry with exponential backoff — transient failures self-heal
+2. Circuit breaker — stop calling a dead service, fail fast
+3. Graceful degradation — save partial results, never lose completed work
+
+Each pattern handles a different failure mode:
+• Retry → intermittent 5xx, timeouts
+• Circuit breaker → sustained outage
+• Graceful degradation → partial pipeline failure
+
+Together they ensure: best-effort completion, no wasted spend on doomed calls, and users always see something useful.`
+      },
+      {
+        q: "Explain retry with exponential backoff",
+        a: `Each LLM call retries up to 3 times: 1s → 2s → 4s delay between attempts.
+
+Why exponential? Gives the upstream service time to recover. Linear retry (1s, 1s, 1s) hammers a struggling service. Exponential backs off progressively.
+
+Key rules:
+• Only retry on transient errors (5xx, timeouts)
+• Never retry on 4xx (bad input won't magically fix itself)
+• Add jitter (random 0–500ms) to prevent thundering herd — many instances retrying at the exact same second
+• Cap max delay to prevent infinite waits
+
+Implementation: Resilience4j @Retry annotation or RetryTemplate in Spring.`
+      },
+      {
+        q: "Explain circuit breaker pattern (Resilience4j)",
+        a: `Three states:
+
+CLOSED (normal): Requests flow through. Track failure rate.
+OPEN (tripped): If failures exceed threshold (e.g., 50% in 5-min window), stop calling. Return fallback immediately. No wasted requests.
+HALF-OPEN (probing): After cooldown (e.g., 30s), send one probe request. If it succeeds → CLOSED. If it fails → OPEN again.
+
+Why? Without a circuit breaker, during an OpenAI outage you'd:
+• Queue up hundreds of doomed requests
+• Waste money on calls that will timeout
+• Increase latency for users waiting on inevitable failures
+
+With circuit breaker: fail fast, surface "service temporarily unavailable", retry automatically when the service recovers.
+
+Resilience4j integrates cleanly with Spring Boot via annotations:
+@CircuitBreaker(name = "openai", fallbackMethod = "fallback")`
+      },
+      {
+        q: "What is graceful degradation in your pipeline?",
+        a: `The pipeline has 5 steps: URL scrape → business understanding → keywords → ad copy → budget.
+
+If step 3 (keywords) succeeds but step 4 (ad copy) fails:
+• Persist steps 1–3 results
+• Mark step 4 as "pending"
+• Show user: "Keywords generated. Ad copy pending — retry or edit manually."
+
+Key principle: Never lose completed work because a later step failed.
+
+Implementation:
+• Each step writes its result to the DB independently
+• Pipeline status tracks per-step completion
+• UI renders whatever is available + retry buttons for failed steps
+• User can manually fill in failed steps and continue`
+      },
+      {
+        q: "Why not use a message queue for v1?",
+        a: `Adding Kafka or RabbitMQ for v1 would mean:
+
+• New infrastructure to deploy, monitor, and maintain
+• Message serialization/deserialization complexity
+• Dead letter queues, consumer groups, offset management
+• Team needs to learn a new operational surface
+
+For v1, request volume was manageable with synchronous calls + retry. The pipeline is user-initiated (not batch processing), so the user is already waiting for a response — async wouldn't improve their experience.
+
+When to add a queue:
+• Thousands of concurrent generations
+• Batch processing (generate campaigns for 500 businesses overnight)
+• Need to decouple producers from consumers for independent scaling
+
+Staff-level answer: "Premature infrastructure adds complexity without proportional value. We'd add it when the scaling need is real, not speculative."`
+      }
+    ]
+  },
+  {
+    name: "Cost Control",
+    icon: "$",
+    color: "#C9CBA3",
+    cards: [
+      {
+        q: "What were your three levers for cost control?",
+        a: `1. Caching — Don't re-call for the same input. If someone generates a campaign for "joes-pizza.com" and another AM does the same URL within a time window, serve cached results.
+
+2. Prompt optimization — Shorter prompts = fewer input tokens. Remove verbose instructions, use structured output formats, leverage few-shot examples efficiently. Every token costs money.
+
+3. Rate limiting per tenant — Prevent any single tenant from running away with usage. Hard cap per hour + alerting when tenants approach limits.
+
+Together: Cache avoids redundant spend, prompt optimization reduces per-call cost, rate limiting caps total exposure.`
+      },
+      {
+        q: "How did you cache LLM responses?",
+        a: `Application-level cache keyed on normalized input:
+
+Key: hash(normalized_url + prompt_version)
+Value: LLM response
+TTL: 24 hours (business info doesn't change hourly)
+
+Why prompt_version in the key? When you update a prompt, cached responses from the old prompt are stale. Including the version auto-invalidates on prompt changes.
+
+Why normalize the URL? "https://joes-pizza.com", "joes-pizza.com", "JOES-PIZZA.COM" should all hit the same cache entry.
+
+Storage: Redis (RMapCache via Redisson) for distributed cache across instances. Per-entry TTL so stale entries self-evict.`
+      },
+      {
+        q: "How did you optimize prompts for token reduction?",
+        a: `Several techniques:
+
+1. System prompt compression — Rewrite verbose instructions into concise bullet points. "Please generate a list of relevant keywords for this business" → "Generate keywords for:"
+
+2. Structured output format — Request JSON output instead of prose. Fewer output tokens, easier to parse.
+
+3. Few-shot pruning — Start with many examples, measure quality, remove examples until quality drops. Find the minimum examples needed.
+
+4. Context window management — Only send relevant scraped content, not the entire webpage. Extract key sections (business name, services, location) before sending to LLM.
+
+5. Model tiering — Use GPT-4 for complex steps (business understanding), GPT-3.5 for simpler steps (formatting, basic extraction). 3.5 is ~20x cheaper.`
+      }
+    ]
+  },
+  {
+    name: "Leadership & Ambiguity",
+    icon: "★",
+    color: "#B8B8D1",
+    cards: [
+      {
+        q: "How did you prototype fast but ship production-quality?",
+        a: `Concentric circles approach:
+
+Ring 1 (Week 1–2): Get the core loop working. URL in → campaign out. Happy path only. No error handling, no caching, no rate limiting. Prove the concept works.
+
+Ring 2 (Week 3–4): Add error handling, retry logic, and basic validation. Now it's reliable for a demo.
+
+Ring 3 (Week 5–8): Production hardening — circuit breakers, rate limiting, cost controls, monitoring, logging. Now it's shippable.
+
+Key principle: Each ring is a deployable increment. Stakeholders see progress at every stage. You're never "80% done with nothing to show."
+
+This maps directly to what fast-moving AI teams need — validate the idea before investing in production infrastructure.`
+      },
+      {
+        q: "How did you lead the team through ambiguity?",
+        a: `No playbook existed for this product. Three things I did:
+
+1. Defined the technical roadmap as a sequence of bets, not a waterfall plan. "We'll try X. If it works, we continue. If not, we pivot to Y." This gave the team permission to experiment without fear of "wasting time."
+
+2. Broke work into shippable increments. Nobody worked on something for 3 weeks without visible output. Short feedback loops kept morale high and direction clear.
+
+3. Shielded the team from stakeholder churn. Product and business had evolving ideas. I absorbed that ambiguity, translated it into stable 2-week goals, and only redirected the team when the change was material.
+
+Result: The team shipped confidently in an uncertain environment because they had clarity at the task level even when the big picture was evolving.`
+      },
+      {
+        q: "How do you think about building AI responsibly?",
+        a: `Three concrete practices from the AI Ad Planner:
+
+1. Human-in-the-loop: No campaign goes live without human review. The AI generates, a human approves. This catches hallucinations, inappropriate content, and edge cases the model doesn't understand.
+
+2. Output validation: Structured validation on every LLM response — are required fields present? Are keyword counts within bounds? Is the budget allocation sane? Reject and retry if not.
+
+3. Transparency: Users see what the AI generated and can edit every field. It's a tool, not a black box. Users maintain agency over the final output.
+
+Responsible AI isn't just about bias detection — it's about designing systems where humans stay in control and AI failures are recoverable.`
+      }
+    ]
+  },
+  {
+    name: "AI Quality & Grading",
+    icon: "✓",
+    color: "#7EC8E3",
+    cards: [
+      {
+        q: "Hard constraint validation",
+        a: `Every ad format has platform-enforced rules. A Google RSA needs at least 3 headlines (max 30 chars each) and 1 description (max 90 chars). After every LLM response, we ran deterministic validation.
+
+If a headline exceeded the character limit, we discarded that individual asset. If we still had enough assets to form a valid ad, we proceeded. If not, we injected specific feedback — "headline 2 was 38 chars, needs to be under 30" — back into the prompt and re-invoked the same agent.
+
+This was our tightest, cheapest feedback loop — no LLM calls needed, pure rule-based checks. It caught roughly the most common class of generation errors before anything else in the pipeline even ran.`
+      },
+      {
+        q: "LLM-as-judge & the website quality bug",
+        a: `We used a separate LLM call to grade the generated assets against the scraped website data — essentially asking, "Do these ads accurately reflect what this business actually offers?"
+
+This worked well initially, but I discovered a fundamental flaw: if the website itself had poor content, the ads would inherit that quality, yet still score high because they accurately reflected bad source material.
+
+To fix this, I did two things:
+
+1. During the scraping phase itself, I had the LLM classify the business vertical and assess the quality of the website content. That content-quality score became a signal we could surface to the client — essentially flagging "your website content may be limiting your ad quality," which also became a potential upsell opportunity.
+
+2. For the actual ad grading, I shifted from comparing ads against the specific website to comparing ads against vertical benchmarks — "How good are these ads for a dental practice?" rather than "Do these ads match this particular dental website?" That decoupled ad quality assessment from source content quality.`
+      },
+      {
+        q: "User-edit telemetry",
+        a: `When an account manager modified any AI-generated asset before publishing, we captured both the original and edited versions and pushed them into a queue. A backend consumer persisted these diffs into a separate analytics database.
+
+This wasn't real-time grading — it was a feedback loop for continuous improvement. The data showed us patterns in what humans consistently changed, which informed prompt refinements.
+
+For example, if AMs across multiple accounts were consistently shortening headlines or rewriting CTAs in a specific way, that was a strong signal that our prompt needed adjustment in that area. The edit-diff data became one of our most valuable inputs for prompt iteration.`
+      },
+      {
+        q: "Vector-based asset reuse",
+        a: `Now that we have a meaningful corpus of graded assets organized by vertical, I'm exploring using a vector database to find semantically similar businesses at generation time.
+
+If a new dental practice in LA closely matches one we already generated high-scoring assets for, we can reuse those assets — or at least seed the prompt with them as few-shot examples.
+
+The wins are threefold:
+• Lower latency — skip the generation step entirely for close matches
+• Reduced token costs — fewer LLM calls for businesses that resemble ones we've already served
+• Pre-validated quality — we already graded these assets, so we know they score well
+
+This is currently in progress — I'm learning vector DB patterns and evaluating how to structure the embeddings meaningfully around business type, services offered, and geographic context.`
+      },
+      {
+        q: "Vertical performance dashboard & agent routing",
+        a: `I'm building a dashboard that aggregates asset quality scores by vertical, so we can spot patterns — for example, if the LLM consistently produces weaker assets for legal services versus restaurants.
+
+If we find that certain verticals underperform, the plan is to move from a single generic prompt to vertical-specific agents. The orchestrator already knows the business vertical from the scraping phase, so it can route to a specialized agent — one with a prompt tuned for that vertical's language, compliance needs, and high-performing patterns.
+
+This is the payoff of the entire grading system: it stops being just a quality gate and starts driving the architecture of the agent pipeline itself. Measurement informs system design — the grading data tells us where the generic approach breaks down, and the fix is architectural, not just prompt tweaking.`
+      }
+    ]
+  }
+];
+
+let activeCategory = 0;
+let activeCard = 0;
+
+function render() {
+  const cat = categories[activeCategory];
+  const card = cat.cards[activeCard];
+
+  // Header subtitle
+  const totalCards = categories.reduce((s, c) => s + c.cards.length, 0);
+  document.getElementById('headerSubtitle').textContent =
+    `${totalCards} QUESTIONS ACROSS ${categories.length} CATEGORIES`;
+
+  // Category pills
+  const catBar = document.getElementById('catBar');
+  catBar.innerHTML = categories.map((c, i) => `
+    <button class="cat-pill ${i === activeCategory ? 'active' : ''}"
+      style="${i === activeCategory ? `border-color:${c.color}; box-shadow:0 0 12px ${c.color}33;` : ''}"
+      onclick="selectCategory(${i})">
+      <span style="margin-right:6px">${c.icon}</span>${c.name}
+    </button>
+  `).join('');
+
+  // Question cards
+  const leftCol = document.getElementById('leftCol');
+  leftCol.innerHTML = cat.cards.map((c, i) => `
+    <button class="q-card ${i === activeCard ? 'active' : ''}"
+      style="${i === activeCard ? `border-color:${cat.color}; box-shadow:0 0 16px ${cat.color}33;` : ''}"
+      onclick="selectCard(${i})">
+      <span class="idx" style="color:${cat.color}">${String(i+1).padStart(2,'0')}</span>
+      ${c.q}
+    </button>
+  `).join('');
+
+  // Answer
+  document.getElementById('answerCategory').innerHTML =
+    `<span style="color:${cat.color}">${cat.icon} ${cat.name}</span>`;
+  document.getElementById('answerQuestion').textContent = card.q;
+  document.getElementById('answerPanel').textContent = card.a;
+
+  // Footer
+  document.getElementById('pageInfo').textContent =
+    `${activeCard + 1} / ${cat.cards.length}`;
+  document.getElementById('prevBtn').style.opacity =
+    (activeCard === 0 && activeCategory === 0) ? '0.3' : '1';
+  document.getElementById('nextBtn').style.opacity =
+    (activeCard === cat.cards.length - 1 && activeCategory === categories.length - 1) ? '0.3' : '1';
+}
+
+function selectCategory(i) {
+  activeCategory = i;
+  activeCard = 0;
+  render();
+}
+
+function selectCard(i) {
+  activeCard = i;
+  render();
+}
+
+function navigate(dir) {
+  const cat = categories[activeCategory];
+  if (dir === 1) {
+    if (activeCard < cat.cards.length - 1) {
+      activeCard++;
+    } else if (activeCategory < categories.length - 1) {
+      activeCategory++;
+      activeCard = 0;
+    }
+  } else {
+    if (activeCard > 0) {
+      activeCard--;
+    } else if (activeCategory > 0) {
+      activeCategory--;
+      activeCard = categories[activeCategory].cards.length - 1;
+    }
+  }
+  render();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+render();
+</script>
+</body>
+</html>
