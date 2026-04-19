@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Serverless Architecture — Interview Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #161922;
+    --surface-hover: #1e2230;
+    --border: #2a2e3d;
+    --text: #e2e4ea;
+    --text-muted: #8b8fa3;
+    --accent-lambda: #f59e0b;
+    --accent-apigw: #3b82f6;
+    --accent-dynamo: #8b5cf6;
+    --accent-event: #10b981;
+    --accent-cdk: #ef4444;
+    --accent-design: #06b6d4;
+    --glow-lambda: rgba(245,158,11,0.15);
+    --glow-apigw: rgba(59,130,246,0.15);
+    --glow-dynamo: rgba(139,92,246,0.15);
+    --glow-event: rgba(16,185,129,0.15);
+    --glow-cdk: rgba(239,68,68,0.15);
+    --glow-design: rgba(6,182,212,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+.root-container {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Subtle grid background */
+  .root-container::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  header h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #f59e0b, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+
+  header p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 300;
+  }
+
+  /* ── ARCHITECTURE DIAGRAM ── */
+  .diagram-area {
+    position: relative;
+    width: 100%;
+    padding: 40px 20px;
+    margin-bottom: 16px;
+  }
+
+  .diagram-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .diagram-row.main-flow {
+    gap: 0;
+  }
+
+  .arrow {
+    color: var(--text-muted);
+    font-size: 1.6rem;
+    padding: 0 8px;
+    opacity: 0.5;
+    user-select: none;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .node {
+    position: relative;
+    padding: 18px 28px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+    border: 1.5px solid transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    text-align: center;
+    min-width: 150px;
+  }
+
+  .node .node-icon {
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .node:hover { transform: translateY(-3px); }
+  .node.active { transform: translateY(-3px); }
+
+  .node-client {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text-muted);
+    cursor: default;
+    min-width: 100px;
+  }
+
+  .node-apigw {
+    background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(59,130,246,0.05));
+    border-color: rgba(59,130,246,0.3);
+    color: var(--accent-apigw);
+  }
+  .node-apigw:hover, .node-apigw.active {
+    border-color: var(--accent-apigw);
+    box-shadow: 0 0 30px var(--glow-apigw), inset 0 0 20px var(--glow-apigw);
+  }
+
+  .node-lambda {
+    background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05));
+    border-color: rgba(245,158,11,0.3);
+    color: var(--accent-lambda);
+  }
+  .node-lambda:hover, .node-lambda.active {
+    border-color: var(--accent-lambda);
+    box-shadow: 0 0 30px var(--glow-lambda), inset 0 0 20px var(--glow-lambda);
+  }
+
+  .node-dynamo {
+    background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(139,92,246,0.05));
+    border-color: rgba(139,92,246,0.3);
+    color: var(--accent-dynamo);
+  }
+  .node-dynamo:hover, .node-dynamo.active {
+    border-color: var(--accent-dynamo);
+    box-shadow: 0 0 30px var(--glow-dynamo), inset 0 0 20px var(--glow-dynamo);
+  }
+
+  .node-event {
+    background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.05));
+    border-color: rgba(16,185,129,0.3);
+    color: var(--accent-event);
+  }
+  .node-event:hover, .node-event.active {
+    border-color: var(--accent-event);
+    box-shadow: 0 0 30px var(--glow-event), inset 0 0 20px var(--glow-event);
+  }
+
+  .node-cdk {
+    background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05));
+    border-color: rgba(239,68,68,0.3);
+    color: var(--accent-cdk);
+  }
+  .node-cdk:hover, .node-cdk.active {
+    border-color: var(--accent-cdk);
+    box-shadow: 0 0 30px var(--glow-cdk), inset 0 0 20px var(--glow-cdk);
+  }
+
+  .node-design {
+    background: linear-gradient(135deg, rgba(6,182,212,0.1), rgba(6,182,212,0.05));
+    border-color: rgba(6,182,212,0.3);
+    color: var(--accent-design);
+  }
+  .node-design:hover, .node-design.active {
+    border-color: var(--accent-design);
+    box-shadow: 0 0 30px var(--glow-design), inset 0 0 20px var(--glow-design);
+  }
+
+  /* Side branches */
+  .side-branch {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 8px;
+  }
+
+  .branch-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .branch-connector .v-arrow {
+    color: var(--text-muted);
+    opacity: 0.4;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.2rem;
+  }
+
+  .diagram-label {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 6px;
+    font-weight: 400;
+  }
+
+  /* Bottom row */
+  .bottom-row {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px dashed rgba(255,255,255,0.06);
+  }
+
+  /* ── HINT ── */
+  .hint {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-bottom: 32px;
+    opacity: 0.7;
+  }
+
+  .hint span {
+    display: inline-block;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  /* ── CONTENT PANEL ── */
+  .content-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                padding 0.3s ease,
+                border-color 0.3s ease;
+  }
+
+  .content-panel.open {
+    max-height: 3000px;
+    padding: 36px 40px;
+  }
+
+  .content-panel.accent-lambda { border-color: rgba(245,158,11,0.3); }
+  .content-panel.accent-apigw { border-color: rgba(59,130,246,0.3); }
+  .content-panel.accent-dynamo { border-color: rgba(139,92,246,0.3); }
+  .content-panel.accent-event { border-color: rgba(16,185,129,0.3); }
+  .content-panel.accent-cdk { border-color: rgba(239,68,68,0.3); }
+  .content-panel.accent-design { border-color: rgba(6,182,212,0.3); }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .panel-header .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .tag-lambda { background: rgba(245,158,11,0.15); color: var(--accent-lambda); }
+  .tag-apigw { background: rgba(59,130,246,0.15); color: var(--accent-apigw); }
+  .tag-dynamo { background: rgba(139,92,246,0.15); color: var(--accent-dynamo); }
+  .tag-event { background: rgba(16,185,129,0.15); color: var(--accent-event); }
+  .tag-cdk { background: rgba(239,68,68,0.15); color: var(--accent-cdk); }
+  .tag-design { background: rgba(6,182,212,0.15); color: var(--accent-design); }
+
+  .panel-header h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .panel-body h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 20px 0 10px;
+    color: var(--text);
+  }
+
+  .panel-body h3:first-child { margin-top: 0; }
+
+  .panel-body p {
+    color: var(--text-muted);
+    line-height: 1.7;
+    font-size: 0.92rem;
+    margin-bottom: 10px;
+  }
+
+  .panel-body ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 12px;
+  }
+
+  .panel-body ul li {
+    position: relative;
+    padding-left: 20px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    font-size: 0.92rem;
+    margin-bottom: 4px;
+  }
+
+  .panel-body ul li::before {
+    content: '›';
+    position: absolute;
+    left: 4px;
+    font-weight: 700;
+    opacity: 0.5;
+  }
+
+  .code-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: #c9d1d9;
+    overflow-x: auto;
+    margin: 12px 0;
+  }
+
+  .highlight {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .example-box {
+    background: rgba(255,255,255,0.03);
+    border-left: 3px solid rgba(255,255,255,0.1);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .example-box.accent-lambda { border-left-color: var(--accent-lambda); }
+  .example-box.accent-apigw { border-left-color: var(--accent-apigw); }
+  .example-box.accent-dynamo { border-left-color: var(--accent-dynamo); }
+  .example-box.accent-event { border-left-color: var(--accent-event); }
+  .example-box.accent-cdk { border-left-color: var(--accent-cdk); }
+  .example-box.accent-design { border-left-color: var(--accent-design); }
+
+  /* NAV DOTS */
+  .nav-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .nav-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .nav-dot:hover { background: var(--text-muted); }
+  .nav-dot.active-lambda { background: var(--accent-lambda); }
+  .nav-dot.active-apigw { background: var(--accent-apigw); }
+  .nav-dot.active-dynamo { background: var(--accent-dynamo); }
+  .nav-dot.active-event { background: var(--accent-event); }
+  .nav-dot.active-cdk { background: var(--accent-cdk); }
+  .nav-dot.active-design { background: var(--accent-design); }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .node { min-width: 110px; padding: 14px 16px; font-size: 0.82rem; }
+    .arrow { font-size: 1.2rem; padding: 0 4px; }
+    header h1 { font-size: 1.6rem; }
+    .content-panel.open { padding: 24px 20px; }
+    .diagram-row.main-flow { flex-wrap: wrap; justify-content: center; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="root-container">
+
+<div class="container">
+  <header>
+    <h1>AWS Serverless Architecture</h1>
+    <p>Interactive Interview Guide — Click any component to explore</p>
+  </header>
+
+  <!-- ARCHITECTURE DIAGRAM -->
+  <div class="diagram-area">
+
+    <!-- Main flow -->
+    <div class="diagram-row main-flow">
+      <div class="node node-client">
+        <span class="node-icon">🌐</span>
+        Client
+      </div>
+      <span class="arrow">→</span>
+      <div class="node node-apigw" onclick="showPanel('apigw')" id="node-apigw">
+        <span class="node-icon">🚪</span>
+        API Gateway
+      </div>
+      <span class="arrow">→</span>
+      <div class="node node-lambda" onclick="showPanel('lambda')" id="node-lambda">
+        <span class="node-icon">⚡</span>
+        Lambda
+      </div>
+      <span class="arrow">→</span>
+      <div class="node node-dynamo" onclick="showPanel('dynamo')" id="node-dynamo">
+        <span class="node-icon">🗄️</span>
+        DynamoDB
+      </div>
+    </div>
+
+    <!-- Async branch from Lambda -->
+    <div class="side-branch">
+      <div class="branch-connector">
+        <div class="v-arrow">↕</div>
+        <div class="node node-event" onclick="showPanel('event')" id="node-event" style="min-width:180px;">
+          <span class="node-icon">📨</span>
+          SQS / EventBridge
+        </div>
+        <div class="diagram-label">Async & Events</div>
+      </div>
+    </div>
+
+    <!-- IaC & Design row -->
+    <div class="bottom-row">
+      <div class="node node-cdk" onclick="showPanel('cdk')" id="node-cdk">
+        <span class="node-icon">🏗️</span>
+        CDK / IaC
+      </div>
+      <div class="node node-design" onclick="showPanel('design')" id="node-design">
+        <span class="node-icon">📐</span>
+        System Design
+      </div>
+    </div>
+  </div>
+
+  <div class="hint"><span>↑ Click a component to view interview notes ↑</span></div>
+
+  <!-- CONTENT PANEL -->
+  <div class="content-panel" id="content-panel">
+    <div id="panel-content"></div>
+  </div>
+
+  <!-- NAV DOTS -->
+  <div class="nav-dots">
+    <div class="nav-dot" onclick="showPanel('lambda')" id="dot-lambda" title="Lambda"></div>
+    <div class="nav-dot" onclick="showPanel('apigw')" id="dot-apigw" title="API Gateway"></div>
+    <div class="nav-dot" onclick="showPanel('dynamo')" id="dot-dynamo" title="DynamoDB"></div>
+    <div class="nav-dot" onclick="showPanel('event')" id="dot-event" title="SQS / EventBridge"></div>
+    <div class="nav-dot" onclick="showPanel('cdk')" id="dot-cdk" title="CDK"></div>
+    <div class="nav-dot" onclick="showPanel('design')" id="dot-design" title="System Design"></div>
+  </div>
+</div>
+
+<script>
+const content = {
+  lambda: {
+    tag: 'Lambda',
+    tagClass: 'tag-lambda',
+    accentClass: 'accent-lambda',
+    title: 'Lambda — Execution Model, Cold Starts & Concurrency',
+    html: `
+      <h3>Execution Model</h3>
+      <p>Lambda runs your code in a short-lived container. AWS manages the server. You deploy a function, attach a trigger (API Gateway, SQS, S3 event, etc.), and Lambda handles scaling automatically.</p>
+      <p>Each invocation gets its own execution environment with CPU, memory, and a <span class="highlight">/tmp disk (up to 10 GB)</span>.</p>
+
+      <h3>Cold Starts</h3>
+      <p>When Lambda spins up a new execution environment, it downloads your code, starts the runtime, and runs init code — this is a <span class="highlight">cold start</span>. Subsequent invocations reuse the warm container.</p>
+      <div class="example-box accent-lambda">
+        <strong>Example:</strong> A Java Lambda with Spring Boot might cold start in 3–5 seconds. A Python Lambda with minimal deps might cold start in ~200ms.
+      </div>
+      <p>Ways to reduce cold starts:</p>
+      <ul>
+        <li>Use lightweight runtimes (Python/Node over Java)</li>
+        <li>Keep deployment packages small</li>
+        <li>Use <span class="highlight">Provisioned Concurrency</span> — pre-warms N instances</li>
+        <li>Avoid heavy init logic in the constructor</li>
+        <li>Use SnapStart (Java) — snapshots the init phase</li>
+      </ul>
+
+      <h3>Concurrency</h3>
+      <p>Each concurrent request gets its own execution environment. 100 simultaneous requests = 100 containers.</p>
+      <ul>
+        <li><span class="highlight">Account-level default:</span> 1,000 concurrent executions per region</li>
+        <li><span class="highlight">Reserved concurrency:</span> Guarantees capacity for a function (but also caps it)</li>
+        <li><span class="highlight">Provisioned concurrency:</span> Pre-warms instances, eliminates cold starts</li>
+      </ul>
+      <div class="example-box accent-lambda">
+        <strong>Quick math:</strong> If your function takes 1s and you get 500 req/s → you need ~500 concurrent executions.
+      </div>
+
+      <h3>Key Limits to Know</h3>
+      <ul>
+        <li>Timeout: max 15 minutes</li>
+        <li>Memory: 128 MB – 10,240 MB</li>
+        <li>Payload: 6 MB sync, 256 KB async</li>
+        <li>Deployment package: 50 MB zipped, 250 MB unzipped (or use container images up to 10 GB)</li>
+      </ul>
+
+      <h3>✅ When to Use Lambda</h3>
+      <ul>
+        <li>Short-lived, stateless request handling (APIs, webhooks, file processing)</li>
+        <li>Event-driven reactions (S3 upload → thumbnail, DynamoDB stream → sync to search)</li>
+        <li>Glue code between AWS services (transform data between SQS and DynamoDB)</li>
+        <li>Unpredictable or spiky traffic where you don't want to manage servers</li>
+        <li>Cron jobs / scheduled tasks (EventBridge scheduled rules → Lambda)</li>
+      </ul>
+      <div class="example-box accent-lambda">
+        <strong>Real-world:</strong> An image upload API — user uploads to S3, S3 event triggers Lambda, Lambda generates thumbnails in 3 sizes and writes metadata to DynamoDB. Zero servers, scales to thousands of uploads/minute.
+      </div>
+
+      <h3>🔄 Alternatives to Lambda</h3>
+      <ul>
+        <li><span class="highlight">ECS Fargate:</span> When you need long-running processes (>15 min), persistent connections, or more control over the runtime. Still serverless (no EC2 management).</li>
+        <li><span class="highlight">App Runner:</span> Simpler than Fargate for containerized web apps. Just point at a container image or source repo.</li>
+        <li><span class="highlight">EC2:</span> When you need GPUs, custom OS, high sustained compute, or specific networking requirements.</li>
+        <li><span class="highlight">Step Functions:</span> When your logic is an orchestration of multiple steps rather than a single function.</li>
+        <li><span class="highlight">GCP Cloud Functions / Azure Functions:</span> Cross-cloud equivalents with similar models.</li>
+      </ul>
+    `
+  },
+
+  apigw: {
+    tag: 'API Gateway',
+    tagClass: 'tag-apigw',
+    accentClass: 'accent-apigw',
+    title: 'API Gateway + Lambda — REST API Patterns',
+    html: `
+      <h3>What It Does</h3>
+      <p>API Gateway is a fully managed service that acts as the "front door" for your APIs. It handles routing, auth, throttling, and request/response transformation.</p>
+
+      <h3>Two Flavors</h3>
+      <ul>
+        <li><span class="highlight">REST API:</span> Full-featured — request validation, WAF, usage plans, API keys, caching. Higher latency, higher cost.</li>
+        <li><span class="highlight">HTTP API:</span> Lightweight, cheaper (~70% less), lower latency. Supports JWT auth natively. Use this unless you need REST-specific features.</li>
+      </ul>
+
+      <h3>Integration Types</h3>
+      <ul>
+        <li><span class="highlight">Lambda Proxy (AWS_PROXY):</span> Passes the entire request to Lambda as-is. Most common. Lambda returns status code, headers, body.</li>
+        <li><span class="highlight">Lambda Custom (AWS):</span> You configure request/response mapping templates (VTL). More control, more complexity.</li>
+        <li><span class="highlight">HTTP Proxy:</span> Passes through to another HTTP endpoint.</li>
+        <li><span class="highlight">Service Proxy:</span> Direct integration with AWS services (e.g., DynamoDB, SQS) — no Lambda needed.</li>
+      </ul>
+      <div class="example-box accent-apigw">
+        <strong>Example:</strong> A service proxy can write directly to SQS from API Gateway, skipping Lambda entirely — great for fire-and-forget ingestion endpoints.
+      </div>
+
+      <h3>Auth Options</h3>
+      <ul>
+        <li>IAM-based (SigV4 signing)</li>
+        <li>Cognito User Pools</li>
+        <li>Lambda Authorizer (custom token/request validation)</li>
+        <li>JWT Authorizer (HTTP API only)</li>
+      </ul>
+
+      <h3>Throttling & Quotas</h3>
+      <ul>
+        <li>Default: 10,000 req/s per region, 5,000 burst</li>
+        <li>Can set per-method, per-stage, or per-client (usage plans + API keys)</li>
+        <li>Returns <span class="highlight">429 Too Many Requests</span> when throttled</li>
+      </ul>
+
+      <h3>Common Patterns</h3>
+      <ul>
+        <li>API Gateway → Lambda → DynamoDB (classic CRUD)</li>
+        <li>API Gateway → SQS (async ingestion, no Lambda)</li>
+        <li>API Gateway + Lambda Authorizer → downstream services</li>
+      </ul>
+
+      <h3>✅ When to Use API Gateway</h3>
+      <ul>
+        <li>Public-facing REST/HTTP APIs that need auth, throttling, and managed TLS</li>
+        <li>You want request validation and transformation without writing code</li>
+        <li>You need usage plans and API keys for third-party consumers</li>
+        <li>WebSocket APIs for real-time applications (chat, notifications)</li>
+      </ul>
+      <div class="example-box accent-apigw">
+        <strong>Real-world:</strong> A multi-tenant SaaS API where each customer gets an API key with rate limits (100 req/s for free tier, 10,000 for enterprise) — API Gateway handles this natively with usage plans.
+      </div>
+
+      <h3>🔄 Alternatives to API Gateway</h3>
+      <ul>
+        <li><span class="highlight">Application Load Balancer (ALB):</span> Cheaper for high-traffic APIs. Supports Lambda targets. No request validation or usage plans though.</li>
+        <li><span class="highlight">CloudFront + Lambda@Edge:</span> For edge-computed APIs or when you need global low latency.</li>
+        <li><span class="highlight">AppSync:</span> If your API is GraphQL-based. Built-in subscriptions, caching, and DynamoDB resolvers.</li>
+        <li><span class="highlight">Kong / Nginx (self-managed):</span> When you need full control over routing, plugins, and custom middleware on ECS/EC2.</li>
+      </ul>
+    `
+  },
+
+  dynamo: {
+    tag: 'DynamoDB',
+    tagClass: 'tag-dynamo',
+    accentClass: 'accent-dynamo',
+    title: 'DynamoDB — Data Modeling & Access Patterns',
+    html: `
+      <h3>What It Is</h3>
+      <p>Fully managed NoSQL key-value and document database. Single-digit millisecond latency at any scale. No servers to manage.</p>
+
+      <h3>Core Concepts</h3>
+      <ul>
+        <li><span class="highlight">Partition Key (PK):</span> Determines which partition stores the item. Must be chosen for even distribution.</li>
+        <li><span class="highlight">Sort Key (SK):</span> Optional. Enables range queries within a partition. PK + SK = composite primary key.</li>
+        <li><span class="highlight">Item:</span> A single record (like a row). Max 400 KB.</li>
+      </ul>
+
+      <h3>Data Modeling — Single Table Design</h3>
+      <p>In DynamoDB, you model for your <span class="highlight">access patterns</span>, not your entity relationships. The best practice is single-table design: store multiple entity types in one table using overloaded keys.</p>
+      <div class="example-box accent-dynamo">
+        <strong>Example:</strong> An e-commerce app might store Users, Orders, and Products in one table:<br>
+        <code>PK=USER#123, SK=PROFILE</code> → user data<br>
+        <code>PK=USER#123, SK=ORDER#456</code> → user's order<br>
+        <code>PK=PRODUCT#789, SK=METADATA</code> → product info
+      </div>
+
+      <h3>Secondary Indexes</h3>
+      <ul>
+        <li><span class="highlight">GSI (Global Secondary Index):</span> Different PK and SK. Eventually consistent. Can be added anytime. You get 20 per table.</li>
+        <li><span class="highlight">LSI (Local Secondary Index):</span> Same PK, different SK. Strongly consistent option. Must be created at table creation. Max 5 per table.</li>
+      </ul>
+
+      <h3>Capacity Modes</h3>
+      <ul>
+        <li><span class="highlight">On-Demand:</span> Pay per request. Good for unpredictable traffic. No capacity planning.</li>
+        <li><span class="highlight">Provisioned:</span> You set RCU/WCU. Cheaper for predictable workloads. Supports auto-scaling.</li>
+      </ul>
+
+      <h3>DynamoDB Streams</h3>
+      <p>Captures item-level changes (INSERT, MODIFY, REMOVE) in order. You can attach a Lambda to a stream for event-driven processing — e.g., update a search index or send a notification when an order is placed.</p>
+
+      <h3>Key Limits</h3>
+      <ul>
+        <li>Item size: 400 KB max</li>
+        <li>Partition throughput: 3,000 RCU / 1,000 WCU per partition</li>
+        <li>Query returns max 1 MB per call (use pagination)</li>
+        <li>Transaction limit: 100 items per transaction</li>
+      </ul>
+
+      <h3>✅ When to Use DynamoDB</h3>
+      <ul>
+        <li>You know your access patterns upfront and they're key-value or key-range lookups</li>
+        <li>You need consistent single-digit ms latency at any scale</li>
+        <li>High write throughput — user sessions, IoT telemetry, click streams, gaming leaderboards</li>
+        <li>Serverless-first architectures where you want zero DB management</li>
+      </ul>
+      <div class="example-box accent-dynamo">
+        <strong>Real-world:</strong> A ride-sharing app stores active rides in DynamoDB — PK=DRIVER#id, SK=RIDE#timestamp. Queries for a driver's active ride are O(1). A GSI on rider ID enables lookup by rider. DynamoDB Streams triggers a Lambda to update the real-time map.
+      </div>
+
+      <h3>🔄 Alternatives to DynamoDB</h3>
+      <ul>
+        <li><span class="highlight">Aurora Serverless (PostgreSQL/MySQL):</span> When you need complex queries, joins, aggregations, or your access patterns are unpredictable. Relational model with serverless scaling.</li>
+        <li><span class="highlight">ElastiCache (Redis):</span> When you need in-memory speed (<1ms) for caching, sessions, or leaderboards. Not a primary datastore.</li>
+        <li><span class="highlight">DocumentDB (MongoDB-compatible):</span> When your team knows MongoDB and needs flexible document queries without DynamoDB's access pattern constraints.</li>
+        <li><span class="highlight">S3 + Athena:</span> For analytical queries on large datasets. Not for transactional workloads.</li>
+        <li><span class="highlight">Timestream:</span> Purpose-built for time-series data (IoT, metrics, logs).</li>
+      </ul>
+    `
+  },
+
+  event: {
+    tag: 'SQS / EventBridge',
+    tagClass: 'tag-event',
+    accentClass: 'accent-event',
+    title: 'Event-Driven — SQS, EventBridge & Async Patterns',
+    html: `
+      <h3>Why Event-Driven?</h3>
+      <p>Decouples producers from consumers. Enables async processing, retry logic, and fan-out. Critical for scalable serverless systems.</p>
+
+      <h3>SQS (Simple Queue Service)</h3>
+      <ul>
+        <li>Fully managed message queue. Producer sends → message sits in queue → consumer polls.</li>
+        <li><span class="highlight">Standard Queue:</span> At-least-once delivery, best-effort ordering. Nearly unlimited throughput.</li>
+        <li><span class="highlight">FIFO Queue:</span> Exactly-once processing, strict ordering. 300 msg/s (3,000 with batching).</li>
+        <li><span class="highlight">Visibility Timeout:</span> After a consumer picks up a message, it's hidden for X seconds. If not deleted, it reappears.</li>
+        <li><span class="highlight">Dead Letter Queue (DLQ):</span> Messages that fail N times go to a DLQ for inspection.</li>
+      </ul>
+      <div class="example-box accent-event">
+        <strong>Example:</strong> API Gateway → Lambda → SQS → another Lambda processes orders asynchronously. If the order processor fails 3 times, the message goes to a DLQ for manual review.
+      </div>
+
+      <h3>EventBridge</h3>
+      <ul>
+        <li>Serverless event bus. Routes events based on <span class="highlight">rules</span> (pattern matching on event content).</li>
+        <li>Native integration with 90+ AWS services and SaaS providers.</li>
+        <li>Supports <span class="highlight">content-based filtering</span> — only matching events reach the target.</li>
+        <li>Targets: Lambda, SQS, SNS, Step Functions, Kinesis, API Gateway, etc.</li>
+      </ul>
+
+      <h3>SQS vs EventBridge — When to Use What</h3>
+      <ul>
+        <li><span class="highlight">SQS:</span> Point-to-point, buffering, rate control, retry with backoff. One producer, one consumer.</li>
+        <li><span class="highlight">EventBridge:</span> Fan-out, event routing, rule-based filtering, cross-account events. One event, many consumers.</li>
+      </ul>
+
+      <h3>Lambda Event Source Mapping</h3>
+      <p>Lambda polls SQS for you via an <span class="highlight">Event Source Mapping</span>. It batches messages (up to 10 for standard, up to 10,000 for FIFO) and invokes your function. If the function fails, messages return to the queue after the visibility timeout.</p>
+
+      <h3>Async Invocation</h3>
+      <p>Lambda supports async invocation (from S3, SNS, EventBridge). AWS queues the event internally, retries up to 2 times, and sends failures to a DLQ or on-failure destination.</p>
+
+      <h3>✅ When to Use SQS vs EventBridge</h3>
+      <ul>
+        <li><span class="highlight">SQS —</span> Decouple a fast producer from a slow consumer. Rate-limit processing. Buffer bursts. Guaranteed delivery with retry.</li>
+        <li><span class="highlight">EventBridge —</span> Route different event types to different targets. Integrate with SaaS apps (Shopify, Zendesk). Cross-account event sharing. Schema registry for event contracts.</li>
+      </ul>
+      <div class="example-box accent-event">
+        <strong>Real-world:</strong> An e-commerce checkout publishes an "OrderPlaced" event to EventBridge. Rule 1 routes it to a Payment Lambda. Rule 2 routes it to an Analytics SQS queue. Rule 3 routes it to a third-party webhook for the warehouse. One event, three consumers, zero coupling.
+      </div>
+
+      <h3>🔄 Alternatives</h3>
+      <ul>
+        <li><span class="highlight">SNS (Simple Notification Service):</span> Pub/sub fan-out. Simpler than EventBridge but no content-based filtering. Use when you just need to broadcast to multiple SQS queues or Lambda functions.</li>
+        <li><span class="highlight">Kinesis Data Streams:</span> When you need ordered, high-throughput streaming (100k+ records/s). Consumers can replay. Good for clickstream, logs, IoT.</li>
+        <li><span class="highlight">MSK (Managed Kafka):</span> When you need Kafka's ecosystem — consumer groups, compacted topics, exactly-once semantics. Heavier than SQS/EventBridge.</li>
+        <li><span class="highlight">Step Functions:</span> When your async flow is a workflow (branching, retries, wait states, human approval) rather than simple queue processing.</li>
+      </ul>
+    `
+  },
+
+  cdk: {
+    tag: 'CDK / IaC',
+    tagClass: 'tag-cdk',
+    accentClass: 'accent-cdk',
+    title: 'AWS CDK & Infrastructure as Code',
+    html: `
+      <h3>What is CDK?</h3>
+      <p>AWS Cloud Development Kit — define cloud infrastructure using <span class="highlight">real programming languages</span> (TypeScript, Python, Java, etc.) instead of YAML/JSON. CDK synthesizes your code into CloudFormation templates.</p>
+
+      <h3>Why CDK over CloudFormation/Terraform?</h3>
+      <ul>
+        <li>Full programming language: loops, conditionals, abstractions, type safety</li>
+        <li><span class="highlight">Constructs:</span> High-level abstractions (L2/L3) that bundle best practices — e.g., a single line creates a Lambda + API Gateway + IAM roles + CloudWatch logs</li>
+        <li>Testable with standard test frameworks (Jest, pytest, JUnit)</li>
+        <li>Same language as your application code</li>
+      </ul>
+
+      <h3>Construct Levels</h3>
+      <ul>
+        <li><span class="highlight">L1 (Cfn*):</span> 1:1 mapping to CloudFormation resources. Low-level, verbose.</li>
+        <li><span class="highlight">L2:</span> Opinionated defaults with sensible security. Most commonly used. E.g., <code>lambda.Function</code>, <code>dynamodb.Table</code>.</li>
+        <li><span class="highlight">L3 (Patterns):</span> Multi-resource patterns. E.g., <code>LambdaRestApi</code> creates API Gateway + Lambda + permissions in one shot.</li>
+      </ul>
+
+      <div class="example-box accent-cdk">
+        <strong>Example (TypeScript):</strong><br>
+        <code>const fn = new lambda.Function(this, 'Handler', { runtime: Runtime.NODEJS_18_X, handler: 'index.handler', code: Code.fromAsset('lambda') });<br>
+        new apigateway.LambdaRestApi(this, 'API', { handler: fn });</code><br>
+        → This creates a Lambda function, REST API, IAM role, CloudWatch log group, and all permissions.
+      </div>
+
+      <h3>Key CDK Commands</h3>
+      <ul>
+        <li><code>cdk synth</code> — Generate CloudFormation template</li>
+        <li><code>cdk deploy</code> — Deploy the stack</li>
+        <li><code>cdk diff</code> — Preview changes before deploy</li>
+        <li><code>cdk destroy</code> — Tear down the stack</li>
+      </ul>
+
+      <h3>CDK vs Pulumi</h3>
+      <ul>
+        <li>Both use real programming languages</li>
+        <li>CDK is AWS-only, Pulumi is multi-cloud</li>
+        <li>CDK compiles to CloudFormation; Pulumi has its own state engine</li>
+        <li>Pulumi supports more languages and has tighter state management</li>
+      </ul>
+
+      <h3>Best Practices</h3>
+      <ul>
+        <li>One stack per environment (dev, staging, prod) using context/parameters</li>
+        <li>Use L2 constructs by default — drop to L1 only when needed</li>
+        <li>Tag all resources for cost tracking</li>
+        <li>Use <code>cdk diff</code> before every deploy</li>
+      </ul>
+
+      <h3>✅ When to Use CDK</h3>
+      <ul>
+        <li>Your team is already writing TypeScript/Python/Java — same language for infra and app</li>
+        <li>You want high-level abstractions that encode best practices (L2/L3 constructs)</li>
+        <li>You're building AWS-only infrastructure and want tight CloudFormation integration</li>
+        <li>You want to write unit tests for your infrastructure (assert a Lambda has a DLQ, assert no public S3 buckets)</li>
+      </ul>
+      <div class="example-box accent-cdk">
+        <strong>Real-world:</strong> A team deploys 12 microservices, each with Lambda + API Gateway + DynamoDB + SQS. They build a custom L3 construct called "MicroserviceStack" that creates all resources with standard naming, tagging, alarms, and permissions. New services go from 500 lines of YAML to 20 lines of TypeScript.
+      </div>
+
+      <h3>🔄 Alternatives to CDK</h3>
+      <ul>
+        <li><span class="highlight">Terraform:</span> Multi-cloud IaC. HCL syntax (not a full programming language). Massive provider ecosystem. Better for multi-cloud or hybrid setups.</li>
+        <li><span class="highlight">Pulumi:</span> Like CDK but multi-cloud. Own state management engine (not CloudFormation). Supports Go, C#, Java, Python, TypeScript.</li>
+        <li><span class="highlight">CloudFormation (raw):</span> YAML/JSON templates. No abstraction layer. Verbose but well-understood. Good for simple stacks.</li>
+        <li><span class="highlight">SAM (Serverless Application Model):</span> CloudFormation extension for serverless. Simpler syntax for Lambda + API Gateway. Good for small serverless projects. Limited outside serverless.</li>
+        <li><span class="highlight">SST (Serverless Stack):</span> Built on CDK with live Lambda debugging and better DX. Great for full-stack serverless apps.</li>
+      </ul>
+    `
+  },
+
+  design: {
+    tag: 'System Design',
+    tagClass: 'tag-design',
+    accentClass: 'accent-design',
+    title: 'End-to-End Serverless Architecture Design',
+    html: `
+      <h3>Canonical Serverless Stack</h3>
+      <p>The foundational pattern for any serverless application:</p>
+      <div class="code-block">
+Client → CloudFront → API Gateway → Lambda → DynamoDB
+                                       ↓
+                                 SQS / EventBridge
+                                       ↓
+                              Worker Lambdas / Step Functions
+      </div>
+
+      <h3>Synchronous Path (Read/Write APIs)</h3>
+      <ul>
+        <li>Client → API Gateway (HTTP API) → Lambda → DynamoDB</li>
+        <li>Keep Lambda thin: validate, transform, persist. No business logic waterfalls.</li>
+        <li>Use API Gateway caching for read-heavy endpoints</li>
+        <li>Use DynamoDB DAX for microsecond reads on hot data</li>
+      </ul>
+
+      <h3>Asynchronous Path (Events & Background Jobs)</h3>
+      <ul>
+        <li>API Gateway → SQS → Lambda (rate-controlled processing)</li>
+        <li>DynamoDB Streams → Lambda (change data capture)</li>
+        <li>EventBridge → fan-out to multiple Lambda targets</li>
+        <li>Step Functions for orchestrating multi-step workflows</li>
+      </ul>
+
+      <h3>When to Use What</h3>
+      <ul>
+        <li><span class="highlight">SQS:</span> Buffering, retry, rate limiting between producer/consumer</li>
+        <li><span class="highlight">EventBridge:</span> Routing events to multiple consumers, cross-account</li>
+        <li><span class="highlight">Step Functions:</span> Complex workflows with branching, retries, human approval</li>
+        <li><span class="highlight">Kinesis:</span> High-throughput real-time streaming (100k+ records/s)</li>
+      </ul>
+
+      <h3>Design Principles</h3>
+      <ul>
+        <li><span class="highlight">Single Responsibility:</span> Each Lambda does one thing. Small, focused functions.</li>
+        <li><span class="highlight">Idempotency:</span> Every function must handle duplicate invocations safely. Use DynamoDB conditional writes or idempotency keys.</li>
+        <li><span class="highlight">Event-First:</span> Prefer async over sync. Decouple with queues and events.</li>
+        <li><span class="highlight">Fail Gracefully:</span> DLQs on every queue and async Lambda. Alarms on DLQ depth.</li>
+        <li><span class="highlight">Least Privilege:</span> CDK L2 constructs set this up by default — don't override with * permissions.</li>
+      </ul>
+
+      <div class="example-box accent-design">
+        <strong>Interview Example — Order Processing System:</strong><br>
+        1. POST /orders → API Gateway → Order Lambda → DynamoDB (write order)<br>
+        2. DynamoDB Stream → Payment Lambda → Stripe API<br>
+        3. Payment success → EventBridge event → Notification Lambda (email) + Inventory Lambda (update stock)<br>
+        4. Payment failure → SQS DLQ → manual review dashboard
+      </div>
+
+      <h3>Observability</h3>
+      <ul>
+        <li>CloudWatch Logs + Metrics on every Lambda</li>
+        <li>X-Ray tracing across API Gateway → Lambda → DynamoDB</li>
+        <li>Structured logging (JSON) with correlation IDs</li>
+        <li>CloudWatch Alarms on: errors, throttles, DLQ depth, latency P99</li>
+      </ul>
+
+      <h3>Cost Optimization</h3>
+      <ul>
+        <li>Right-size Lambda memory (use AWS Lambda Power Tuning)</li>
+        <li>Use HTTP API over REST API when possible (~70% cheaper)</li>
+        <li>DynamoDB on-demand for unpredictable workloads; provisioned + auto-scale for steady state</li>
+        <li>Use ARM64 (Graviton2) Lambdas — 20% cheaper, 20% faster</li>
+      </ul>
+
+      <h3>✅ When to Go Serverless</h3>
+      <ul>
+        <li>Unpredictable or spiky traffic — pay only for what you use</li>
+        <li>Small team that doesn't want to manage infrastructure</li>
+        <li>Event-driven workloads (webhooks, file processing, data pipelines)</li>
+        <li>Rapid prototyping — go from idea to production API in hours</li>
+        <li>Microservices with independent scaling requirements</li>
+      </ul>
+      <div class="example-box accent-design">
+        <strong>Real-world:</strong> A startup processing 1K orders/day uses fully serverless. At 100K orders/day, they move the high-throughput payment processing to ECS Fargate for cost efficiency, but keep the REST APIs and event routing serverless. Hybrid is often the right answer.
+      </div>
+
+      <h3>🔄 When NOT to Go Serverless</h3>
+      <ul>
+        <li><span class="highlight">Long-running processes:</span> Lambda's 15-min timeout kills batch jobs. Use Fargate or Step Functions.</li>
+        <li><span class="highlight">Steady high throughput:</span> If you're running 24/7 at high concurrency, provisioned containers (ECS/EKS) can be cheaper than Lambda.</li>
+        <li><span class="highlight">Stateful workloads:</span> WebSocket servers, game servers, ML inference with large models — need persistent processes.</li>
+        <li><span class="highlight">Vendor lock-in concerns:</span> Serverless ties you deeply to AWS. Consider portable alternatives (containers + Terraform) if multi-cloud matters.</li>
+        <li><span class="highlight">Complex local development:</span> Serverless is harder to test locally. Tools like SAM CLI and LocalStack help but add friction.</li>
+      </ul>
+    `
+  }
+};
+
+let activePanel = null;
+
+function showPanel(key) {
+  const panel = document.getElementById('content-panel');
+  const panelContent = document.getElementById('panel-content');
+
+  // Remove active from all nodes and dots
+  document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-dot').forEach(d => d.className = 'nav-dot');
+
+  // Remove all accent classes from panel
+  panel.className = 'content-panel';
+
+  if (activePanel === key) {
+    // Close
+    panel.classList.remove('open');
+    activePanel = null;
+    return;
+  }
+
+  const data = content[key];
+  activePanel = key;
+
+  // Set active states
+  const node = document.getElementById('node-' + key);
+  if (node) node.classList.add('active');
+
+  const dot = document.getElementById('dot-' + key);
+  if (dot) dot.classList.add('active-' + key);
+
+  // Set panel accent
+  panel.classList.add(data.accentClass);
+
+  // Build content
+  panelContent.innerHTML = `
+    <div class="panel-header">
+      <span class="tag ${data.tagClass}">${data.tag}</span>
+      <h2>${data.title}</h2>
+    </div>
+    <div class="panel-body">
+      ${data.html}
+    </div>
+  `;
+
+  // Open panel with slight delay for re-render
+  panel.classList.remove('open');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      panel.classList.add('open');
+      // Scroll to panel
+      setTimeout(() => {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    });
+  });
+}
+</script>
+
+</div><!-- end root-container -->
+</body>
+</html>

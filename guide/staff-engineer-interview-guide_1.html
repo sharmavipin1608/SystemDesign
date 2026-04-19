@@ -34,14 +34,15 @@
   --code-bg: #1a1c1a;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 17px; scroll-behavior: smooth; }
-body { font-family: 'DM Sans', sans-serif; font-weight: 400; line-height: 1.72; letter-spacing: -0.008em; color: var(--ink-mid); background: var(--paper); }
+.root-container { background: var(--paper); color: var(--ink-mid); font-family: 'DM Sans', sans-serif;
+       font-weight: 400; line-height: 1.72; letter-spacing: -0.008em; min-height: 100vh; position: relative; }
 
 /* SIDEBAR */
 .sidebar {
-  position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh;
-  background: var(--ink); overflow-y: auto; z-index: 100;
+  position: sticky; top: 60px; width: var(--sidebar-w); height: calc(100vh - 60px);
+  background: var(--ink); overflow-y: auto; z-index: 50;
   display: flex; flex-direction: column;
+  flex-shrink: 0;
 }
 .sidebar-brand { padding: 24px 20px 16px; border-bottom: 1px solid #2e2a26; }
 .sidebar-brand .brand-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
@@ -59,8 +60,8 @@ body { font-family: 'DM Sans', sans-serif; font-weight: 400; line-height: 1.72; 
 .nav-link.active { color: #f0ece6; border-left-color: var(--accent); background: #2a2521; }
 
 /* LAYOUT */
-.layout { }
-.main { margin-left: var(--sidebar-w); width: calc(100% - var(--sidebar-w)); }
+.layout { display: flex; align-items: start; }
+.main { flex: 1; min-width: 0; }
 .progress-bar { position: sticky; top: 0; z-index: 50; height: 3px; background: var(--rule); }
 .progress-bar #prog { height: 100%; width: 0%; background: var(--accent); transition: width .25s ease; }
 
@@ -221,6 +222,7 @@ code { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; }
 </head>
 <body>
 
+<div class="root-container">
 <header class="mobile-header">
   <button class="hamburger" onclick="toggleSidebar()">☰</button>
   <span class="mobile-title">Staff Eng Interview Prep</span>
@@ -228,6 +230,7 @@ code { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; }
 
 <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 
+<div class="layout">
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-label">Interview Prep</div>
@@ -2440,7 +2443,8 @@ public Order getOrder(@PathVariable String id) {
   </div>
 
 </main>
-
+</div><!-- end .layout -->
+</div><!-- end root-container -->
 <script>
 (function() {
   var TOTAL = 13;

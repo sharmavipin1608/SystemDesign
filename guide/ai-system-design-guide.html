@@ -34,18 +34,18 @@
   --r:            10px;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 17px; }
-body { background: var(--paper); color: var(--ink-mid); font-family: 'DM Sans', sans-serif;
-       font-weight: 400; line-height: 1.72; letter-spacing: -0.008em; }
+.root-container { background: var(--paper); color: var(--ink-mid); font-family: 'DM Sans', sans-serif;
+       font-weight: 400; line-height: 1.72; letter-spacing: -0.008em; min-height: 100vh; position: relative; }
 
 /* === LAYOUT === */
-.layout { /* plain div — no flex, no grid */ }
+.layout { display: flex; align-items: start; }
 .sidebar {
-  position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-w);
-  background: var(--ink); overflow-y: auto; z-index: 100;
+  position: sticky; top: 60px; width: var(--sidebar-w); height: calc(100vh - 60px);
+  background: var(--ink); overflow-y: auto; z-index: 50;
   display: flex; flex-direction: column; padding-bottom: 32px;
+  flex-shrink: 0;
 }
-.main { margin-left: var(--sidebar-w); width: calc(100% - var(--sidebar-w)); }
+.main { flex: 1; min-width: 0; }
 
 /* === PROGRESS === */
 .progress-bar { position: sticky; top: 0; z-index: 50; height: 3px; background: var(--rule); }
@@ -287,6 +287,7 @@ hr.div { border: none; border-top: 1px solid var(--rule); margin: 32px 0; }
 </head>
 <body>
 
+<div class="root-container">
 <header class="mob-header">
   <button class="hbg" onclick="toggleSidebar()">☰</button>
   <span class="mtitle">AI System Design</span>
@@ -2122,6 +2123,7 @@ Design:
 </main>
 </div>
 
+</div><!-- end root-container -->
 <script>
 (function() {
   var TOTAL = 8;

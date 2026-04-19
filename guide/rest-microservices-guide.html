@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REST APIs & Microservices — Interview Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #161922;
+    --surface-hover: #1e2230;
+    --border: #2a2e3d;
+    --text: #e2e4ea;
+    --text-muted: #8b8fa3;
+    --accent-arch: #f472b6;
+    --accent-best: #38bdf8;
+    --accent-ext: #a78bfa;
+    --accent-int: #34d399;
+    --glow-arch: rgba(244,114,182,0.15);
+    --glow-best: rgba(56,189,248,0.15);
+    --glow-ext: rgba(167,139,250,0.15);
+    --glow-int: rgba(52,211,153,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+.root-container {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  .root-container::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header { text-align: center; margin-bottom: 48px; }
+
+  header h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #f472b6, #38bdf8, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+
+  header p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 300;
+  }
+
+  /* ── DIAGRAM ── */
+  .diagram-area {
+    position: relative;
+    width: 100%;
+    padding: 32px 20px;
+    margin-bottom: 16px;
+  }
+
+  .diagram-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 12px 0;
+    align-items: center;
+    justify-items: center;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* Row labels */
+  .row-label {
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    opacity: 0.5;
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+    justify-self: start;
+    padding-left: 8px;
+  }
+
+  .arrow {
+    color: var(--text-muted);
+    font-size: 1.4rem;
+    opacity: 0.4;
+    user-select: none;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .v-arrow {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    opacity: 0.4;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+  }
+
+  .node {
+    position: relative;
+    padding: 18px 28px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+    border: 1.5px solid transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    text-align: center;
+    min-width: 170px;
+  }
+
+  .node .node-icon {
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .node:hover { transform: translateY(-3px); }
+  .node.active { transform: translateY(-3px); }
+
+  .node-arch {
+    background: linear-gradient(135deg, rgba(244,114,182,0.1), rgba(244,114,182,0.05));
+    border-color: rgba(244,114,182,0.3);
+    color: var(--accent-arch);
+  }
+  .node-arch:hover, .node-arch.active {
+    border-color: var(--accent-arch);
+    box-shadow: 0 0 30px var(--glow-arch), inset 0 0 20px var(--glow-arch);
+  }
+
+  .node-best {
+    background: linear-gradient(135deg, rgba(56,189,248,0.1), rgba(56,189,248,0.05));
+    border-color: rgba(56,189,248,0.3);
+    color: var(--accent-best);
+  }
+  .node-best:hover, .node-best.active {
+    border-color: var(--accent-best);
+    box-shadow: 0 0 30px var(--glow-best), inset 0 0 20px var(--glow-best);
+  }
+
+  .node-ext {
+    background: linear-gradient(135deg, rgba(167,139,250,0.1), rgba(167,139,250,0.05));
+    border-color: rgba(167,139,250,0.3);
+    color: var(--accent-ext);
+  }
+  .node-ext:hover, .node-ext.active {
+    border-color: var(--accent-ext);
+    box-shadow: 0 0 30px var(--glow-ext), inset 0 0 20px var(--glow-ext);
+  }
+
+  .node-int {
+    background: linear-gradient(135deg, rgba(52,211,153,0.1), rgba(52,211,153,0.05));
+    border-color: rgba(52,211,153,0.3);
+    color: var(--accent-int);
+  }
+  .node-int:hover, .node-int.active {
+    border-color: var(--accent-int);
+    box-shadow: 0 0 30px var(--glow-int), inset 0 0 20px var(--glow-int);
+  }
+
+  .node-static {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text-muted);
+    cursor: default;
+    min-width: 100px;
+  }
+
+  /* Layout rows */
+  .top-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+  }
+
+  .mid-section {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 12px;
+    padding-top: 16px;
+    border-top: 1px dashed rgba(255,255,255,0.06);
+  }
+
+  .bottom-section {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 12px;
+    padding-top: 16px;
+    border-top: 1px dashed rgba(255,255,255,0.06);
+  }
+
+  .branch-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .diagram-label {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 4px;
+    font-weight: 400;
+  }
+
+  .section-label {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin: 16px 0 10px;
+    opacity: 0.5;
+  }
+
+  /* ── CONTENT PANEL ── */
+  .hint {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-bottom: 32px;
+    opacity: 0.7;
+  }
+  .hint span { display: inline-block; animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+  .content-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                padding 0.3s ease,
+                border-color 0.3s ease;
+  }
+  .content-panel.open { max-height: 5000px; padding: 36px 40px; }
+  .content-panel.accent-arch { border-color: rgba(244,114,182,0.3); }
+  .content-panel.accent-best { border-color: rgba(56,189,248,0.3); }
+  .content-panel.accent-ext { border-color: rgba(167,139,250,0.3); }
+  .content-panel.accent-int { border-color: rgba(52,211,153,0.3); }
+
+  .panel-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+
+  .panel-header .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .tag-arch { background: rgba(244,114,182,0.15); color: var(--accent-arch); }
+  .tag-best { background: rgba(56,189,248,0.15); color: var(--accent-best); }
+  .tag-ext { background: rgba(167,139,250,0.15); color: var(--accent-ext); }
+  .tag-int { background: rgba(52,211,153,0.15); color: var(--accent-int); }
+
+  .panel-header h2 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.5px; }
+
+  .panel-body h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 20px 0 10px;
+    color: var(--text);
+  }
+  .panel-body h3:first-child { margin-top: 0; }
+
+  .panel-body p {
+    color: var(--text-muted);
+    line-height: 1.7;
+    font-size: 0.92rem;
+    margin-bottom: 10px;
+  }
+
+  .panel-body ul { list-style: none; padding: 0; margin-bottom: 12px; }
+
+  .panel-body ul li {
+    position: relative;
+    padding-left: 20px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    font-size: 0.92rem;
+    margin-bottom: 4px;
+  }
+  .panel-body ul li::before {
+    content: '›';
+    position: absolute;
+    left: 4px;
+    font-weight: 700;
+    opacity: 0.5;
+  }
+
+  .code-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: #c9d1d9;
+    overflow-x: auto;
+    margin: 12px 0;
+    white-space: pre;
+  }
+
+  .highlight { font-weight: 600; color: var(--text); }
+
+  .example-box {
+    background: rgba(255,255,255,0.03);
+    border-left: 3px solid rgba(255,255,255,0.1);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .example-box.accent-arch { border-left-color: var(--accent-arch); }
+  .example-box.accent-best { border-left-color: var(--accent-best); }
+  .example-box.accent-ext { border-left-color: var(--accent-ext); }
+  .example-box.accent-int { border-left-color: var(--accent-int); }
+
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 0.85rem;
+  }
+  .comparison-table th {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+  }
+  .comparison-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text-muted);
+  }
+  .comparison-table tr:last-child td { border-bottom: none; }
+
+  .nav-dots { display: flex; justify-content: center; gap: 8px; margin-top: 24px; }
+  .nav-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border); cursor: pointer; transition: all 0.3s ease;
+  }
+  .nav-dot:hover { background: var(--text-muted); }
+  .nav-dot.active-arch { background: var(--accent-arch); }
+  .nav-dot.active-best { background: var(--accent-best); }
+  .nav-dot.active-ext { background: var(--accent-ext); }
+  .nav-dot.active-int { background: var(--accent-int); }
+
+  @media (max-width: 700px) {
+    .node { min-width: 120px; padding: 14px 16px; font-size: 0.82rem; }
+    header h1 { font-size: 1.6rem; }
+    .content-panel.open { padding: 24px 20px; }
+    .top-row { gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="root-container">
+
+<div class="container">
+  <header>
+    <h1>REST APIs & Microservices</h1>
+    <p>Interactive Interview Guide — Click any component to explore</p>
+  </header>
+
+  <!-- ARCHITECTURE DIAGRAM -->
+  <div class="diagram-area">
+
+    <!-- Top: REST API Architecture -->
+    <div class="section-label">API Layer</div>
+    <div class="top-row">
+      <div class="node node-static">
+        <span class="node-icon">🌐</span>
+        Client
+      </div>
+      <span class="arrow" style="padding: 0 10px;">→</span>
+      <div class="node node-arch" onclick="showPanel('arch')" id="node-arch">
+        <span class="node-icon">🏛️</span>
+        REST Architecture
+      </div>
+      <span class="arrow" style="padding: 0 10px;">→</span>
+      <div class="node node-best" onclick="showPanel('best')" id="node-best">
+        <span class="node-icon">✨</span>
+        Best Practices
+      </div>
+    </div>
+
+    <!-- Bottom: Communication patterns -->
+    <div class="section-label" style="margin-top: 28px;">Communication Layer</div>
+    <div class="bottom-section">
+      <div class="branch-connector">
+        <div class="node node-ext" onclick="showPanel('ext')" id="node-ext">
+          <span class="node-icon">🌍</span>
+          External Comms
+        </div>
+        <div class="diagram-label">3rd Party / Public APIs</div>
+      </div>
+
+      <div style="display:flex; align-items:center;">
+        <span class="arrow">⟷</span>
+      </div>
+
+      <div class="branch-connector">
+        <div class="node node-static" style="min-width:130px;">
+          <span class="node-icon">⚙️</span>
+          Your Service
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center;">
+        <span class="arrow">⟷</span>
+      </div>
+
+      <div class="branch-connector">
+        <div class="node node-int" onclick="showPanel('int')" id="node-int">
+          <span class="node-icon">🔗</span>
+          Internal Comms
+        </div>
+        <div class="diagram-label">Service-to-Service</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="hint"><span>↑ Click a component to view interview notes ↑</span></div>
+
+  <!-- CONTENT PANEL -->
+  <div class="content-panel" id="content-panel">
+    <div id="panel-content"></div>
+  </div>
+
+  <!-- NAV DOTS -->
+  <div class="nav-dots">
+    <div class="nav-dot" onclick="showPanel('arch')" id="dot-arch" title="REST Architecture"></div>
+    <div class="nav-dot" onclick="showPanel('best')" id="dot-best" title="Best Practices"></div>
+    <div class="nav-dot" onclick="showPanel('ext')" id="dot-ext" title="External Comms"></div>
+    <div class="nav-dot" onclick="showPanel('int')" id="dot-int" title="Internal Comms"></div>
+  </div>
+</div>
+
+<script>
+const content = {
+  arch: {
+    tag: 'Architecture',
+    tagClass: 'tag-arch',
+    accentClass: 'accent-arch',
+    title: 'REST API Architecture',
+    html: `
+      <h3>What is REST?</h3>
+      <p>REST (Representational State Transfer) is an architectural style for building APIs over HTTP. It's not a protocol — it's a set of constraints that, when followed, produce scalable, stateless, cacheable APIs.</p>
+
+      <h3>Core Constraints</h3>
+      <ul>
+        <li><span class="highlight">Stateless:</span> Each request contains all information needed to process it. Server holds no session state.</li>
+        <li><span class="highlight">Client-Server:</span> Clear separation — client handles UI, server handles data/logic.</li>
+        <li><span class="highlight">Cacheable:</span> Responses must declare themselves cacheable or not. Enables CDN and browser caching.</li>
+        <li><span class="highlight">Uniform Interface:</span> Resources identified by URIs. Standard HTTP methods. Self-descriptive messages.</li>
+        <li><span class="highlight">Layered System:</span> Client can't tell if it's talking to the origin server or an intermediary (load balancer, cache, gateway).</li>
+      </ul>
+
+      <h3>Resource-Oriented Design</h3>
+      <p>Everything is a <span class="highlight">resource</span> identified by a URI. Actions are expressed through HTTP methods, not in the URL.</p>
+      <div class="code-block">GET    /users           → List users
+GET    /users/123       → Get user 123
+POST   /users           → Create a user
+PUT    /users/123       → Replace user 123 entirely
+PATCH  /users/123       → Partial update to user 123
+DELETE /users/123       → Delete user 123
+
+GET    /users/123/orders       → List orders for user 123
+POST   /users/123/orders       → Create an order for user 123</div>
+
+      <h3>HTTP Methods — Idempotency & Safety</h3>
+      <table class="comparison-table">
+        <tr><th>Method</th><th>Safe?</th><th>Idempotent?</th><th>Use Case</th></tr>
+        <tr><td>GET</td><td>Yes</td><td>Yes</td><td>Read data</td></tr>
+        <tr><td>POST</td><td>No</td><td>No</td><td>Create resource</td></tr>
+        <tr><td>PUT</td><td>No</td><td>Yes</td><td>Full replace</td></tr>
+        <tr><td>PATCH</td><td>No</td><td>No*</td><td>Partial update</td></tr>
+        <tr><td>DELETE</td><td>No</td><td>Yes</td><td>Remove resource</td></tr>
+      </table>
+      <p style="font-size:0.8rem; opacity:0.6;">*PATCH can be made idempotent depending on implementation.</p>
+
+      <h3>Status Codes to Know</h3>
+      <ul>
+        <li><span class="highlight">200 OK</span> — Success (GET, PUT, PATCH)</li>
+        <li><span class="highlight">201 Created</span> — Resource created (POST). Include Location header.</li>
+        <li><span class="highlight">204 No Content</span> — Success, no body (DELETE)</li>
+        <li><span class="highlight">400 Bad Request</span> — Client sent invalid data</li>
+        <li><span class="highlight">401 Unauthorized</span> — Missing or invalid auth</li>
+        <li><span class="highlight">403 Forbidden</span> — Authenticated but not authorized</li>
+        <li><span class="highlight">404 Not Found</span> — Resource doesn't exist</li>
+        <li><span class="highlight">409 Conflict</span> — Resource state conflict (e.g., duplicate)</li>
+        <li><span class="highlight">429 Too Many Requests</span> — Rate limited</li>
+        <li><span class="highlight">500 Internal Server Error</span> — Server-side failure</li>
+        <li><span class="highlight">503 Service Unavailable</span> — Temporary overload or maintenance</li>
+      </ul>
+
+      <h3>Request/Response Anatomy</h3>
+      <div class="code-block">// Request
+POST /api/v1/orders HTTP/1.1
+Host: api.example.com
+Authorization: Bearer eyJhbGciOi...
+Content-Type: application/json
+Idempotency-Key: ord-abc-123
+
+{
+  "userId": 123,
+  "items": [{"sku": "WIDGET-1", "qty": 2}]
+}
+
+// Response
+HTTP/1.1 201 Created
+Location: /api/v1/orders/456
+Content-Type: application/json
+
+{
+  "id": 456,
+  "status": "pending",
+  "createdAt": "2026-04-18T10:30:00Z"
+}</div>
+
+      <h3>✅ When to Use REST</h3>
+      <ul>
+        <li>CRUD-heavy applications with well-defined resources</li>
+        <li>Public-facing APIs where simplicity and cacheability matter</li>
+        <li>When your clients are browsers, mobile apps, or third-party integrations</li>
+        <li>When HTTP semantics (caching, status codes, content negotiation) add value</li>
+      </ul>
+
+      <h3>🔄 Alternatives</h3>
+      <ul>
+        <li><span class="highlight">GraphQL:</span> When clients need flexible queries, avoid over/under-fetching, or need to aggregate data from multiple resources in one call.</li>
+        <li><span class="highlight">gRPC:</span> High-performance internal service communication. Binary protocol (protobuf), streaming, strongly typed. Not browser-friendly without a proxy.</li>
+        <li><span class="highlight">WebSockets:</span> Bidirectional real-time communication (chat, live updates). Not request-response.</li>
+        <li><span class="highlight">Server-Sent Events (SSE):</span> One-way server-to-client streaming. Simpler than WebSockets for notifications/feeds.</li>
+      </ul>
+    `
+  },
+
+  best: {
+    tag: 'Best Practices',
+    tagClass: 'tag-best',
+    accentClass: 'accent-best',
+    title: 'REST API Best Practices',
+    html: `
+      <h3>URL Design</h3>
+      <ul>
+        <li>Use <span class="highlight">nouns, not verbs:</span> <code>/users</code> not <code>/getUsers</code></li>
+        <li>Use <span class="highlight">plural nouns:</span> <code>/orders</code> not <code>/order</code></li>
+        <li>Nest for relationships: <code>/users/123/orders</code> — but max 2 levels deep</li>
+        <li>Use query params for filtering/sorting: <code>/orders?status=pending&sort=-createdAt</code></li>
+        <li>Version your API: <code>/api/v1/users</code> or via Accept header</li>
+      </ul>
+
+      <h3>Pagination</h3>
+      <p>Never return unbounded lists. Three common strategies:</p>
+      <ul>
+        <li><span class="highlight">Offset-based:</span> <code>?page=2&size=20</code> — Simple but skips/duplicates on inserts. Bad for large offsets (DB scans).</li>
+        <li><span class="highlight">Cursor-based:</span> <code>?cursor=eyJpZCI6MTIzfQ&size=20</code> — Stable pagination. Best for feeds and infinite scroll. Uses an encoded pointer to the last item.</li>
+        <li><span class="highlight">Keyset-based:</span> <code>?after_id=123&size=20</code> — WHERE id > 123. Fast, DB-friendly. Requires a sortable unique key.</li>
+      </ul>
+      <div class="example-box accent-best">
+        <strong>Interview tip:</strong> Always mention cursor-based pagination for large datasets. Offset pagination with <code>OFFSET 100000</code> is a performance killer in SQL — the DB still scans 100K rows.
+      </div>
+
+      <h3>Error Handling</h3>
+      <p>Return consistent, structured error responses:</p>
+      <div class="code-block">{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Email is required",
+    "details": [
+      { "field": "email", "issue": "must not be blank" }
+    ],
+    "traceId": "abc-123-def"
+  }
+}</div>
+      <ul>
+        <li>Use appropriate HTTP status codes — don't return 200 with an error body</li>
+        <li>Include a machine-readable error code (not just a message)</li>
+        <li>Include a trace/correlation ID for debugging</li>
+        <li>Never expose stack traces or internal details in production</li>
+      </ul>
+
+      <h3>Authentication & Authorization</h3>
+      <ul>
+        <li><span class="highlight">JWT (Bearer tokens):</span> Stateless. Token contains claims. Validate signature + expiry on every request. Short-lived access tokens + refresh tokens.</li>
+        <li><span class="highlight">API Keys:</span> Simple, good for server-to-server. Always send in headers, never in URLs. Rate-limit per key.</li>
+        <li><span class="highlight">OAuth 2.0:</span> Delegated authorization. Use Authorization Code + PKCE for public clients.</li>
+      </ul>
+
+      <h3>Rate Limiting</h3>
+      <ul>
+        <li>Return <code>429 Too Many Requests</code> with <code>Retry-After</code> header</li>
+        <li>Common algorithms: Token Bucket (bursty), Sliding Window (smooth)</li>
+        <li>Rate limit by API key, user ID, or IP</li>
+        <li>Return rate limit headers: <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, <code>X-RateLimit-Reset</code></li>
+      </ul>
+
+      <h3>Idempotency</h3>
+      <p>Critical for POST and payment endpoints. Client sends an <span class="highlight">Idempotency-Key</span> header. Server stores the key → response mapping. If the same key is sent again, return the stored response without re-processing.</p>
+      <div class="example-box accent-best">
+        <strong>Example:</strong> Stripe's API requires an <code>Idempotency-Key</code> header for POST requests. If a network timeout occurs and the client retries, Stripe returns the original response instead of creating a duplicate charge.
+      </div>
+
+      <h3>Versioning Strategies</h3>
+      <ul>
+        <li><span class="highlight">URL path:</span> <code>/v1/users</code> — Most common, explicit, easy to route</li>
+        <li><span class="highlight">Header:</span> <code>Accept: application/vnd.api.v2+json</code> — Cleaner URLs but harder to test</li>
+        <li><span class="highlight">Query param:</span> <code>?version=2</code> — Simple but not RESTful</li>
+      </ul>
+
+      <h3>HATEOAS (Briefly)</h3>
+      <p>Hypermedia As The Engine Of Application State — responses include links to related actions. Rarely implemented in full but you should know it for interviews:</p>
+      <div class="code-block">{
+  "id": 456,
+  "status": "pending",
+  "_links": {
+    "self": "/orders/456",
+    "cancel": "/orders/456/cancel",
+    "payment": "/orders/456/payment"
+  }
+}</div>
+
+      <h3>Other Must-Knows</h3>
+      <ul>
+        <li><span class="highlight">CORS:</span> Configure allowed origins, methods, headers. Preflight OPTIONS requests.</li>
+        <li><span class="highlight">Content Negotiation:</span> Use Accept/Content-Type headers. Support JSON at minimum.</li>
+        <li><span class="highlight">Compression:</span> Enable gzip/brotli via Accept-Encoding. Significant bandwidth savings.</li>
+        <li><span class="highlight">Request Validation:</span> Validate early, fail fast. Use Bean Validation in Java (<code>@Valid</code>, <code>@NotBlank</code>).</li>
+      </ul>
+    `
+  },
+
+  ext: {
+    tag: 'External',
+    tagClass: 'tag-ext',
+    accentClass: 'accent-ext',
+    title: 'Microservices — External Communication',
+    html: `
+      <h3>What is External Communication?</h3>
+      <p>Your microservice talking to <span class="highlight">third-party or public APIs</span> — payment gateways (Stripe), email providers (SendGrid), social logins (Google OAuth), map APIs, etc. You don't own or control the other end.</p>
+
+      <h3>Key Patterns</h3>
+
+      <h3>1. API Gateway Pattern</h3>
+      <p>A single entry point that routes external requests to internal services. Handles cross-cutting concerns:</p>
+      <ul>
+        <li>Authentication / Authorization</li>
+        <li>Rate limiting & throttling</li>
+        <li>Request/response transformation</li>
+        <li>SSL termination</li>
+        <li>Logging and monitoring</li>
+      </ul>
+      <div class="example-box accent-ext">
+        <strong>Example:</strong> Kong, AWS API Gateway, or Spring Cloud Gateway sits in front. Mobile app hits <code>/api/orders</code> → gateway validates JWT, rate-limits, and routes to the internal Order Service.
+      </div>
+
+      <h3>2. Circuit Breaker</h3>
+      <p>Protects your service when an external dependency is slow or down. Three states:</p>
+      <ul>
+        <li><span class="highlight">Closed:</span> Normal operation. Requests flow through. Track failure count.</li>
+        <li><span class="highlight">Open:</span> Failure threshold hit. Requests immediately fail-fast with a fallback. No calls to the external service.</li>
+        <li><span class="highlight">Half-Open:</span> After a timeout, allow a few test requests. If they succeed → close. If they fail → reopen.</li>
+      </ul>
+      <div class="example-box accent-ext">
+        <strong>Java example:</strong> Resilience4j's <code>@CircuitBreaker</code> annotation. Configure failure rate threshold (e.g., 50%), wait duration in open state (e.g., 30s), and sliding window size.
+      </div>
+
+      <h3>3. Retry with Backoff</h3>
+      <ul>
+        <li>Retry transient failures (5xx, timeouts) — never retry 4xx (client errors)</li>
+        <li>Use <span class="highlight">exponential backoff</span>: 1s → 2s → 4s → 8s</li>
+        <li>Add <span class="highlight">jitter</span> to avoid thundering herd (all clients retry at the same instant)</li>
+        <li>Set a max retry count (typically 3)</li>
+      </ul>
+
+      <h3>4. Timeout Configuration</h3>
+      <ul>
+        <li><span class="highlight">Connection timeout:</span> How long to wait for TCP handshake (e.g., 2s)</li>
+        <li><span class="highlight">Read timeout:</span> How long to wait for response data (e.g., 5s)</li>
+        <li>Always set explicit timeouts. Default "infinite" timeouts will kill your thread pool.</li>
+      </ul>
+
+      <h3>5. Bulkhead Pattern</h3>
+      <p>Isolate external call pools. If the Stripe API hangs, it shouldn't exhaust your thread pool and block calls to SendGrid.</p>
+      <ul>
+        <li>Separate thread pools (or semaphores) per external dependency</li>
+        <li>Resilience4j <code>@Bulkhead</code> in Java</li>
+      </ul>
+
+      <h3>6. Webhook Pattern (Inbound)</h3>
+      <p>Instead of polling, the external service calls YOUR endpoint when something happens:</p>
+      <ul>
+        <li>Stripe sends payment confirmation to <code>/webhooks/stripe</code></li>
+        <li>Verify the webhook signature to prevent spoofing</li>
+        <li>Process idempotently — webhooks can be sent multiple times</li>
+        <li>Return 200 quickly, process asynchronously (queue the event)</li>
+      </ul>
+
+      <h3>Security Considerations</h3>
+      <ul>
+        <li>Store API keys in a secret manager (AWS Secrets Manager, Vault) — never in code</li>
+        <li>Use short-lived tokens where possible (OAuth client credentials flow)</li>
+        <li>Validate SSL certificates on outbound calls</li>
+        <li>Sanitize and validate all data coming from external APIs — treat it as untrusted input</li>
+        <li>Log external call latency, status codes, and error rates for observability</li>
+      </ul>
+
+      <h3>✅ When to Use What</h3>
+      <table class="comparison-table">
+        <tr><th>Pattern</th><th>When</th></tr>
+        <tr><td>Circuit Breaker</td><td>Any external HTTP call that could fail or be slow</td></tr>
+        <tr><td>Retry + Backoff</td><td>Transient failures (network blips, 503s)</td></tr>
+        <tr><td>Bulkhead</td><td>Multiple external dependencies — isolate failure domains</td></tr>
+        <tr><td>Webhooks</td><td>Real-time notifications from external systems</td></tr>
+        <tr><td>API Gateway</td><td>Single entry point for all external → internal traffic</td></tr>
+      </table>
+
+      <h3>🔄 Alternatives</h3>
+      <ul>
+        <li><span class="highlight">Message Queues (SQS, RabbitMQ):</span> Decouple external calls. Enqueue the call, a worker processes it. Better reliability.</li>
+        <li><span class="highlight">Outbox Pattern:</span> Write to DB + outbox table in one transaction. A poller/CDC sends the event. Guarantees at-least-once delivery to external systems.</li>
+      </ul>
+    `
+  },
+
+  int: {
+    tag: 'Internal',
+    tagClass: 'tag-int',
+    accentClass: 'accent-int',
+    title: 'Microservices — Internal Communication',
+    html: `
+      <h3>What is Internal Communication?</h3>
+      <p>Your microservices talking to <span class="highlight">each other</span> within your system boundary. You own both sides. This is where architectural choices matter most for performance and reliability.</p>
+
+      <h3>Two Fundamental Styles</h3>
+
+      <h3>Synchronous (Request-Response)</h3>
+      <p>Service A calls Service B and waits for a response. Simple but creates coupling.</p>
+      <ul>
+        <li><span class="highlight">REST over HTTP:</span> Most common. Easy to understand, debug, and test. JSON payloads. Use for simple CRUD or when you need the response immediately.</li>
+        <li><span class="highlight">gRPC:</span> Binary protobuf, ~10x faster than JSON/HTTP. Strongly typed contracts (.proto files). Supports streaming. Best for high-throughput internal calls.</li>
+        <li><span class="highlight">Service Mesh (Istio, Linkerd):</span> Sidecar proxy handles retries, load balancing, mTLS, observability — your code just makes HTTP calls.</li>
+      </ul>
+      <div class="example-box accent-int">
+        <strong>Example:</strong> Order Service needs the user's shipping address → makes a synchronous GET to User Service. This is fine because the order can't proceed without it.
+      </div>
+
+      <h3>Asynchronous (Event-Driven)</h3>
+      <p>Service A publishes an event. Service B consumes it later. No waiting. Decoupled.</p>
+      <ul>
+        <li><span class="highlight">Message Queues (SQS, RabbitMQ):</span> Point-to-point. One producer, one consumer. Good for task distribution and work queues.</li>
+        <li><span class="highlight">Event Streaming (Kafka, Kinesis):</span> Append-only log. Multiple consumers can read independently. Replay capability. Best for high-throughput event pipelines.</li>
+        <li><span class="highlight">Event Bus (EventBridge, SNS):</span> Fan-out. One event, many subscribers. Content-based routing.</li>
+      </ul>
+      <div class="example-box accent-int">
+        <strong>Example:</strong> Order Service publishes <code>OrderPlaced</code> event → Inventory Service decrements stock, Email Service sends confirmation, Analytics Service logs it. All independently, no coupling.
+      </div>
+
+      <h3>Service Discovery</h3>
+      <p>How does Service A know where Service B lives?</p>
+      <ul>
+        <li><span class="highlight">Client-side discovery:</span> Service queries a registry (Eureka, Consul) and picks an instance. Client does load balancing.</li>
+        <li><span class="highlight">Server-side discovery:</span> Client calls a load balancer (ALB, Kubernetes Service) which routes to a healthy instance. Simpler for the client.</li>
+        <li><span class="highlight">DNS-based:</span> Kubernetes DNS — <code>user-service.default.svc.cluster.local</code>. Built-in, no extra infra.</li>
+      </ul>
+
+      <h3>Data Consistency Patterns</h3>
+      <ul>
+        <li><span class="highlight">Saga Pattern:</span> Sequence of local transactions. Each service does its part and publishes an event. If one fails, compensating transactions undo previous steps.</li>
+        <li><span class="highlight">Choreography:</span> Each service listens for events and reacts. No central coordinator. Simple but harder to trace.</li>
+        <li><span class="highlight">Orchestration:</span> A central orchestrator (Step Functions, Temporal) tells each service what to do. Easier to understand and debug.</li>
+      </ul>
+      <div class="example-box accent-int">
+        <strong>Saga example (Choreography):</strong><br>
+        1. Order Service creates order → publishes <code>OrderCreated</code><br>
+        2. Payment Service charges card → publishes <code>PaymentCompleted</code><br>
+        3. Inventory Service reserves stock → publishes <code>StockReserved</code><br>
+        If payment fails → Payment Service publishes <code>PaymentFailed</code> → Order Service cancels the order (compensating transaction).
+      </div>
+
+      <h3>Synchronous vs Asynchronous — When to Use What</h3>
+      <table class="comparison-table">
+        <tr><th>Factor</th><th>Synchronous</th><th>Asynchronous</th></tr>
+        <tr><td>Need response now?</td><td>Yes — use sync</td><td>No — use async</td></tr>
+        <tr><td>Coupling</td><td>Temporal coupling (both must be up)</td><td>Decoupled (queue buffers)</td></tr>
+        <tr><td>Latency</td><td>Adds to total response time</td><td>Fire-and-forget</td></tr>
+        <tr><td>Complexity</td><td>Simple to reason about</td><td>Eventual consistency, harder debugging</td></tr>
+        <tr><td>Failure handling</td><td>Circuit breaker, retry</td><td>DLQ, retry from queue</td></tr>
+      </table>
+
+      <h3>Common Anti-Patterns</h3>
+      <ul>
+        <li><span class="highlight">Distributed Monolith:</span> Services that must all be deployed together or can't function independently. Worse than a monolith.</li>
+        <li><span class="highlight">Chatty Communication:</span> Service A makes 10 calls to Service B in a single request. Batch it or rethink your service boundaries.</li>
+        <li><span class="highlight">Shared Database:</span> Two services writing to the same table. Kills independence. Each service owns its data.</li>
+        <li><span class="highlight">Synchronous Chain:</span> A → B → C → D. Latency compounds, one failure kills the chain. Break it with async where possible.</li>
+      </ul>
+
+      <h3>✅ Best Practices</h3>
+      <ul>
+        <li>Default to async unless you need the response synchronously</li>
+        <li>Each service owns its database — no shared data stores</li>
+        <li>Use correlation IDs across all service calls for distributed tracing</li>
+        <li>Define API contracts (OpenAPI for REST, .proto for gRPC) — contract-first development</li>
+        <li>Implement health checks (<code>/health</code>, <code>/ready</code>) for every service</li>
+        <li>Use structured logging (JSON) with service name, correlation ID, timestamp</li>
+      </ul>
+
+      <h3>🔄 Alternatives to Direct Service Calls</h3>
+      <ul>
+        <li><span class="highlight">BFF (Backend for Frontend):</span> Aggregate data from multiple services into one response for the frontend. Avoids chatty client-to-service communication.</li>
+        <li><span class="highlight">CQRS:</span> Separate read and write models. Write to one service, read from a denormalized view optimized for queries.</li>
+        <li><span class="highlight">Event Sourcing:</span> Store events, not state. Rebuild current state by replaying events. Pairs well with Kafka.</li>
+      </ul>
+    `
+  }
+};
+
+let activePanel = null;
+
+function showPanel(key) {
+  const panel = document.getElementById('content-panel');
+  const panelContent = document.getElementById('panel-content');
+
+  document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-dot').forEach(d => d.className = 'nav-dot');
+  panel.className = 'content-panel';
+
+  if (activePanel === key) {
+    panel.classList.remove('open');
+    activePanel = null;
+    return;
+  }
+
+  const data = content[key];
+  activePanel = key;
+
+  const node = document.getElementById('node-' + key);
+  if (node) node.classList.add('active');
+
+  const dot = document.getElementById('dot-' + key);
+  if (dot) dot.classList.add('active-' + key);
+
+  panel.classList.add(data.accentClass);
+
+  panelContent.innerHTML = `
+    <div class="panel-header">
+      <span class="tag ${data.tagClass}">${data.tag}</span>
+      <h2>${data.title}</h2>
+    </div>
+    <div class="panel-body">
+      ${data.html}
+    </div>
+  `;
+
+  panel.classList.remove('open');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      panel.classList.add('open');
+      setTimeout(() => {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    });
+  });
+}
+</script>
+
+</div><!-- end root-container -->
+</body>
+</html>
